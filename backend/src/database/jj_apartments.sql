@@ -23,6 +23,7 @@ USE `jj_apartments` ;
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `jj_apartments`.`expenses` ;
 
+
 CREATE TABLE IF NOT EXISTS `jj_apartments`.`expenses` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `amount` DECIMAL(10,2) NOT NULL,
