@@ -24,7 +24,7 @@ USE `jj_apartments` ;
 DROP TABLE IF EXISTS `jj_apartments`.`expenses` ;
 
 CREATE TABLE IF NOT EXISTS `jj_apartments`.`expenses` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `amount` DECIMAL(10,2) NOT NULL,
   `reason` ENUM('Maintenance', 'Utilities', 'Supplies', 'Repair', 'Other') NOT NULL,
   `date` DATE NOT NULL,
@@ -63,10 +63,14 @@ DROP TABLE IF EXISTS `jj_apartments`.`payments` ;
 CREATE TABLE IF NOT EXISTS `jj_apartments`.`payments` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `tenant_id` INT NOT NULL,
+  `reason` ENUM('Monthly Due', 'Miscellaneous', 'Maintenance') NOT NULL,
   `mode_of_payment` ENUM('Cash', 'GCash', 'Bank', 'Others') NULL DEFAULT NULL,
   `amount` DECIMAL(10,2) NOT NULL,
-  `month_of_start` DATE NOT NULL,
-  `month_of_end` DATE NOT NULL,
+  `due_date` DATE NULL DEFAULT NULL,
+  `month_of_start` DATE NULL DEFAULT NULL,
+  `month_of_end` DATE NULL DEFAULT NULL,
+  `is_paid` TINYINT NOT NULL,
+  `paid_at` DATE NULL,
   PRIMARY KEY (`id`),
   INDEX `tenant_id_idx` (`tenant_id` ASC) VISIBLE,
   CONSTRAINT `tenant_id`
@@ -78,130 +82,65 @@ COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
--- Table `jj_apartments`.`meralco`
+-- Table `jj_apartments`.`rates`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `jj_apartments`.`meralco` ;
+DROP TABLE IF EXISTS `jj_apartments`.`rates` ;
 
-CREATE TABLE IF NOT EXISTS `jj_apartments`.`meralco` (
-  `id` INT NOT NULL,
-  `previous_reading` DECIMAL(10,2) NULL,
+CREATE TABLE IF NOT EXISTS `jj_apartments`.`rates` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `type` ENUM('Meralco', 'Manila Water') NOT NULL,
+  `rate` DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `jj_apartments`.`utilities`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `jj_apartments`.`utilities` ;
+
+CREATE TABLE IF NOT EXISTS `jj_apartments`.`utilities` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `type` ENUM('Meralco', 'Manila Water') NOT NULL,
+  `previous_reading` DECIMAL(10,2) NULL DEFAULT NULL,
   `current_reading` DECIMAL(10,2) NOT NULL,
-  `total_kwh_meter` DECIMAL(10,2) NOT NULL,
+  `total_meter` DECIMAL(10,2) NOT NULL,
   `total_amount` DECIMAL(10,2) NOT NULL,
+  `due_date` DATE NULL,
   `month_of_start` DATE NOT NULL,
   `month_of_end` DATE NOT NULL,
+  `is_paid` TINYINT NOT NULL,
+  `paid_at` DATE NULL,
   `tenants_id` INT NOT NULL,
+  `rates_id` INT NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_meralco_tenants1_idx` (`tenants_id` ASC) VISIBLE,
+  INDEX `fk_utilities_rates1_idx` (`rates_id` ASC) VISIBLE,
   CONSTRAINT `fk_meralco_tenants1`
     FOREIGN KEY (`tenants_id`)
-    REFERENCES `jj_apartments`.`tenants` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `jj_apartments`.`manila_water`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `jj_apartments`.`manila_water` ;
-
-CREATE TABLE IF NOT EXISTS `jj_apartments`.`manila_water` (
-  `id` INT NOT NULL,
-  `previous_reading` DECIMAL(10,2) NULL,
-  `current_reading` DECIMAL(10,2) NOT NULL,
-  `total_cubic_meter` DECIMAL(10,2) NOT NULL,
-  `total_amount` DECIMAL(10,2) NOT NULL,
-  `month_of_start` DATE NOT NULL,
-  `month_of_end` DATE NOT NULL,
-  `tenants_id` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_manila_water_tenants1_idx` (`tenants_id` ASC) VISIBLE,
-  CONSTRAINT `fk_manila_water_tenants1`
-    FOREIGN KEY (`tenants_id`)
-    REFERENCES `jj_apartments`.`tenants` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `jj_apartments`.`utility_bills`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `jj_apartments`.`utility_bills` ;
-
-CREATE TABLE IF NOT EXISTS `jj_apartments`.`utility_bills` (
-  `id` INT NOT NULL,
-  `meralco_id` INT NOT NULL,
-  `manila_water_id` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_utility_bills_meralco1_idx` (`meralco_id` ASC) VISIBLE,
-  INDEX `fk_utility_bills_manila_water1_idx` (`manila_water_id` ASC) VISIBLE,
-  CONSTRAINT `fk_utility_bills_meralco1`
-    FOREIGN KEY (`meralco_id`)
-    REFERENCES `jj_apartments`.`meralco` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_utility_bills_manila_water1`
-    FOREIGN KEY (`manila_water_id`)
-    REFERENCES `jj_apartments`.`manila_water` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `jj_apartments`.`finances`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `jj_apartments`.`finances` ;
-
-CREATE TABLE IF NOT EXISTS `jj_apartments`.`finances` (
-  `id` INT NOT NULL,
-  `expenses_id` INT NULL DEFAULT NULL,
-  `payments_id` INT NOT NULL,
-  `utility_bills_id` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `expenses_id_idx` (`expenses_id` ASC) VISIBLE,
-  INDEX `payments_id_idx` (`payments_id` ASC) VISIBLE,
-  INDEX `fk_finances_utility_bills1_idx` (`utility_bills_id` ASC) VISIBLE,
-  CONSTRAINT `expenses_id`
-    FOREIGN KEY (`expenses_id`)
-    REFERENCES `jj_apartments`.`expenses` (`id`),
-  CONSTRAINT `payments_id`
-    FOREIGN KEY (`payments_id`)
-    REFERENCES `jj_apartments`.`payments` (`id`),
-  CONSTRAINT `fk_finances_utility_bills1`
-    FOREIGN KEY (`utility_bills_id`)
-    REFERENCES `jj_apartments`.`utility_bills` (`id`)
+    REFERENCES `jj_apartments`.`tenants` (`id`),
+  CONSTRAINT `fk_utilities_rates1`
+    FOREIGN KEY (`rates_id`)
+    REFERENCES `jj_apartments`.`rates` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
-
 -- -----------------------------------------------------
 -- Table `jj_apartments`.`monthly_report`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `jj_apartments`.`monthly_report` ;
+DROP TABLE IF EXISTS `jj_apartments`.`monthly_reports` ;
 
-CREATE TABLE IF NOT EXISTS `jj_apartments`.`monthly_report` (
+CREATE TABLE IF NOT EXISTS `jj_apartments`.`monthly_reports` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `finances_id` INT NOT NULL,
-  `monthly_dues` DECIMAL(10,2) NOT NULL,
-  `utility_bills` DECIMAL(10,2) NOT NULL,
-  `miscellaneous` DECIMAL(10,2) NULL DEFAULT NULL,
-  `maintenance` DECIMAL(10,2) NULL DEFAULT NULL,
   `year` INT NOT NULL,
   `month` INT NOT NULL,
   `total_earnings` DECIMAL(10,2) NOT NULL,
-  `expenses` DECIMAL(10,2) NULL,
+  `total_expenses` DECIMAL(10,2) NOT NULL,
   `net_income` DECIMAL(10,2) NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `finances_id_idx` (`finances_id` ASC) VISIBLE,
-  CONSTRAINT `finances_id`
-    FOREIGN KEY (`finances_id`)
-    REFERENCES `jj_apartments`.`finances` (`id`))
+  PRIMARY KEY (`id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
