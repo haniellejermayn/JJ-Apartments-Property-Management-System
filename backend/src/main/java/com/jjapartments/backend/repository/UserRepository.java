@@ -1,9 +1,12 @@
+package com.jjapartments.backend.repository;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Repository;
+import com.jjapartments.backend.models.User;
 
 
 @Repository
@@ -12,9 +15,9 @@ public class UserRepository{
     private JdbcTemplate jdbcTemplate;
 
     @Transactional(readOnly = true)
-    public List<Stock> findAll() {
+    public List<User> findAll() {
         String sql = "SELECT * FROM users"; 
-        return jdbcTemplate.query(sql, new StockRowMapper());
+        return jdbcTemplate.query(sql, new UserRowMapper());
     }
 
     public boolean userExists(User user) {

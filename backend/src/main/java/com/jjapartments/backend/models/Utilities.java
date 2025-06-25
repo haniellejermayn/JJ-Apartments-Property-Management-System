@@ -3,7 +3,7 @@ package com.jjapartments.backend.models;
 public class Utilities {
 
     private int id;
-    private string type;
+    private String type;
     private double previousReading;
     private double currentReading;
     private double totalMeter;
@@ -25,11 +25,11 @@ public class Utilities {
         this.id = id;
     }
 
-    public string getType() {
+    public String getType() {
         return this.type;
     }
 
-    public void setType(string type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -65,27 +65,27 @@ public class Utilities {
         this.totalAmount = totalAmount;
     }
 
-    public string getDueDate() {
+    public String getDueDate() {
         return this.dueDate;
     }
 
-    public void setDueDate(string dueDate) {
+    public void setDueDate(String dueDate) {
         this.dueDate = dueDate;
     }
 
-    public string getMonthOfStart() {
+    public String getMonthOfStart() {
         return this.monthOfStart;
     }
 
-    public void setMonthOfStart(string monthOfStart) {
+    public void setMonthOfStart(String monthOfStart) {
         this.monthOfStart = monthOfStart;
     }
 
-    public string getMonthOfEnd() {
+    public String getMonthOfEnd() {
         return this.monthOfEnd;
     }
 
-    public void setMonthOfEnd(string monthOfEnd) {
+    public void setMonthOfEnd(String monthOfEnd) {
         this.monthOfEnd = monthOfEnd;
     }
 
@@ -97,11 +97,11 @@ public class Utilities {
         this.isPaid = isPaid;
     }
 
-    public string getPaidAt() {
+    public String getPaidAt() {
         return this.paidAt;
     }
 
-    public void setPaidAt(string paidAt) {
+    public void setPaidAt(String paidAt) {
         this.paidAt = paidAt;
     }
 
