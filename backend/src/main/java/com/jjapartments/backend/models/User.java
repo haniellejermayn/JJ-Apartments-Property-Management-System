@@ -8,7 +8,7 @@ public class User {
     private String fullName;
     private String email;
     private boolean isOwner;
-    private string createdAt;
+    private String createdAt;
     
     public int getId() {
         return id;
@@ -58,11 +58,11 @@ public class User {
         this.isOwner = isOwner;
     }
 
-    public string getCreatedAt() {
+    public String getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(string createdAt) {
+    public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
 }

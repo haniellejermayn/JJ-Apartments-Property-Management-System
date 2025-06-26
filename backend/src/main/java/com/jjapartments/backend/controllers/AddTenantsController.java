@@ -1,4 +1,4 @@
-package backend.repository;
+package com.jjapartments.backend.controllers;
 
 import java.nio.charset.StandardCharsets;
 
@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.net.URLEncoder;
 
+import com.jjapartments.backend.models.Tenant;
+
 @Controller
 public class AddTenantsController{
     @Autowired
@@ -19,7 +21,7 @@ public class AddTenantsController{
     @RequestParam("id") int userid,  
     @RequestParam("first_name") String first_name,
     @RequestParam("last_name") String last_name,
-    @RequestParam("unit") char unit,
+    @RequestParam("unit") String unit,
     @RequestParam("email") String email,
     @RequestParam("phone_number") String number) {
 

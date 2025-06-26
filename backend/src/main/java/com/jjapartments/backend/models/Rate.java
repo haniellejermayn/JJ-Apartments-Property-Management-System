@@ -3,7 +3,7 @@ package com.jjapartments.backend.models;
 public class Rate {
     
     private int id;
-    private string type;
+    private String type;
     private double rate;
 
     public int getId() {
@@ -14,11 +14,11 @@ public class Rate {
         this.id = id;
     }
 
-    public string getType() {
+    public String getType() {
         return this.type;
     }
 
-    public void setType(string type) {
+    public void setType(String type) {
         this.type = type;
     }
 

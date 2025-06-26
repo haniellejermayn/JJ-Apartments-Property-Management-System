@@ -1,4 +1,4 @@
-package backend.repository;
+package com.jjapartments.backend.controllers;
 
 import java.nio.charset.StandardCharsets;
 
@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.net.URLEncoder;
+import com.jjapartments.backend.models.*;
 
 @Controller
 
