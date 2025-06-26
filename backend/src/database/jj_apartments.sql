@@ -91,6 +91,7 @@ CREATE TABLE IF NOT EXISTS `jj_apartments`.`rates` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `type` ENUM('Meralco', 'Manila Water') NOT NULL,
   `rate` DECIMAL(10,2) NOT NULL,
+  `date` DATE NOT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
