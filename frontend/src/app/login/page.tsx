@@ -18,6 +18,13 @@ export default function LoginPage() {
   const [error, setError] = useState('');
 
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;          
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
@@ -61,11 +68,12 @@ export default function LoginPage() {
               <Label htmlFor="email">username</Label>
               <Input
                 id="username"
-                name="email"
+                name="username"
                 type="email"
                 placeholder="Enter your username"
                 value={formData.username}
                 disabled={isLoading}
+                onChange={handleChange}
                 className="w-full"
                 required
               />
@@ -81,6 +89,7 @@ export default function LoginPage() {
                   placeholder="Enter your password"
                   value={formData.password}
                   disabled={isLoading}
+                  onChange={handleChange}
                   className="w-full pr-10"
                   required
                 />
