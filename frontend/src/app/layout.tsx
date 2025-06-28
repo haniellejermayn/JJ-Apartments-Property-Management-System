@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { TopBar } from "@/components/TopBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,8 +37,4 @@ export default function RootLayout({
 
 
 
-export function TopBar() {
-  return (
-    <header className="w-full h-6 bg-yellow-400 shadow-sm" />
-  )
-}
+
