@@ -30,4 +30,27 @@ public class MonthlyReportRepository{
         String sql = "DELETE FROM monthly_reports WHERE id = ?";
         return jdbcTemplate.update(sql, monthlyReport.getId());
     }
+
+    public int add(MonthlyReport report) {
+        String sql = "INSERT INTO monthly_report (year, month, total_earnings, total_expenses, net_income) " +
+                     "VALUES (?, ?, ?, ?, ?)";
+        return jdbcTemplate.update(sql,
+                report.getYear(),
+                report.getMonth(),
+                report.getTotalEarnings(),
+                report.getTotalExpenses(),
+                report.getNetIncome());
+    }
+
+    public float sumPayments(int year, int month) {
+        String sql = "SELECT COALESCE(SUM(amount), 0) FROM payments " +
+                     "WHERE is_paid = 1 AND YEAR(paid_at) = ? AND MONTH(paid_at) = ?";
+        return jdbcTemplate.queryForObject(sql, Float.class, year, month);
+    }
+
+    public float sumExpenses(int year, int month) {
+        String sql = "SELECT COALESCE(SUM(amount), 0) FROM expenses " +
+                     "WHERE YEAR(date) = ? AND MONTH(date) = ?";
+        return jdbcTemplate.queryForObject(sql, Float.class, year, month);
+    }
 }

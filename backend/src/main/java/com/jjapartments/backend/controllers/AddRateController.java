@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-//import org.springframework.stereotype.Controller; unused
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.net.URLEncoder;
@@ -14,6 +14,7 @@ import com.jjapartments.backend.models.Rate;
 //import com.jjapartments.backend.exception.ErrorException; unused
 import com.jjapartments.backend.repository.RateRepository;
 
+@Controller
 public class AddRateController{
     @Autowired
     private RateRepository rateRepository;
