@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Repository;
 import com.jjapartments.backend.models.Expense;
+import com.jjapartments.backend.exception.ErrorException;
 import com.jjapartments.backend.mappers.ExpenseRowMapper;
 
 @Repository
@@ -22,8 +23,11 @@ public class ExpenseRepository{
 
     public int add(Expense expense) {
         String sql = "INSERT INTO expenses(amount, reason, date) VALUES (?, ?, ?)";
-        return jdbcTemplate.update(sql, expense.getAmount(), expense.getReason(), expense.getDate());
-       
+
+        if(expense.getAmount() < 0)
+            throw new ErrorException("Amount cannot be below ₱0");
+        else
+            return jdbcTemplate.update(sql, expense.getAmount(), expense.getReason(), expense.getDate());
     }
 
     public int delete(Expense expense) {

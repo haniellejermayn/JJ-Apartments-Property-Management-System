@@ -3,7 +3,6 @@ package com.jjapartments.backend.controllers;
 import java.nio.charset.StandardCharsets;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,7 +21,7 @@ public class AddTenantsController{
     public String AddTenant(
     @RequestParam("first_name") String first_name,
     @RequestParam("last_name") String last_name,
-    @RequestParam("unit") String unit,
+    @RequestParam("unit") int unit,
     @RequestParam("email") String email,
     @RequestParam("phone_number") String number) {
 
