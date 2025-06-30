@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -19,11 +19,11 @@ public class AddRateController{
     @Autowired
     private RateRepository rateRepository;
 
-    @GetMapping()
+    @PostMapping("/add-rate")
     public String addRate(
-        @RequestParam("type") String type,
-        @RequestParam("rate") float rateValue,
-        @RequestParam("date") String date) {
+    @RequestParam("type") String type,
+    @RequestParam("rate") float rateValue,
+    @RequestParam("date") String date) {
 
         List<String> validTypes = List.of("Meralco", "Manila Water");
         if (!validTypes.contains(type)) {

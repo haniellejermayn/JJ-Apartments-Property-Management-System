@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-//import org.springframework.web.bind.annotation.GetMapping;
+//import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.net.URLEncoder;
@@ -19,7 +19,7 @@ public class AddMonthlyReportController {
     @Autowired
     private MonthlyReportRepository monthlyReportRepository;
 
-    @PostMapping("/addMonthlyReport")
+    @PostMapping("/add-monthly-report")
     public String addMonthlyReport(
         @RequestParam("year") int year,
         @RequestParam("month") int month

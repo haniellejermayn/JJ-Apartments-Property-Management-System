@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.net.URLEncoder;
@@ -19,15 +19,14 @@ public class AddUserController{
 
     @Autowired
     private UserRepository userRepository;
-    @GetMapping()
-    public String AddUser(
+    @PostMapping("add-user")
+    public String addUser(
     @RequestParam("username") String username,
     @RequestParam("password") String password,
-    @RequestParam("is_owner") Boolean is_owner
-    ) {
+    @RequestParam("is_owner") Boolean is_owner) {
 
         User user = new User();
-
+        
         user.setUsername(username);
         user.setPassword(password);
         user.setIsOwner(is_owner);

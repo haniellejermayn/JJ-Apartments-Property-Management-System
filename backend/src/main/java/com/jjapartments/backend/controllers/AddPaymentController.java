@@ -18,7 +18,7 @@ public class AddPaymentController {
     @Autowired
     private PaymentRepository paymentRepository;
 
-    @PostMapping("/addPayment")
+    @PostMapping("/add-payment")
     public String addPayment(
         @RequestParam("tenant_id") int tenantId,
         @RequestParam("reason") String reason,

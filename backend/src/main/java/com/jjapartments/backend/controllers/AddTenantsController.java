@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.net.URLEncoder;
@@ -17,8 +17,8 @@ import com.jjapartments.backend.exception.ErrorException;
 public class AddTenantsController{
     @Autowired
     private TenantRepository tenantRepository;
-    @GetMapping()
-    public String AddTenant(
+    @PostMapping("/add-tenant")
+    public String addTenant(
     @RequestParam("first_name") String first_name,
     @RequestParam("last_name") String last_name,
     @RequestParam("unit") int unit,
