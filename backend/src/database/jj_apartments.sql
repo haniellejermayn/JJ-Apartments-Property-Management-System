@@ -27,13 +27,10 @@ CREATE TABLE IF NOT EXISTS users (
   id INT NOT NULL AUTO_INCREMENT,
   username VARCHAR(45) NOT NULL,
   password VARCHAR(45) NOT NULL,
-  full_name VARCHAR(45) NULL DEFAULT NULL,
-  email VARCHAR(45) NOT NULL,
   is_owner TINYINT NULL DEFAULT NULL,
   created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  UNIQUE INDEX username_UNIQUE (username ASC),
-  UNIQUE INDEX email_UNIQUE (email ASC)
+  UNIQUE INDEX username_UNIQUE (username ASC)
 ) ENGINE = InnoDB;
 
 
@@ -118,9 +115,9 @@ CREATE TABLE IF NOT EXISTS utilities (
   tenants_id INT NOT NULL,
   rates_id INT NOT NULL,
   PRIMARY KEY (id),
-  INDEX fk_meralco_tenants1_idx (tenants_id ASC),
+  INDEX fk_utilities_tenants1_idx (tenants_id ASC),
   INDEX fk_utilities_rates1_idx (rates_id ASC),
-  CONSTRAINT fk_meralco_tenants1 FOREIGN KEY (tenants_id) REFERENCES tenants (id),
+  CONSTRAINT fk_utilities_tenants1 FOREIGN KEY (tenants_id) REFERENCES tenants (id),
   CONSTRAINT fk_utilities_rates1 FOREIGN KEY (rates_id) REFERENCES rates (id)
 ) ENGINE = InnoDB;
 

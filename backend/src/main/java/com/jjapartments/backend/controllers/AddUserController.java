@@ -23,17 +23,14 @@ public class AddUserController{
     public String AddUser(
     @RequestParam("username") String username,
     @RequestParam("password") String password,
-    @RequestParam("full_name") String full_name,
-    @RequestParam("is_owner") Boolean is_owner,
-    @RequestParam("email") String email) {
+    @RequestParam("is_owner") Boolean is_owner
+    ) {
 
         User user = new User();
 
         user.setUsername(username);
         user.setPassword(password);
-        user.setFullName(full_name);
         user.setIsOwner(is_owner);
-        user.setEmail(email);
         user.setCreatedAt(String.valueOf(LocalDateTime.now()));
 
         try {
