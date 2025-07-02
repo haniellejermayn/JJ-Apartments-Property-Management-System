@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import com.jjapartments.backend.models.Unit;
 import com.jjapartments.backend.mappers.UnitRowMapper;
+import com.jjapartments.backend.exception.ErrorException;
 
 @Repository
 public class UnitRepository {
@@ -36,12 +37,12 @@ public class UnitRepository {
             String sql = "INSERT INTO units(unit_number, is_occupied) VALUES (?, ?)";
             return jdbcTemplate.update(sql, unit.getUnitNumber(), unit.isOccupied());
         } else {
-            throw new IllegalArgumentException("The unit number already exists.");
+            throw new ErrorException("The unit number already exists.");
         }
     }
 
-    public int delete(Unit unit) {
+    public int delete(int id) {
         String sql = "DELETE FROM units WHERE id = ?";
-        return jdbcTemplate.update(sql, unit.getId());
+        return jdbcTemplate.update(sql, id);
     }
 }

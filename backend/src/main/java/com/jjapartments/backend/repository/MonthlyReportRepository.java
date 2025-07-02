@@ -26,13 +26,13 @@ public class MonthlyReportRepository{
        
     // }
 
-    public int delete(MonthlyReport monthlyReport) {
+    public int delete(int id) {
         String sql = "DELETE FROM monthly_reports WHERE id = ?";
-        return jdbcTemplate.update(sql, monthlyReport.getId());
+        return jdbcTemplate.update(sql, id);
     }
 
     public int add(MonthlyReport report) {
-        String sql = "INSERT INTO monthly_report (year, month, total_earnings, total_expenses, net_income) " +
+        String sql = "INSERT INTO monthly_reports(year, month, total_earnings, total_expenses, net_income) " +
                      "VALUES (?, ?, ?, ?, ?)";
         return jdbcTemplate.update(sql,
                 report.getYear(),

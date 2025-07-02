@@ -48,8 +48,8 @@ public class TenantRepository{
         }
     }
 
-    public int delete(Tenant tenant) {
+    public int delete(int id) {
         String sql = "DELETE FROM tenants WHERE id = ?";
-        return jdbcTemplate.update(sql, tenant.getId());
+        return jdbcTemplate.update(sql, id);
     }
 }

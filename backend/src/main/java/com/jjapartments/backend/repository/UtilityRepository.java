@@ -26,8 +26,8 @@ public class UtilityRepository{
        
     }
 
-    public int delete(Utility utility) {
+    public int delete(int id) {
         String sql = "DELETE FROM utilities WHERE id = ?";
-        return jdbcTemplate.update(sql, utility.getId());
+        return jdbcTemplate.update(sql, id);
     }
 }
