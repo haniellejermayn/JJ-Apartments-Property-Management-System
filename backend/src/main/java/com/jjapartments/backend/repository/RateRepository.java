@@ -28,6 +28,9 @@ public class RateRepository{
         if (!validTypes.contains(rate.getType())) {
             throw new ErrorException("Invalid rate type " + rate.getType());
         }
+        if (rate.getRate() <= 0) {
+            throw new ErrorException("Amount cannot be 0 or below");
+        }
         String sql = "INSERT INTO rates(type, rate) VALUES (?, ?, ?)";
         return jdbcTemplate.update(sql, rate.getType(), rate.getRate(), rate.getDate());
     }

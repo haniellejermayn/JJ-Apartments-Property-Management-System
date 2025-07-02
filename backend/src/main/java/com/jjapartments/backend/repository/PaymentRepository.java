@@ -30,9 +30,11 @@ public class PaymentRepository{
         if (!validReasons.contains(payment.getReason())) {
             throw new ErrorException("Invalid reason type " + payment.getReason());
         }
-
         if (!validModes.contains(payment.getModeOfPayment())) {
             throw new ErrorException("Invalid mode of payment " + payment.getModeOfPayment());
+        }
+        if (payment.getAmount() <= 0) {
+            throw new ErrorException("Amount cannot be ₱0 or below");
         }
         String sql = "INSERT INTO payments(tenant_id, reason, mode_of_payment, amount, due_date, month_of_start, month_of_end, is_paid, paid_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         return jdbcTemplate.update(sql, payment.getTenantId(), payment.getReason(), payment.getModeOfPayment(), payment.getAmount(), payment.getDueDate(), payment.getMonthOfStart(), payment.getMonthOfEnd(), payment.getIsPaid(), payment.getPaidAt());

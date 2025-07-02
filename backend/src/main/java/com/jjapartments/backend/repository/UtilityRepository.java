@@ -24,6 +24,25 @@ public class UtilityRepository{
     }
 
     public int add(Utility utility) {
+        List<String> validTypes = List.of("Meralco", "Manila Water");
+        if (!validTypes.contains(utility.getType())) {
+            throw new ErrorException("Invalid rate type " + utility.getType());
+        }
+        if (utility.getPreviousReading() < 0) {
+            throw new ErrorException("Previous reading cannot be less than 0.");
+        }
+        if (utility.getCurrentReading() < 0) {
+            throw new ErrorException("Current reading cannot be less than 0.");
+        }
+        if (utility.getTotalMeter() < 0) {
+            throw new ErrorException("Total meter cannot be less than 0.");
+        }
+        if (utility.getTotalAmount() < 0) {
+            throw new ErrorException("Total amount cannot be less than 0.");
+        }
+        if (utility.getTotalMeter() < 0) {
+            throw new ErrorException("Total meter cannot be less than 0.");
+        }
         String sql = "INSERT INTO utilities(type, previous_reading, current_reading, total_meter, total_amount, due_date, month_of_start, month_of_end, is_paid, paid_at, tenants_id, rates_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         return jdbcTemplate.update(sql, utility.getType(), utility.getPreviousReading(), utility.getCurrentReading(), utility.getTotalMeter(), utility.getTotalAmount(), utility.getDueDate(), utility.getMonthOfStart(), utility.getMonthOfEnd(), utility.getIsPaid(), utility.getPaidAt(), utility.getTenantId(), utility.getRateId());
        
