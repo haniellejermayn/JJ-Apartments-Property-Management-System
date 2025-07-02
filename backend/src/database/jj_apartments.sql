@@ -143,7 +143,9 @@ CREATE TABLE IF NOT EXISTS monthly_reports (
   total_earnings DECIMAL(10,2) NOT NULL,
   total_expenses DECIMAL(10,2) NOT NULL,
   net_income DECIMAL(10,2) NOT NULL,
-  PRIMARY KEY (id)
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY unique_year_month (year, month)
 ) ENGINE = InnoDB;
 
 
