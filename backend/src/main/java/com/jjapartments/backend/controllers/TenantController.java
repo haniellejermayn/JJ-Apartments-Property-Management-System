@@ -1,0 +1,51 @@
+package com.jjapartments.backend.controllers;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import com.jjapartments.backend.models.Tenant;
+import com.jjapartments.backend.repository.TenantRepository;
+import com.jjapartments.backend.exception.ErrorException;
+
+@RestController
+@RequestMapping("/api/tenants")
+public class TenantController{
+    @Autowired
+    private TenantRepository tenantRepository;
+
+    //Create
+    @PostMapping("/add")
+    public ResponseEntity<String> addTenant(@RequestBody Tenant tenant) {
+        try {
+            tenantRepository.add(tenant);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Tenant successfully added");
+        } catch(ErrorException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        
+    }
+
+    //Get all
+    @GetMapping
+    public ResponseEntity<List<Tenant>> getAllTenants() {
+        List<Tenant> tenants = tenantRepository.findAll();
+        return ResponseEntity.ok(tenants);
+    }
+
+    // Delete
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteTenant(@PathVariable int id) {
+        int rowsAffected = tenantRepository.delete(id);
+        if (rowsAffected > 0) {
+            return ResponseEntity.ok("Tenant deleted successfully.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Tenant not found");
+        }
+    }
+    
+
+}
