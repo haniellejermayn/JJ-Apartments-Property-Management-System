@@ -1,12 +1,13 @@
 package com.jjapartments.backend.repository;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Repository;
+import org.springframework.dao.EmptyResultDataAccessException;
+
 import com.jjapartments.backend.models.Payment;
 import com.jjapartments.backend.mappers.PaymentRowMapper;
 import com.jjapartments.backend.exception.ErrorException;
@@ -41,5 +42,14 @@ public class PaymentRepository{
     public int delete(int id) {
         String sql = "DELETE FROM payments WHERE id = ?";
         return jdbcTemplate.update(sql, id);
+    }
+
+    public Payment findById(int id) {
+        String sql = "SELECT * FROM payments WHERE id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new PaymentRowMapper(), id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new ErrorException("Payment with id " + id + " not found.");
+        }
     }
 }

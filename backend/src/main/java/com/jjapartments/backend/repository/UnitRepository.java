@@ -3,6 +3,7 @@ package com.jjapartments.backend.repository;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Repository;
@@ -44,5 +45,14 @@ public class UnitRepository {
     public int delete(int id) {
         String sql = "DELETE FROM units WHERE id = ?";
         return jdbcTemplate.update(sql, id);
+    }
+
+    public Unit findById(int id) {
+        String sql = "SELECT * FROM units WHERE id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new UnitRowMapper(), id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new ErrorException("Unit with id " + id + " not found.");
+        }
     }
 }

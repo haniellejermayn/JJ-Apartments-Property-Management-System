@@ -3,10 +3,12 @@ package com.jjapartments.backend.repository;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Repository;
 import com.jjapartments.backend.models.MonthlyReport;
+import com.jjapartments.backend.exception.ErrorException;
 import com.jjapartments.backend.mappers.MonthlyReportRowMapper;
 
 @Repository
@@ -53,4 +55,14 @@ public class MonthlyReportRepository{
                      "WHERE YEAR(date) = ? AND MONTH(date) = ?";
         return jdbcTemplate.queryForObject(sql, Float.class, year, month);
     }
+
+    public MonthlyReport findById(int id) {
+        String sql = "SELECT * FROM monthly_reports WHERE id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new MonthlyReportRowMapper(), id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new ErrorException("Monthly Report with id " + id + " not found.");
+        }
+    }
+    
 }

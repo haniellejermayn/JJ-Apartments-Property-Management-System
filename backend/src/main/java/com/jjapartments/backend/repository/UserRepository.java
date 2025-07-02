@@ -53,7 +53,7 @@ public class UserRepository{
         try {
             return jdbcTemplate.queryForObject(sql, new UserRowMapper(), id);
         } catch (EmptyResultDataAccessException e) {
-            throw new ErrorException("User not found.");
+            throw new ErrorException("User with id " + id + " not found.");
         }
     }
 

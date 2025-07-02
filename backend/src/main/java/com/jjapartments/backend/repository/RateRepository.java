@@ -3,6 +3,7 @@ package com.jjapartments.backend.repository;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Repository;
@@ -34,5 +35,14 @@ public class RateRepository{
     public int delete(int id) {
         String sql = "DELETE FROM rates WHERE id = ?";
         return jdbcTemplate.update(sql, id);
+    }
+
+    public Rate findById(int id) {
+        String sql = "SELECT * FROM rates WHERE id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new RateRowMapper(), id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new ErrorException("Rate with id " + id + " not found.");
+        }
     }
 }   
