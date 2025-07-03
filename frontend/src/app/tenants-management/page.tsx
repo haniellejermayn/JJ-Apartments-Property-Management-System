@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
-
-import { TenantMgtForm } from "@/components/TenantMgtForm";
+import { TenantPopUp } from "@/components/TenantPopUp";
+import { TenantMgt } from "@/components/TenantMgt";
 export default function TenantsManagementPage() {
     const [modalOpen, setModalOpen] = useState(false)
     return (
@@ -23,7 +23,7 @@ export default function TenantsManagementPage() {
             </header>
             
             <div className="flex flex-1">
-                <TenantMgtForm />
+                <TenantMgt toggleModal={undefined} onSubmit={undefined} />
             </div>
             
         </div>
