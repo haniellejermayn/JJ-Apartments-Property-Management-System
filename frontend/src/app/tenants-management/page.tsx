@@ -1,5 +1,31 @@
+"use client";
+import React, { useState } from "react";
 
-
+import { TenantMgtForm } from "@/components/TenantMgtForm";
 export default function TenantsManagementPage() {
-
+    const [modalOpen, setModalOpen] = useState(false)
+    return (
+        <div>
+            <header className="bg-white shadow-sm border-b p-2 ">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-2xl font-bold text-gray-900">Tenant Management</h1>
+                    
+                    <button
+                    onClick={() => setModalOpen(true)}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors float-right"
+                    >
+                    Add Tenant
+                    </button>
+                    
+                    
+                </div>
+                
+            </header>
+            
+            <div className="flex flex-1">
+                <TenantMgtForm />
+            </div>
+            
+        </div>
+    )
 }

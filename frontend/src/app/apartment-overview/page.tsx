@@ -1,6 +1,5 @@
 "use client";
-import React, { useState } from 'react';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import React from 'react';
 import { ApartmentForm } from '@/components/apartmentForm';
 import { ApartmentList } from '@/components/apartmentList';
 
@@ -29,7 +28,7 @@ const MainContent = () => {
   );
 };
 
-const App = () => {
+export default function ApartmentOverview() {
   return (
     <div className="h-screen bg-gray-100">
       <MainContent />
@@ -37,4 +36,3 @@ const App = () => {
   );
 };
 
-export default App;
