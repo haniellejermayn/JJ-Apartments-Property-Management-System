@@ -3,7 +3,16 @@ import React, { useState } from "react";
 import { TenantPopUp } from "@/components/TenantPopUp";
 import { TenantMgt } from "@/components/TenantMgt";
 export default function TenantsManagementPage() {
-    const [modalOpen, setModalOpen] = useState(false)
+    const [modalOpen, setModalOpen] = useState(false);
+    const [tenants, setTenants] = useState([]);
+    const toggleModal = () => setModalOpen(!modalOpen);
+
+    const handleAddTenant = (tenantData) => {
+        setTenants([...tenants, { ...tenantData, id: 1 }]); // database
+        console.log('New tenant added:', tenantData);
+    };
+
+    
     return (
         <div>
             <header className="bg-white shadow-sm border-b p-2 ">
@@ -23,7 +32,13 @@ export default function TenantsManagementPage() {
             </header>
             
             <div className="flex flex-1">
-                <TenantMgt toggleModal={undefined} onSubmit={undefined} />
+                <TenantPopUp modalOpen={modalOpen}>
+                    <TenantMgt toggleModal={toggleModal} onSubmit={handleAddTenant} />
+                </TenantPopUp>
+            </div>
+
+            <div className="bg-white rounded-lg shadow flex items-center justify-center">
+                tenant list to be put here  
             </div>
             
         </div>
