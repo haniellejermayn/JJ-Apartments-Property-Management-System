@@ -1,14 +1,17 @@
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export function ApartmentForm() {
   
-    const [formData, setFormData] = useState({
-        apartment: 'Dela Cruz Apartment',
-        apartmentNo: '',
-        description: '',
-        price: ''
-    });
+  const [formData, setFormData] = useState({
+      apartment: 'Dela Cruz Apartment',
+      apartmentNo: '',
+      description: '',
+      price: ''
+  });
+  const [units, setUnits] = useState([]);
+  const API_BASE_URL = 'http://localhost:8080/api/units';
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -17,8 +20,24 @@ export function ApartmentForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Form submitted:', formData);
+    
   };
 
+  useEffect(() => {
+    fetchUnits();
+  }, []);
+
+  const fetchUnits = async () => {
+   
+    
+    const response = await axios.get(API_BASE_URL);
+    setUnits(response.data);
+    
+  };
+
+
+
+  
   return (
     <div className="w-80  bg-white border-r border-gray-200 p-6 overflow-y-auto">
       <div className="mb-6">
