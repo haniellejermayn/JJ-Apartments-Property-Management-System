@@ -32,8 +32,13 @@ public class TenantController{
     //Get all
     @GetMapping
     public ResponseEntity<List<Tenant>> getAllTenants() {
-        List<Tenant> tenants = tenantRepository.findAll();
-        return ResponseEntity.ok(tenants);
+        try {
+            List<Tenant> tenants = tenantRepository.findAll();
+            return ResponseEntity.ok(tenants);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     // Delete

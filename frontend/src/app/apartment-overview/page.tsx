@@ -4,12 +4,6 @@ import { ApartmentForm } from '@/components/apartmentForm';
 import { ApartmentList } from '@/components/apartmentList';
 
 
-
-
-
-
-
-
 const MainContent = () => {
   return (
     <div className="flex-1 flex flex-col min-h-screen">

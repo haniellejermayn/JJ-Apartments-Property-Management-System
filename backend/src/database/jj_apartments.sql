@@ -45,6 +45,30 @@ CREATE TABLE IF NOT EXISTS `jj_apartments`.`units` (
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
+INSERT INTO `jj_apartments`.`units` (`id`, `unit_number`, `is_occupied`) 
+VALUES
+(1, 'D', 1),
+(2, 'A', 0),
+(3, 'M', 1),
+(4, 'K', 0),
+(5, 'R', 1),
+(6, 'C', 0),
+(7, 'B', 1),
+(8, 'F', 0),
+(9, 'H', 1),
+(10, 'P', 0),
+(11, 'G', 1),
+(12, 'E', 0),
+(13, 'L', 1),
+(14, 'S', 0),
+(15, 'T', 1),
+(16, 'J', 0),
+(17, 'Q', 1),
+(18, 'N', 0),
+(19, 'U', 1),
+(20, 'V', 0);
+
+SELECT * FROM units;
 -- -------------------------
 -- Table: tenants
 -- -------------------------
@@ -64,6 +88,21 @@ CREATE TABLE IF NOT EXISTS `jj_apartments`.`tenants` (
     FOREIGN KEY (`units_id`)
     REFERENCES `jj_apartments`.`units` (`id`)
 ) ENGINE = InnoDB;
+INSERT INTO `jj_apartments`.`tenants` 
+(`last_name`, `first_name`, `middle_initial`, `email`, `phone_number`, `units_id`) 
+VALUES
+('Dela Cruz', 'Juan', 'R', 'juan.delacruz@example.com', '09171234567', 1),
+('Santos', 'Maria', 'L', 'maria.santos@example.com', '09181234567', 3),
+('Reyes', 'Carlos', 'T', 'carlos.reyes@example.com', '09192234567', 5),
+('Cruz', 'Angela', 'M', 'angela.cruz@example.com', '09201234567', 7),
+('Gomez', 'Joseph', 'P', 'joseph.gomez@example.com', '09211234567', 9),
+('Torres', 'Anna', 'S', 'anna.torres@example.com', '09221234567', 11),
+('Lopez', 'Daniel', 'V', 'daniel.lopez@example.com', '09231234567', 13),
+('Garcia', 'Leah', 'C', 'leah.garcia@example.com', '09241234567', 15),
+('Navarro', 'Miguel', 'D', 'miguel.navarro@example.com', '09251234567', 17),
+('Ramos', 'Patricia', 'E', 'patricia.ramos@example.com', '09261234567', 19);
+
+SELECT * FROM tenants;
 
 
 -- -------------------------
@@ -147,6 +186,13 @@ CREATE TABLE IF NOT EXISTS monthly_reports (
   PRIMARY KEY (id),
   UNIQUE KEY unique_year_month (year, month)
 ) ENGINE = InnoDB;
+
+INSERT INTO monthly_reports(id, year, month, total_earnings, total_expenses, net_income, created_at)
+VALUES
+(1, 2025, 7, 514136.30, 20000, 494136.3, '2025-07-05 14:37:00');
+
+SELECT * FROM monthly_reports;
+
 
 
 -- Restore original SQL modes and checks

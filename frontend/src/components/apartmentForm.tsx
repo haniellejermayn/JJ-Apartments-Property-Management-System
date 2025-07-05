@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import axios from "axios";
+// import axios from "axios";
 
 export function ApartmentForm() {
   
@@ -30,7 +30,7 @@ export function ApartmentForm() {
   const fetchUnits = async () => {
    
     
-    const response = await axios.get(API_BASE_URL);
+    // const response = await axios.get(API_BASE_URL);
     setUnits(response.data);
     
   };
