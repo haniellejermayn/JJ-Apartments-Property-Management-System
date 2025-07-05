@@ -23,9 +23,9 @@ public class TenantRepository{
     }
 
     public boolean emailExists(Tenant tenant) {
-    String sqlChecker = "SELECT COUNT(*) FROM tenants WHERE email = ?";
-    Integer count = jdbcTemplate.queryForObject(sqlChecker, Integer.class, tenant.getId());
-    return count != null && count > 0;
+        String sqlChecker = "SELECT COUNT(*) FROM tenants WHERE email = ?";
+        Integer count = jdbcTemplate.queryForObject(sqlChecker, Integer.class, tenant.getEmail()); 
+        return count != null && count > 0;
     } 
 
     public boolean phoneNumberExists(Tenant tenant) {
@@ -35,11 +35,11 @@ public class TenantRepository{
     } 
 
     public int add(Tenant tenant) {
-        String sqlChecker = "SELECT COUNT(*) FROM tenants WHERE email = ? OR phone_numer = ?";
+        String sqlChecker = "SELECT COUNT(*) FROM tenants WHERE email = ? OR phone_number = ?"; 
         Integer count = jdbcTemplate.queryForObject(sqlChecker, Integer.class, tenant.getEmail(), tenant.getPhoneNumber());
 
         if(count != null && count == 0){
-            String sql = "INSERT INTO tenants(last_name, first_name, middle_initial, unit, email, phone_number) VALUES (?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO tenants(last_name, first_name, middle_initial, units_id, email, phone_number) VALUES (?, ?, ?, ?, ?, ?)"; 
             return jdbcTemplate.update(sql, tenant.getLastName(), tenant.getFirstName(), tenant.getMiddleInitial(), tenant.getUnit(), tenant.getEmail(), tenant.getPhoneNumber());
         } else if(emailExists(tenant)){
             throw new IllegalArgumentException("The email is already taken.");
