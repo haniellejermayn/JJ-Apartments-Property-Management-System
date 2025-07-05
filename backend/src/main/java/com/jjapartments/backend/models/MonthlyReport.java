@@ -8,6 +8,7 @@ public class MonthlyReport {
     private float totalEarnings;
     private float totalExpenses;
     private float netIncome;
+    private String createdAt;
 
 
     public int getId() {
@@ -56,6 +57,14 @@ public class MonthlyReport {
 
     public void setNetIncome(float netIncome) {
         this.netIncome = netIncome;
+    }
+
+    public String getCreatedAt() {
+        return this.createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
     }
 
 }
