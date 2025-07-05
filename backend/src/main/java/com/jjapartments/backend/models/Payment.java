@@ -4,14 +4,14 @@ public class Payment {
 
     private int id;
     private int tenantId;
-    private string reason;
-    private string modeOfPayment;
-    private double amount;
-    private string dueDate;
-    private string monthOfStart;
-    private string monthOfEnd;
+    private String reason;
+    private String modeOfPayment;
+    private float amount;
+    private String dueDate;
+    private String monthOfStart;
+    private String monthOfEnd;
     private boolean isPaid;
-    private string paidAt;
+    private String paidAt;
 
     public Integer getId() {
         return this.id;
@@ -21,7 +21,7 @@ public class Payment {
         this.id = id;
     }
 
-    public Tenant getTenantId() {
+    public int getTenantId() {
         return this.tenantId;
     }
 
@@ -29,11 +29,11 @@ public class Payment {
         this.tenantId = tenantId;
     }
 
-    public Reason getReason() {
+    public String getReason() {
         return this.reason;
     }
 
-    public void setReason(string reason) {
+    public void setReason(String reason) {
         this.reason = reason;
     }
 
@@ -41,42 +41,42 @@ public class Payment {
         return this.isPaid;
     }
 
-    public string getModeOfPayment() {
-        return this.ModeOfPayment;
+    public String getModeOfPayment() {
+        return this.modeOfPayment;
     }
 
-    public void setModeOfPayment(string modeOfPayment) {
-        this.ModeOfPayment = modeOfPayment;
+    public void setModeOfPayment(String modeOfPayment) {
+        this.modeOfPayment = modeOfPayment;
     }
 
-    public double getAmount() {
+    public float getAmount() {
         return this.amount;
     }
 
-    public void setAmount(double amount) {
+    public void setAmount(float amount) {
         this.amount = amount;
     }
 
-    public string getDueDate() {
+    public String getDueDate() {
         return this.dueDate;
     }
 
-    public void setDueDate(string dueDate) {
+    public void setDueDate(String dueDate) {
         this.dueDate = dueDate;
     }
-    public string getMonthOfStart() {
+    public String getMonthOfStart() {
         return this.monthOfStart;
     }
 
-    public void setMonthOfStart(string monthOfStart) {
+    public void setMonthOfStart(String monthOfStart) {
         this.monthOfStart = monthOfStart;
     }
 
-    public string getMonthOfEnd() {
+    public String getMonthOfEnd() {
         return this.monthOfEnd;
     }
 
-    public void setMonthOfEnd(string monthOfEnd) {
+    public void setMonthOfEnd(String monthOfEnd) {
         this.monthOfEnd = monthOfEnd;
     }
 
@@ -88,11 +88,11 @@ public class Payment {
         this.isPaid = isPaid;
     }
 
-    public LocalDate getPaidAt() {
+    public String getPaidAt() {
         return this.paidAt;
     }
 
-    public void setPaidAt(LocalDate paidAt) {
+    public void setPaidAt(String paidAt) {
         this.paidAt = paidAt;
     }
 

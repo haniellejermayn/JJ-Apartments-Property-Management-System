@@ -1,13 +1,13 @@
 package com.jjapartments.backend.models;
 
-public class Utilities {
+public class Utility {
 
     private int id;
-    private string type;
-    private double previousReading;
-    private double currentReading;
-    private double totalMeter;
-    private double totalAmount;
+    private String type;
+    private float previousReading;
+    private float currentReading;
+    private float totalMeter;
+    private float totalAmount;
     private String dueDate;
     private String monthOfStart;
     private String monthOfEnd;
@@ -25,67 +25,67 @@ public class Utilities {
         this.id = id;
     }
 
-    public string getType() {
+    public String getType() {
         return this.type;
     }
 
-    public void setType(string type) {
+    public void setType(String type) {
         this.type = type;
     }
 
-    public double getPreviousReading() {
+    public float getPreviousReading() {
         return this.previousReading;
     }
 
-    public void setPreviousReading(double previousReading) {
+    public void setPreviousReading(float previousReading) {
         this.previousReading = previousReading;
     }
 
-    public double getCurrentReading() {
+    public float getCurrentReading() {
         return this.currentReading;
     }
 
-    public void setCurrentReading(double currentReading) {
+    public void setCurrentReading(float currentReading) {
         this.currentReading = currentReading;
     }
 
-    public double getTotalMeter() {
+    public float getTotalMeter() {
         return this.totalMeter;
     }
 
-    public void setTotalMeter(double totalMeter) {
+    public void setTotalMeter(float totalMeter) {
         this.totalMeter = totalMeter;
     }
 
-    public double getTotalAmount() {
+    public float getTotalAmount() {
         return this.totalAmount;
     }
 
-    public void setTotalAmount(double totalAmount) {
+    public void setTotalAmount(float totalAmount) {
         this.totalAmount = totalAmount;
     }
 
-    public string getDueDate() {
+    public String getDueDate() {
         return this.dueDate;
     }
 
-    public void setDueDate(string dueDate) {
+    public void setDueDate(String dueDate) {
         this.dueDate = dueDate;
     }
 
-    public string getMonthOfStart() {
+    public String getMonthOfStart() {
         return this.monthOfStart;
     }
 
-    public void setMonthOfStart(string monthOfStart) {
+    public void setMonthOfStart(String monthOfStart) {
         this.monthOfStart = monthOfStart;
     }
 
-    public string getMonthOfEnd() {
+    public String getMonthOfEnd() {
         return this.monthOfEnd;
     }
 
-    public void setMonthOfEnd(string monthOfEnd) {
+    public void setMonthOfEnd(String monthOfEnd) {
         this.monthOfEnd = monthOfEnd;
     }
 
@@ -97,11 +97,11 @@ public class Utilities {
         this.isPaid = isPaid;
     }
 
-    public string getPaidAt() {
+    public String getPaidAt() {
         return this.paidAt;
     }
 
-    public void setPaidAt(string paidAt) {
+    public void setPaidAt(String paidAt) {
         this.paidAt = paidAt;
     }
 

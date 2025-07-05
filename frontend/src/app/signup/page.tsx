@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
-export default function LoginPage() {
+export default function SignUp() {
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -34,8 +34,8 @@ export default function LoginPage() {
     try {
       
     } catch (err) {
-      console.error('Login error:', err);
-      setError('Failed to sign in. Please check your credentials and try again.');
+      console.error('Signup error:', err);
+      setError('Failed to sign up. Please check your credentials and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -124,7 +124,7 @@ export default function LoginPage() {
                   Signing in...
                 </>
               ) : (
-                'Log in'
+                'Sign up'
               )}
             </Button>
           </form>
@@ -137,11 +137,7 @@ export default function LoginPage() {
             </p>
           </div> */}
 
-          <div className="mt-4 text-center">
-            <Button variant="link" className="text-sm">
-              Forgot your password?
-            </Button>
-          </div>
+          
         </CardContent>
       </Card>
     </div>
