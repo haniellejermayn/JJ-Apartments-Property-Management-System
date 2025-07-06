@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Image from 'next/image';
@@ -35,29 +34,42 @@ export default function LoginPage() {
       
     } catch (err) {
       console.error('Login error:', err);
-      setError('Failed to sign in. Please check your credentials and try again.');
+      setError('Failed to log in. Please check your credentials and try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-4">
-          <div className="flex justify-center">
+    <div className="min-h-screen flex">
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-gray-100">
+        <Image 
+          src="/apartment.png" 
+          alt="JJ Apartments Building" 
+          width={700}
+          height={900}
+          className="object-cover w-full h-full"
+          priority
+        />
+      </div>
+
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center">
             <Image 
               src="/JJ Apartments Logo.png" 
               alt="JJ Apartments Logo" 
-              width={300}
-              height={100}
-              className="object-contain"
+              width={250}
+              height={80}
+              className="object-contain mx-auto mb-6"
               priority
             />
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Log in to your account</h2>
+            <p className="text-gray-600">Access your property management dashboard</p>
           </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
@@ -65,22 +77,26 @@ export default function LoginPage() {
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="email">username</Label>
+              <Label htmlFor="username" className="text-sm font-medium text-gray-700">
+                Username
+              </Label>
               <Input
                 id="username"
                 name="username"
-                type="email"
+                type="text"
                 placeholder="Enter your username"
                 value={formData.username}
                 disabled={isLoading}
                 onChange={handleChange}
-                className="w-full"
+                className="w-full h-12 px-4 border-gray-300 focus:border-yellow-400 focus:ring-yellow-400"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                Password
+              </Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -90,7 +106,7 @@ export default function LoginPage() {
                   value={formData.password}
                   disabled={isLoading}
                   onChange={handleChange}
-                  className="w-full pr-10"
+                  className="w-full h-12 px-4 pr-12 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500"
                   required
                 />
                 <Button
@@ -102,9 +118,9 @@ export default function LoginPage() {
                   disabled={isLoading}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
+                    <EyeOff className="h-5 w-5 text-gray-400" />
                   ) : (
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-5 w-5 text-gray-400" />
                   )}
                   <span className="sr-only">
                     {showPassword ? 'Hide password' : 'Show password'}
@@ -113,37 +129,52 @@ export default function LoginPage() {
               </div>
             </div>
 
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  className="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
+                />
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                  Remember me
+                </label>
+              </div>
+
+              <Button variant="link" className="text-sm text--black hover:text-black p-0">
+                Forgot your password?
+              </Button>
+            </div>
+
             <Button 
               type="submit" 
-              className="w-full text-yellow-300"
+              className="w-full h-12 bg-black hover:bg-black text-yellow-300 font-medium text-base"
               disabled={isLoading}
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Logging in...
                 </>
               ) : (
-                'Log in'
+                'Login'
               )}
             </Button>
           </form>
 
-          {/* <div className="mt-6 text-center text-sm text-gray-600">
-            <p>Demo credentials:</p>
-            <p className="font-mono text-xs mt-1">
-              Email: demo@example.com<br />
-              Password: password
-            </p>
-          </div> */}
-
-          <div className="mt-4 text-center">
-            <Button variant="link" className="text-sm">
-              Forgot your password?
-            </Button>
+          <div className="lg:hidden text-center pt-8">
+            <Image 
+              src="/apartment.png" 
+              alt="JJ Apartments Building" 
+              width={300}
+              height={400}
+              className="object-contain mx-auto opacity-20"
+              priority
+            />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
