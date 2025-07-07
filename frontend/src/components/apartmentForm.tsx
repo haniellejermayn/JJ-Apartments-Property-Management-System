@@ -24,6 +24,11 @@ export function ApartmentForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleDelete = async (id) => {
+
+    setApartments((prev) => prev.filter((apt) => apt.id !== id));
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const newApartment = {
@@ -174,7 +179,7 @@ export function ApartmentForm() {
         </div>
       </div>
     </div>
-    <ApartmentList apartments={apartments} />
+    <ApartmentList apartments={apartments} onDelete={handleDelete} />
     </div>
   );
 
