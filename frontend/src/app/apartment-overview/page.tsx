@@ -16,7 +16,7 @@ const MainContent = () => {
       
       <div className="flex flex-1">
         <ApartmentForm />
-        <ApartmentList />
+        {/* <ApartmentList /> */}
       </div>
     </div>
   );

@@ -1,14 +1,21 @@
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
+import { ApartmentList } from "./apartmentList";
 // import axios from "axios";
 
 export function ApartmentForm() {
-  
+  const [apartments, setApartments] = useState([
+    { id: 1, number: '#110', status: 'Not available', apartment: 'Dela Cruz Apartment', description: '2 bedroom and 1 rest room', price: '12,000.00' },
+    { id: 2, number: '#111', status: 'Available', apartment: 'Dela Cruz Apartment', description: '3 bedroom and 1 rest room', price: '15,000.00' },
+    { id: 3, number: '#111', status: 'Available', apartment: 'Dela Cruz Apartment', description: '1 bedroom and 1 rest room', price: '10,000.00' },
+    // { id: 4, number: '#110', status: 'Occupied', apartment: 'Dela Cruz Apartment', description: '2 bedroom and 1 rest room', price: '11,000.00' },
+  ]); // dummy data
   const [formData, setFormData] = useState({
       apartment: 'Dela Cruz Apartment',
       apartmentNo: '',
       description: '',
-      price: ''
+      price: '',
+      status: 'Not available'
   });
   const [units, setUnits] = useState([]);
   const API_BASE_URL = 'http://localhost:8080/api/units';
@@ -19,8 +26,23 @@ export function ApartmentForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const newApartment = {
+        id: Math.max(...apartments.map(a => a.id), 0) + 1,
+        number: formData.apartmentNo,
+        status: formData.status,
+        apartment: formData.apartment,
+        description: formData.description,
+        price: formData.price
+    };
+    setApartments([...apartments, newApartment]);
     console.log('Form submitted:', formData);
-    
+    setFormData({
+      apartment: 'Dela Cruz Apartment',
+      apartmentNo: '',
+      description: '',
+      price: '',
+      status: ''
+    });
   };
 
   useEffect(() => {
@@ -39,6 +61,8 @@ export function ApartmentForm() {
 
   
   return (
+    <div className="flex flex-1">
+
     <div className="w-80  bg-white border-r border-gray-200 p-6 overflow-y-auto">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-2">Apartment Form</h2>
@@ -75,6 +99,22 @@ export function ApartmentForm() {
             placeholder="e.g. #110"
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Occupied
+          </label>
+          <select 
+            name="status"
+            value={formData.status}
+            onChange={handleInputChange}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
+          >
+            <option value='Not available'>No</option>
+            <option value="Available">Yes</option>
+            
+          </select>
         </div>
 
         <div>
@@ -133,6 +173,8 @@ export function ApartmentForm() {
           </button>
         </div>
       </div>
+    </div>
+    <ApartmentList apartments={apartments} />
     </div>
   );
 

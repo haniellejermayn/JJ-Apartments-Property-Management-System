@@ -3,6 +3,11 @@ import React, { useState } from "react";
 import { TenantPopUp } from "@/components/TenantPopUp";
 import { TenantMgt } from "@/components/TenantMgt";
 export default function TenantsManagementPage() {
+    type Unit = {
+        id: number;
+        unitNumber: string;
+        occupied: boolean;
+    };
     const [modalOpen, setModalOpen] = useState(false);
     const [tenants, setTenants] = useState([]);
     const toggleModal = () => setModalOpen(!modalOpen);

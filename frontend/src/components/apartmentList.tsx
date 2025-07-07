@@ -2,13 +2,8 @@ import { Edit, Trash2 } from "lucide-react";
 import React from "react";
 
 
-export function ApartmentList(){
-  const apartments = [
-    { id: 1, number: '#110', status: 'Not available', apartment: 'Dela Cruz Apartment', description: '2 bedroom and 1 rest room', price: '12,000.00' },
-    { id: 2, number: '#111', status: 'Available', apartment: 'Dela Cruz Apartment', description: '3 bedroom and 1 rest room', price: '15,000.00' },
-    { id: 3, number: '#111', status: 'Available', apartment: 'Dela Cruz Apartment', description: '1 bedroom and 1 rest room', price: '10,000.00' },
-    { id: 4, number: '#110', status: 'Occupied', apartment: 'Dela Cruz Apartment', description: '2 bedroom and 1 rest room', price: '11,000.00' },
-  ]; // dummy data
+export function ApartmentList({apartments}){
+  
 
   return (
     <div className="flex-1 bg-gray-50 p-6 overflow-auto">
