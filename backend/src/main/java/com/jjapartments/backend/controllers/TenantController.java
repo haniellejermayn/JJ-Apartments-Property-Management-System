@@ -11,6 +11,7 @@ import com.jjapartments.backend.models.Tenant;
 import com.jjapartments.backend.repository.TenantRepository;
 import com.jjapartments.backend.exception.ErrorException;
 
+@CrossOrigin(origins = "http://localhost:3000") 
 @RestController
 @RequestMapping("/api/tenants")
 public class TenantController{
