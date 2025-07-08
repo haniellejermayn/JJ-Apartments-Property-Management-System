@@ -1,24 +1,17 @@
 import { Edit, Trash2 } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 
 
 export function ApartmentList({apartments, onDelete, onEdit}){
   
-
+  
   return (
     <div className="flex-1 bg-gray-50 p-6 overflow-auto">
+
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Apartment List</h1>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Show</span>
-            <select className="px-3 py-1 border border-gray-300 rounded text-sm">
-              <option>10</option>
-              <option>25</option>
-              <option>50</option>
-            </select>
-            <span className="text-sm text-gray-600">entries</span>
-          </div>
+          
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Search:</span>
             <input 
@@ -30,8 +23,8 @@ export function ApartmentList({apartments, onDelete, onEdit}){
         </div>
       </div>
 
-      
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        
+      <div className="bg-white rounded-lg shadow-sm overflow-auto h-80">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -94,7 +87,9 @@ export function ApartmentList({apartments, onDelete, onEdit}){
               Showing 1 to 4 of 4 entries
             </div>
             <div className="flex gap-2">
-              <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-500 bg-gray-100">
+              <button 
+              
+              className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-500 bg-gray-100">
                 Previous
               </button>
               <button className="px-3 py-1 border border-blue-500 bg-blue-500 text-white rounded text-sm">

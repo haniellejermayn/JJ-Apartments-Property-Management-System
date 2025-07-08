@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import { ApartmentForm } from '@/components/apartmentForm';
-import { ApartmentList } from '@/components/apartmentList';
+
 
 
 const MainContent = () => {
