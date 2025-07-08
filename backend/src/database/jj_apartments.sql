@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS `jj_apartments`.`units` (
   `name` VARCHAR(45) NULL,
   `description` VARCHAR(45) NULL,
   `num_occupants` INT NULL,
+  `contact_number` VARCHAR(15) NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 

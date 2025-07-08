@@ -7,6 +7,7 @@ public class Unit {
     private String name;
     private String description;
     private int numOccupants;
+    private String contactNumber;
 
     public int getId() {
         return id;
@@ -47,6 +48,16 @@ public class Unit {
     public void setNumOccupants(int numOccupants) {
         this.numOccupants = numOccupants;
     }
+
+
+    public String getContactNumber() {
+        return this.contactNumber;
+    }
+
+    public void setContactNumber(String contactNumber) {
+        this.contactNumber = contactNumber;
+    }
+
    
 }
 
