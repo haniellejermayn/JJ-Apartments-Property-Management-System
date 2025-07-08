@@ -11,6 +11,7 @@ export function ApartmentForm() {
     // { id: 4, number: '#110', status: 'Occupied', apartment: 'Dela Cruz Apartment', description: '2 bedroom and 1 rest room', price: '11,000.00' },
   ]); // dummy data
   const [formData, setFormData] = useState({
+      id: null,
       apartment: 'Dela Cruz Apartment',
       apartmentNo: '',
       description: '',
@@ -19,6 +20,7 @@ export function ApartmentForm() {
   });
   const [units, setUnits] = useState([]);
   const API_BASE_URL = 'http://localhost:8080/api/units';
+  const [editingId, setEditingId] = useState(null);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -30,25 +32,65 @@ export function ApartmentForm() {
   }
 
   const handleSubmit = (e) => {
+    console.log(editingId);
     e.preventDefault();
-    const newApartment = {
-        id: Math.max(...apartments.map(a => a.id), 0) + 1,
-        number: formData.apartmentNo,
-        status: formData.status,
-        apartment: formData.apartment,
-        description: formData.description,
-        price: formData.price
-    };
-    setApartments([...apartments, newApartment]);
-    console.log('Form submitted:', formData);
-    setFormData({
-      apartment: 'Dela Cruz Apartment',
-      apartmentNo: '',
-      description: '',
-      price: '',
-      status: ''
-    });
+    if (!editingId){
+      const newApartment = {
+          id: Math.max(...apartments.map(a => a.id), 0) + 1,
+          number: formData.apartmentNo,
+          status: formData.status,
+          apartment: formData.apartment,
+          description: formData.description,
+          price: formData.price
+      };
+      setApartments([...apartments, newApartment]);
+      console.log('Form submitted:', formData);
+      setFormData({
+        id: null,
+        apartment: 'Dela Cruz Apartment',
+        apartmentNo: '',
+        description: '',
+        price: '',
+        status: ''
+      });
+    }
+    else{
+      setApartments(apartments.map(
+        apt => apt.id == editingId ? 
+        {
+          ...apt,
+          apartmentNo: formData.apartmentNo,
+          apartment: formData.apartment,
+          description: formData.description,
+          price: formData.price,
+          status: formData.status
+        } : apt
+      ));
+      setFormData({
+        id: null,
+        apartment: 'Dela Cruz Apartment',
+        apartmentNo: '',
+        description: '',
+        price: '',
+        status: ''
+      });
+
+    }
+
+    setEditingId(null);
   };
+
+  const handleEdit = (apt) => {
+    setFormData({
+      id: apt.id,
+      apartment: apt.apartment,
+      apartmentNo: apt.number,
+      description: apt.description,
+      price: apt.price,
+      status: apt.status,
+    });
+    setEditingId(apt.id);
+  }
 
   useEffect(() => {
     fetchUnits();
@@ -70,7 +112,7 @@ export function ApartmentForm() {
 
     <div className="w-80  bg-white border-r border-gray-200 p-6 overflow-y-auto">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Apartment Form</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-2"> {editingId ? 'Edit' : 'Add'} Apartment Form</h2>
         <p className="text-sm text-gray-600">Add or edit apartment details</p>
       </div>
 
@@ -168,18 +210,10 @@ export function ApartmentForm() {
           </button>
         </div>
 
-        <div className="pt-4 border-t border-gray-200">
-          <button 
-            type="button"
-            className="flex items-center justify-center gap-2 w-full py-2 px-4 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-          >
-            <Plus size={16} />
-            Add New Apartment
-          </button>
-        </div>
+        
       </div>
     </div>
-    <ApartmentList apartments={apartments} onDelete={handleDelete} />
+    <ApartmentList apartments={apartments} onDelete={handleDelete} onEdit={handleEdit}/>
     </div>
   );
 

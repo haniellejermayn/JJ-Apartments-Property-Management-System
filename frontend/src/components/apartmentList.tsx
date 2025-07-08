@@ -2,7 +2,7 @@ import { Edit, Trash2 } from "lucide-react";
 import React from "react";
 
 
-export function ApartmentList({apartments, onDelete}){
+export function ApartmentList({apartments, onDelete, onEdit}){
   
 
   return (
@@ -67,7 +67,9 @@ export function ApartmentList({apartments, onDelete}){
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₱{apartment.price}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <div className="flex gap-2">
-                      <button className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors">
+                      <button 
+                      onClick={() => onEdit?.(apartment)}
+                      className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors">
                         <Edit size={12} className="mr-1" />
                         Edit
                       </button>
