@@ -41,31 +41,33 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS `jj_apartments`.`units` (
   `id` INT NOT NULL,
   `unit_number` VARCHAR(1) NULL,
-  `is_occupied` TINYINT NULL,
+  `name` VARCHAR(45) NULL,
+  `description` VARCHAR(45) NULL,
+  `num_occupants` INT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
-INSERT INTO `jj_apartments`.`units` (`id`, `unit_number`, `is_occupied`) 
+INSERT INTO `jj_apartments`.`units` (`id`, `unit_number`, `num_occupants`) 
 VALUES
 (1, 'D', 1),
 (2, 'A', 0),
-(3, 'M', 1),
+(3, 'M', 2),
 (4, 'K', 0),
-(5, 'R', 1),
+(5, 'R', 3),
 (6, 'C', 0),
 (7, 'B', 1),
 (8, 'F', 0),
-(9, 'H', 1),
+(9, 'H', 4),
 (10, 'P', 0),
 (11, 'G', 1),
 (12, 'E', 0),
-(13, 'L', 1),
+(13, 'L', 2),
 (14, 'S', 0),
 (15, 'T', 1),
 (16, 'J', 0),
 (17, 'Q', 1),
 (18, 'N', 0),
-(19, 'U', 1),
+(19, 'U', 2),
 (20, 'V', 0);
 
 SELECT * FROM units;
