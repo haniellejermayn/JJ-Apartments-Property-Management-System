@@ -4,7 +4,14 @@ import { ApartmentList } from "./apartmentList";
 // import axios from "axios";
 
 export function ApartmentForm() {
-  
+  type Unit = {
+    id: number;
+    unitNumber: string;
+    name: string;
+    description: string;
+    numOccupants: number;
+    contactNumber: string;
+  }
   const [apartments, setApartments] = useState([
     // { id: 1, number: '#110', status: 'Not available', apartment: 'Dela Cruz Apartment', description: '2 bedroom and 1 rest room', price: '12,000.00' },
     // { id: 2, number: '#111', status: 'Available', apartment: 'Dela Cruz Apartment', description: '3 bedroom and 1 rest room', price: '15,000.00' },
@@ -28,9 +35,9 @@ export function ApartmentForm() {
   };
 
   const handleDelete = async (id) => {
-    const res = await fetch(`${API_BASE_URL}/${id}`, {
+    const res = await fetch(`${API_BASE_URL}/${editingId}`, {
       method: "DELETE",
-      
+      headers: { "Content-Type": "application/json" },
     });
     // setApartments((prev) => prev.filter((apt) => apt.id !== id));
     fetchUnits();
@@ -68,28 +75,33 @@ export function ApartmentForm() {
       });
     }
     else{
-      setApartments(apartments.map(
-        apt => apt.id == editingId ? 
-        {
-          ...apt,
+      // setApartments(apartments.map(
+      //   apt => apt.id == editingId ? 
+      //   {
+      //     ...apt,
+      //     unitNumber: formData.unitNumber,
+      //     name: formData.name,
+      //     description: formData.description,
+      //     numOccupants: formData.numOccupants,
+      //     contactNumber: formData.contactNumber
+      //   } : apt
+      // ));
+      const res = await fetch(`${API_BASE_URL}/update/${editingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           unitNumber: formData.unitNumber,
           name: formData.name,
           description: formData.description,
-          numOccupants: formData.numOccupants,
-          contactNumber: formData.contactNumber
-        } : apt
-      ));
-
-      const res = await fetch("/api/units",{
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+          numOccupants: parseInt(formData.numOccupants) || 0,
+          contactNumber: formData.contactNumber,
+        }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const updated = await res.json();
-      setApartments((prev) =>
-        prev.map((apt) => (apt.id === updated.id ? updated : apt))
-      );
+      
+      fetchUnits();
+
+      
 
       setFormData({
         id: null,
