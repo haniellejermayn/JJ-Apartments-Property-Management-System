@@ -27,8 +27,6 @@ export function ApartmentForm() {
       contactNumber: ''
   });
   const [units, setUnits] = useState([]);
-  // const API_BASE_URL = 'http://localhost:8080/api/units';
-  const NEXT_PUBLIC_API_URL= 'http://localhost:8080';
   const [editingId, setEditingId] = useState(null);
 
   const handleInputChange = (e) => {
@@ -36,7 +34,7 @@ export function ApartmentForm() {
   };
 
   const handleDelete = async (id) => {
-    const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/units/${id}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units/${id}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
     });
@@ -49,7 +47,7 @@ export function ApartmentForm() {
     e.preventDefault();
     if (!editingId){
       
-      const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/units/add`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -88,9 +86,8 @@ export function ApartmentForm() {
       //   } : apt
       // ));
       console.log(editingId);
-      const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/units/update/${editingId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units/update/${editingId}`, {
         method: "PATCH",
-        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           unitNumber: formData.unitNumber,
