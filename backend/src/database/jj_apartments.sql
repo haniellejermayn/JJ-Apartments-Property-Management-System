@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS monthly_reports;
 -- -------------------------
 -- Table: users
 -- -------------------------
-CREATE TABLE IF NOT EXISTcustomersS users (
+CREATE TABLE IF NOT EXISTS users (
   id INT NOT NULL AUTO_INCREMENT,
   username VARCHAR(45) NOT NULL,
   password VARCHAR(45) NOT NULL,
@@ -91,6 +91,21 @@ CREATE TABLE IF NOT EXISTS `jj_apartments`.`tenants` (
     FOREIGN KEY (`units_id`)
     REFERENCES `jj_apartments`.`units` (`id`)
 ) ENGINE = InnoDB;
+INSERT INTO `jj_apartments`.`tenants` 
+(`last_name`, `first_name`, `middle_initial`, `email`, `phone_number`, `units_id`) 
+VALUES
+('Dela Cruz', 'Juan', 'R', 'juan.delacruz@example.com', '09171234567', 1),
+('Santos', 'Maria', 'L', 'maria.santos@example.com', '09181234567', 3),
+('Reyes', 'Carlos', 'T', 'carlos.reyes@example.com', '09192234567', 5),
+('Cruz', 'Angela', 'M', 'angela.cruz@example.com', '09201234567', 7),
+('Gomez', 'Joseph', 'P', 'joseph.gomez@example.com', '09211234567', 9),
+('Torres', 'Anna', 'S', 'anna.torres@example.com', '09221234567', 11),
+('Lopez', 'Daniel', 'V', 'daniel.lopez@example.com', '09231234567', 13),
+('Garcia', 'Leah', 'C', 'leah.garcia@example.com', '09241234567', 15),
+('Navarro', 'Miguel', 'D', 'miguel.navarro@example.com', '09251234567', 17),
+('Ramos', 'Patricia', 'E', 'patricia.ramos@example.com', '09261234567', 19);
+
+SELECT * FROM tenants;
 
 
 -- -------------------------
@@ -188,5 +203,3 @@ SELECT * FROM monthly_reports;
 SET SQL_MODE = @OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS = @OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS = @OLD_UNIQUE_CHECKS;
-
-select 
