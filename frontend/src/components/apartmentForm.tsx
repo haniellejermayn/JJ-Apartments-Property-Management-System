@@ -27,7 +27,8 @@ export function ApartmentForm() {
       contactNumber: ''
   });
   const [units, setUnits] = useState([]);
-  const API_BASE_URL = 'http://localhost:8080/api/units';
+  // const API_BASE_URL = 'http://localhost:8080/api/units';
+  const NEXT_PUBLIC_API_URL= 'http://localhost:8080';
   const [editingId, setEditingId] = useState(null);
 
   const handleInputChange = (e) => {
@@ -35,11 +36,11 @@ export function ApartmentForm() {
   };
 
   const handleDelete = async (id) => {
-    const res = await fetch(`${API_BASE_URL}/${editingId}`, {
+    const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/units/${id}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
     });
-    // setApartments((prev) => prev.filter((apt) => apt.id !== id));
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     fetchUnits();
   }
 
@@ -48,7 +49,7 @@ export function ApartmentForm() {
     e.preventDefault();
     if (!editingId){
       
-      const res = await fetch(`${API_BASE_URL}/add`, {
+      const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/units/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -86,8 +87,10 @@ export function ApartmentForm() {
       //     contactNumber: formData.contactNumber
       //   } : apt
       // ));
-      const res = await fetch(`${API_BASE_URL}/update/${editingId}`, {
-        method: "PUT",
+      console.log(editingId);
+      const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/units/update/${editingId}`, {
+        method: "PATCH",
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           unitNumber: formData.unitNumber,
