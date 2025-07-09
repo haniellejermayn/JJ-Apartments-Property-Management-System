@@ -39,12 +39,39 @@ CREATE TABLE IF NOT EXISTcustomersS users (
 -- Table `jj_apartments`.`units`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `jj_apartments`.`units` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `unit_number` VARCHAR(1) NULL,
-  `is_occupied` TINYINT NULL,
+  `name` VARCHAR(45) NULL,
+  `description` VARCHAR(45) NULL,
+  `num_occupants` INT NULL,
+  `contact_number` VARCHAR(15) NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
+INSERT INTO `jj_apartments`.`units` (`unit_number`, `num_occupants`) 
+VALUES
+('D', 1),
+('A', 0),
+('M', 2),
+('K', 0),
+('R', 3),
+('C', 0),
+('B', 1),
+('F', 0),
+('H', 4),
+( 'P', 0),
+( 'G', 1),
+( 'E', 0),
+('L', 2),
+('S', 0),
+('T', 1),
+('J', 0),
+('Q', 1),
+('N', 0),
+('U', 2),
+('V', 0);
+
+SELECT * FROM units;
 -- -------------------------
 -- Table: tenants
 -- -------------------------
@@ -147,6 +174,14 @@ CREATE TABLE IF NOT EXISTS monthly_reports (
   PRIMARY KEY (id),
   UNIQUE KEY unique_year_month (year, month)
 ) ENGINE = InnoDB;
+
+INSERT INTO monthly_reports(year, month, total_earnings, total_expenses, net_income)
+VALUES
+(2025, 6, 514136.30, 20000, 494136.3),
+(2025, 7, 514136.30, 20000, 494136.3);
+
+SELECT * FROM monthly_reports;
+
 
 
 -- Restore original SQL modes and checks

@@ -35,8 +35,8 @@ public class UnitRepository {
         Integer count = jdbcTemplate.queryForObject(sqlChecker, Integer.class, unit.getUnitNumber());
 
         if (count != null && count == 0) {
-            String sql = "INSERT INTO units(unit_number, is_occupied) VALUES (?, ?)";
-            return jdbcTemplate.update(sql, unit.getUnitNumber(), unit.isOccupied());
+            String sql = "INSERT INTO units(unit_number, name, description, num_occupants, contact_number) VALUES (?, ?, ?, ?, ?)";
+            return jdbcTemplate.update(sql, unit.getUnitNumber(), unit.getName(), unit.getDescription(), unit.getNumOccupants(), unit.getContactNumber());
         } else {
             throw new ErrorException("The unit number already exists.");
         }
