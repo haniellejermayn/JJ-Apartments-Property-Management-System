@@ -30,7 +30,7 @@ export function ApartmentList({apartments, onDelete, onEdit}){
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Apartment Unit</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit no, contact</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Apartment Name</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
@@ -40,24 +40,18 @@ export function ApartmentList({apartments, onDelete, onEdit}){
             <tbody className="bg-white divide-y divide-gray-200">
               {apartments.map((apartment, index) => (
                 <tr key={apartment.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{apartment.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-gray-900">{apartment.number}</span>
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        apartment.status === 'Available' 
-                          ? 'bg-green-100 text-green-800' 
-                          : apartment.status === 'Not available'
-                          ? 'bg-red-100 text-red-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {apartment.status}
+                      <span className="text-sm font-medium text-gray-900">{apartment.unitNumber}</span>
+                      <span className={`px-2 py-1 text-xs rounded-full bg-green-100 text-green-800`}>
+                        {apartment.contactNumber}
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{apartment.apartment}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{apartment.name}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{apartment.description}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₱{apartment.price}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Number of occupants: {apartment.numOccupants}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <div className="flex gap-2">
                       <button 

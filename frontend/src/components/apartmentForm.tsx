@@ -13,18 +13,18 @@ export function ApartmentForm() {
     contactNumber: string;
   }
   const [apartments, setApartments] = useState([
-    { id: 1, number: '#110', status: 'Not available', apartment: 'Dela Cruz Apartment', description: '2 bedroom and 1 rest room', price: '12,000.00' },
-    { id: 2, number: '#111', status: 'Available', apartment: 'Dela Cruz Apartment', description: '3 bedroom and 1 rest room', price: '15,000.00' },
-    { id: 3, number: '#111', status: 'Available', apartment: 'Dela Cruz Apartment', description: '1 bedroom and 1 rest room', price: '10,000.00' },
+    // { id: 1, number: '#110', status: 'Not available', apartment: 'Dela Cruz Apartment', description: '2 bedroom and 1 rest room', price: '12,000.00' },
+    // { id: 2, number: '#111', status: 'Available', apartment: 'Dela Cruz Apartment', description: '3 bedroom and 1 rest room', price: '15,000.00' },
+    // { id: 3, number: '#111', status: 'Available', apartment: 'Dela Cruz Apartment', description: '1 bedroom and 1 rest room', price: '10,000.00' },
     // { id: 4, number: '#110', status: 'Occupied', apartment: 'Dela Cruz Apartment', description: '2 bedroom and 1 rest room', price: '11,000.00' },
   ]); // dummy data
   const [formData, setFormData] = useState({
       id: null,
-      apartment: 'Dela Cruz Apartment',
-      apartmentNo: '',
+      unitNumber: '',
+      name: '',
       description: '',
-      price: '',
-      status: 'Not available'
+      numOccupants: '',
+      contactNumber: ''
   });
   const [units, setUnits] = useState([]);
   const API_BASE_URL = 'http://localhost:8080/api/units';
@@ -35,31 +35,43 @@ export function ApartmentForm() {
   };
 
   const handleDelete = async (id) => {
-
-    setApartments((prev) => prev.filter((apt) => apt.id !== id));
+    const res = await fetch(`${API_BASE_URL}/${id}`, {
+      method: "DELETE",
+      
+    });
+    // setApartments((prev) => prev.filter((apt) => apt.id !== id));
+    fetchUnits();
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     console.log(editingId);
     e.preventDefault();
     if (!editingId){
-      const newApartment = {
-          id: Math.max(...apartments.map(a => a.id), 0) + 1,
-          number: formData.apartmentNo,
-          status: formData.status,
-          apartment: formData.apartment,
+      
+      const res = await fetch(`${API_BASE_URL}/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          unitNumber: formData.unitNumber,
+          name: formData.name,
           description: formData.description,
-          price: formData.price
-      };
-      setApartments([...apartments, newApartment]);
+          numOccupants: parseInt(formData.numOccupants) || 0,
+          contactNumber: formData.contactNumber,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      
+      fetchUnits();
+
+      
       console.log('Form submitted:', formData);
       setFormData({
         id: null,
-        apartment: 'Dela Cruz Apartment',
-        apartmentNo: '',
+        unitNumber: '',
+        name: '',
         description: '',
-        price: '',
-        status: ''
+        numOccupants: '',
+        contactNumber: ''
       });
     }
     else{
@@ -67,20 +79,32 @@ export function ApartmentForm() {
         apt => apt.id == editingId ? 
         {
           ...apt,
-          apartmentNo: formData.apartmentNo,
-          apartment: formData.apartment,
+          unitNumber: formData.unitNumber,
+          name: formData.name,
           description: formData.description,
-          price: formData.price,
-          status: formData.status
+          numOccupants: formData.numOccupants,
+          contactNumber: formData.contactNumber
         } : apt
       ));
+
+      const res = await fetch("/api/units",{
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const updated = await res.json();
+      setApartments((prev) =>
+        prev.map((apt) => (apt.id === updated.id ? updated : apt))
+      );
+
       setFormData({
         id: null,
-        apartment: 'Dela Cruz Apartment',
-        apartmentNo: '',
+        unitNumber: '',
+        name: '',
         description: '',
-        price: '',
-        status: ''
+        numOccupants: '',
+        contactNumber: ''
       });
 
     }
@@ -91,17 +115,16 @@ export function ApartmentForm() {
   const handleEdit = (apt) => {
     setFormData({
       id: apt.id,
-      apartment: apt.apartment,
-      apartmentNo: apt.number,
+      unitNumber: apt.unitNumber,
+      name: apt.name,
       description: apt.description,
-      price: apt.price,
-      status: apt.status,
+      numOccupants: apt.numOccupants,
+      contactNumber: apt.contactNumber
     });
     setEditingId(apt.id);
   }
 
-  useEffect(() => {
-    const fetchUnits = async () =>{
+  const fetchUnits = async () =>{
       try {
         const [unitsResponse] = await Promise.all([
           fetch('/api/units', {
@@ -116,24 +139,22 @@ export function ApartmentForm() {
           unitsResponse.json()
         ]);
         setApartments(unitsData);
+        console.log(apartments);
       } catch (error: any) {
         console.error('Error fetching data:', error);
       }
       
 
       
-    }
+  }
+
+  useEffect(() => {
+    
 
     fetchUnits();
   }, []);
 
-  const fetchUnits = async () => {
-   
-    
-    // const response = await axios.get(API_BASE_URL);
-    setUnits(response.data);
-    
-  };
+  
 
 
 
@@ -151,28 +172,26 @@ export function ApartmentForm() {
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Apartment
+            Apartment name
           </label>
-          <select 
-            name="apartment"
-            value={formData.apartment}
+          <input 
+            type="text"
+            name="name"
+            value={formData.name}
             onChange={handleInputChange}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
-          >
-            <option value="Dela Cruz Apartment">Dela Cruz Apartment</option>
-            <option value="Santos Apartment">Santos Apartment</option>
-            <option value="Garcia Apartment">Garcia Apartment</option>
-          </select>
+            placeholder="Jason's apartment"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Apartment No.
+            Unit No.
           </label>
           <input 
             type="text"
-            name="apartmentNo"
-            value={formData.apartmentNo}
+            name="unitNumber"
+            value={formData.unitNumber}
             onChange={handleInputChange}
             placeholder="e.g. #110"
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -181,18 +200,16 @@ export function ApartmentForm() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Occupied
+            Contact No.
           </label>
-          <select 
-            name="status"
-            value={formData.status}
+          <input 
+            type="number"
+            name="contactNumber"
+            value={formData.contactNumber}
             onChange={handleInputChange}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
-          >
-            <option value='Not available'>No</option>
-            <option value="Available">Yes</option>
-            
-          </select>
+            placeholder="e.g. 09121234440"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
         </div>
 
         <div>
@@ -211,14 +228,14 @@ export function ApartmentForm() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Price
+            Number of occupants
           </label>
           <div className="relative">
-            <span className="absolute left-3 top-3 text-gray-500">₱</span>
+          
             <input 
               type="number"
-              name="price"
-              value={formData.price}
+              name="numOccupants"
+              value={formData.numOccupants}
               onChange={handleInputChange}
               placeholder="0.00"
               className="w-full pl-8 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

@@ -27,3 +27,35 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+// export async function POST(request: NextRequest) {
+//   try {
+//     const body = await request.json();
+//     console.log('Creating unit with data:', body);
+    
+//     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify(body),
+//     });
+
+//     if (!response.ok) {
+//       const errorText = await response.text();
+//       console.error('Backend error:', errorText);
+//       throw new Error(errorText || `Backend responded with status: ${response.status}`);
+//     }
+
+//     const responseText = await response.text();
+//     console.log('Backend success response:', responseText);
+    
+//     return NextResponse.json({ message: responseText }, { status: 201 });
+//   } catch (error) {
+//     console.error('Error creating unit:', error);
+//     return NextResponse.json(
+//       { error: error.message || 'Failed to create unit' },
+//       { status: 500 }
+//     );
+//   }
+// }
