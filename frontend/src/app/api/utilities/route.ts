@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   try {
     
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/utilities`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/utilites`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -27,4 +27,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

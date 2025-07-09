@@ -4,14 +4,7 @@ import { ApartmentList } from "./apartmentList";
 // import axios from "axios";
 
 export function ApartmentForm() {
-  type Unit = {
-    id: number;
-    unitNumber: string;
-    name: string;
-    description: string;
-    numOccupants: number;
-    contactNumber: string;
-  }
+  
   const [apartments, setApartments] = useState([
     // { id: 1, number: '#110', status: 'Not available', apartment: 'Dela Cruz Apartment', description: '2 bedroom and 1 rest room', price: '12,000.00' },
     // { id: 2, number: '#111', status: 'Available', apartment: 'Dela Cruz Apartment', description: '3 bedroom and 1 rest room', price: '15,000.00' },
