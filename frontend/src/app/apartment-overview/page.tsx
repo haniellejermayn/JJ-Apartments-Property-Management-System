@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import { ApartmentForm } from '@/components/apartmentForm';
-import { ApartmentList } from '@/components/apartmentList';
+
 
 
 const MainContent = () => {
@@ -16,7 +16,7 @@ const MainContent = () => {
       
       <div className="flex flex-1">
         <ApartmentForm />
-        <ApartmentList />
+        {/* <ApartmentList /> */}
       </div>
     </div>
   );
