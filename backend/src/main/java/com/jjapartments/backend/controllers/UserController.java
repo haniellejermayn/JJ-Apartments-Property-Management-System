@@ -53,6 +53,17 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
     }
+
+    // Update
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable int id, @RequestBody User user) {
+        try {
+            userRepository.update(id, user);
+            return ResponseEntity.ok(userRepository.findById(id));
+        } catch (ErrorException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
     
 
    

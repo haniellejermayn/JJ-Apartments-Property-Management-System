@@ -24,11 +24,7 @@ public class ExpenseRepository{
     }
 
     public int add(Expense expense) {
-        List<String> validReasons = List.of("Maintenance", "Utilities", "Supplies", "Repair", "Other");
-
-        if (!validReasons.contains(expense.getReason())) {
-            throw new ErrorException("Invalid reason " + expense.getReason());
-        } else if (expense.getAmount() <= 0) {
+        if (expense.getAmount() <= 0) {
             throw new ErrorException("Amount cannot be ₱0 or below");
         }
 
@@ -48,5 +44,17 @@ public class ExpenseRepository{
         } catch (EmptyResultDataAccessException e) {
             throw new ErrorException("Expense with id " + id + " not found.");
         }
+    }
+
+    public int update(int id, Expense expense) {
+        if (findById(id) == null) {
+            throw new ErrorException("Expense not found");
+        }
+        if (expense.getAmount() < 0) {
+            throw new ErrorException("Amount cannot be below ₱0");
+        }
+        
+        String sql = "UPDATE expenses SET amount = ?, reason = ?, date = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, expense.getAmount(), expense.getReason(), expense.getDate(), id);
     }
 }

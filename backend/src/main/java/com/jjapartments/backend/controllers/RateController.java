@@ -46,5 +46,16 @@ public class RateController{
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Rate not found");
         }
     }
+
+    // Update
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<?> updateRate(@PathVariable int id, @RequestBody Rate rate) {
+        try {
+            rateRepository.update(id, rate);
+            return ResponseEntity.ok(rateRepository.findById(id));
+        } catch (ErrorException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
     
 }

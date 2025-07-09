@@ -54,4 +54,17 @@ public class PaymentRepository{
             throw new ErrorException("Payment with id " + id + " not found.");
         }
     }
+
+    public int update(int id, Payment payment) {
+        if (findById(id) == null) {
+            throw new ErrorException("Expense not found");
+        }
+        if (payment.getAmount() < 0) {
+            throw new ErrorException("Amount cannot be below ₱0");
+        }
+        
+        String sql = "UPDATE payments SET reason = ?, mode_of_payment = ?, amount = ?, due_date = ?, month_of_start = ?, month_of_end = ?, "
+        + "is_paid = ?, paid_at = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, payment.getReason(), payment.getModeOfPayment(), payment.getAmount(), payment.getDueDate(), payment.getMonthOfStart(), payment.getMonthOfEnd(), payment.getIsPaid(), payment.getPaidAt(), id);
+    }
 }

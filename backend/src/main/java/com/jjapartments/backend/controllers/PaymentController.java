@@ -45,5 +45,16 @@ public class PaymentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Payment not found");
         }
     }
+
+    // Update
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<?> updatePayment(@PathVariable int id, @RequestBody Payment payment) {
+        try {
+            paymentRepository.update(id, payment);
+            return ResponseEntity.ok(paymentRepository.findById(id));
+        } catch (ErrorException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
     
 }

@@ -23,7 +23,7 @@ public class UtilityRepository{
         return jdbcTemplate.query(sql, new UtilityRowMapper());
     }
 
-    public int add(Utility utility) {
+    public void validate(Utility utility) {
         List<String> validTypes = List.of("Meralco", "Manila Water");
         if (!validTypes.contains(utility.getType())) {
             throw new ErrorException("Invalid rate type " + utility.getType());
@@ -43,6 +43,10 @@ public class UtilityRepository{
         if (utility.getTotalMeter() < 0) {
             throw new ErrorException("Total meter cannot be less than 0.");
         }
+    }
+
+    public int add(Utility utility) {
+        validate(utility);
         String sql = "INSERT INTO utilities(type, previous_reading, current_reading, total_meter, total_amount, due_date, month_of_start, month_of_end, is_paid, paid_at, tenants_id, rates_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         return jdbcTemplate.update(sql, utility.getType(), utility.getPreviousReading(), utility.getCurrentReading(), utility.getTotalMeter(), utility.getTotalAmount(), utility.getDueDate(), utility.getMonthOfStart(), utility.getMonthOfEnd(), utility.getIsPaid(), utility.getPaidAt(), utility.getTenantId(), utility.getRateId());
        
@@ -60,5 +64,12 @@ public class UtilityRepository{
         } catch (EmptyResultDataAccessException e) {
             throw new ErrorException("Utility record with id " + id + "  not found.");
         }
+    }
+
+    public int update(int id, Utility utility) {
+        findById(id);
+        validate(utility);
+        String sql = "UPDATE utilities SET type = ?, previous_reading = ?, current_reading = ?, total_meter = ?, total_amount = ?, due_date = ?, month_of_start = ?, month_of_end = ?, is_paid = ?, paid_at = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, utility.getType(), utility.getPreviousReading(), utility.getCurrentReading(), utility.getTotalMeter(), utility.getTotalAmount(), utility.getDueDate(), utility.getMonthOfStart(), utility.getMonthOfEnd(), utility.getIsPaid(), utility.getPaidAt(), id);
     }
 }
