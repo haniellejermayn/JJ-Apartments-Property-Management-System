@@ -23,22 +23,26 @@ public class UnitRepository {
         String sql = "SELECT * FROM units";
         return jdbcTemplate.query(sql, new UnitRowMapper());
     }
-
+    // for creating
     public boolean unitNumberExists(Unit unit) {
         String sqlChecker = "SELECT COUNT(*) FROM units WHERE unit_number = ?";
         Integer count = jdbcTemplate.queryForObject(sqlChecker, Integer.class, unit.getUnitNumber());
         return count != null && count > 0;
     }
+    // for updating
+    public boolean unitNumberExists(Unit unit, int excludeId) {
+        String sqlChecker = "SELECT COUNT(*) FROM units WHERE unit_number = ? AND id != ?";
+        Integer count = jdbcTemplate.queryForObject(sqlChecker, Integer.class, unit.getUnitNumber(), excludeId);
+        return count != null && count > 0;
+    }
+
 
     public int add(Unit unit) {
-        String sqlChecker = "SELECT COUNT(*) FROM units WHERE unit_number = ?";
-        Integer count = jdbcTemplate.queryForObject(sqlChecker, Integer.class, unit.getUnitNumber());
-
-        if (count != null && count == 0) {
-            String sql = "INSERT INTO units(unit_number, is_occupied) VALUES (?, ?)";
-            return jdbcTemplate.update(sql, unit.getUnitNumber(), unit.isOccupied());
-        } else {
+        if (unitNumberExists(unit)) {
             throw new ErrorException("The unit number already exists.");
+        } else {
+            String sql = "INSERT INTO units(unit_number, name, description, num_occupants, contact_number) VALUES (?, ?, ?, ?, ?)";
+            return jdbcTemplate.update(sql, unit.getUnitNumber(), unit.getName(), unit.getDescription(), unit.getNumOccupants(), unit.getContactNumber());
         }
     }
 
@@ -54,5 +58,15 @@ public class UnitRepository {
         } catch (EmptyResultDataAccessException e) {
             throw new ErrorException("Unit with id " + id + " not found.");
         }
+    }
+
+    public int update(int id, Unit unit) {
+        Unit existingUnit = findById(id);
+
+        if (unitNumberExists(unit, existingUnit.getId())) {
+            throw new ErrorException("The unit number already exists.");
+        }
+        String sql = "UPDATE units SET unit_number = ?, name = ?, description = ?, num_occupants = ?, contact_number = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, unit.getUnitNumber(), unit.getName(), unit.getDescription(), unit.getNumOccupants(), unit.getContactNumber(), id);
     }
 }

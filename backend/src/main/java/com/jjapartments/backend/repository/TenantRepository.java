@@ -7,6 +7,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Repository;
+
 import com.jjapartments.backend.models.Tenant;
 import com.jjapartments.backend.exception.ErrorException;
 import com.jjapartments.backend.mappers.TenantRowMapper;
@@ -22,32 +23,53 @@ public class TenantRepository{
         return jdbcTemplate.query(sql, new TenantRowMapper());
     }
 
-    public boolean emailExists(Tenant tenant) {
+    // for creating
+    public String duplicateExists(Tenant tenant) {
         String sqlChecker = "SELECT COUNT(*) FROM tenants WHERE email = ?";
         Integer count = jdbcTemplate.queryForObject(sqlChecker, Integer.class, tenant.getEmail()); 
-        return count != null && count > 0;
-    } 
+        if (count != null && count > 0) {
+            return "email";
+        }
+        String sqlChecker2 = "SELECT COUNT(*) FROM tenants WHERE phone_number = ?";
+        Integer count2 = jdbcTemplate.queryForObject(sqlChecker2, Integer.class, tenant.getPhoneNumber());
+        if (count2 != null && count2 > 0) {
+            return "phone";
+        }
 
-    public boolean phoneNumberExists(Tenant tenant) {
-    String sqlChecker = "SELECT COUNT(*) FROM tenants WHERE phone_number = ?";
-    Integer count = jdbcTemplate.queryForObject(sqlChecker, Integer.class, tenant.getPhoneNumber());
-    return count != null && count > 0;
-    } 
+        return null;
+    }
+    // for updating
+    public String duplicateExists(Tenant tenant, int excludeId) {
+        String sqlChecker = "SELECT COUNT(*) FROM tenants WHERE email = ? AND id != ?";
+        Integer count = jdbcTemplate.queryForObject(sqlChecker, Integer.class, tenant.getEmail(), excludeId); 
+        if (count != null && count > 0) {
+            return "email";
+        }
+        String sqlChecker2 = "SELECT COUNT(*) FROM tenants WHERE phone_number = ? AND id != ?";
+        Integer count2 = jdbcTemplate.queryForObject(sqlChecker2, Integer.class, tenant.getPhoneNumber(), excludeId);
+        if (count2 != null && count2 > 0) {
+            return "phone";
+        }
+
+        return null;
+    }
 
     public int add(Tenant tenant) {
-        String sqlChecker = "SELECT COUNT(*) FROM tenants WHERE email = ? OR phone_number = ?"; 
-        Integer count = jdbcTemplate.queryForObject(sqlChecker, Integer.class, tenant.getEmail(), tenant.getPhoneNumber());
+        String duplicateField = duplicateExists(tenant);
+        if (duplicateField != null) {
+            switch (duplicateField) {
+                case "email":
+                    throw new ErrorException("The email is already taken.");
+                case "phone":
+                    throw new ErrorException("The phone number is already taken.");
+                default:
+                    throw new ErrorException("The tenant is already registered.");
 
-        if(count != null && count == 0){
-            String sql = "INSERT INTO tenants(last_name, first_name, middle_initial, units_id, email, phone_number) VALUES (?, ?, ?, ?, ?, ?)"; 
-            return jdbcTemplate.update(sql, tenant.getLastName(), tenant.getFirstName(), tenant.getMiddleInitial(), tenant.getUnit(), tenant.getEmail(), tenant.getPhoneNumber());
-        } else if(emailExists(tenant)){
-            throw new IllegalArgumentException("The email is already taken.");
-        } else if(phoneNumberExists(tenant)){
-            throw new IllegalArgumentException("The phone number is already taken.");
-        } else {
-            throw new IllegalArgumentException("The tenant is already registered.");
+            }
         }
+        String sql = "INSERT INTO tenants(last_name, first_name, middle_initial, units_id, email, phone_number) VALUES (?, ?, ?, ?, ?, ?)"; 
+        return jdbcTemplate.update(sql, tenant.getLastName(), tenant.getFirstName(), tenant.getMiddleInitial(), tenant.getUnit(), tenant.getEmail(), tenant.getPhoneNumber());
+      
     }
 
     public int delete(int id) {
@@ -62,5 +84,24 @@ public class TenantRepository{
         } catch (EmptyResultDataAccessException e) {
             throw new ErrorException("Tenant with id " + id + " not found.");
         }
+    }
+
+    public int update(int id, Tenant tenant) {
+        Tenant existingTenant = findById(id);
+
+        String duplicateField = duplicateExists(tenant, existingTenant.getId());
+        if (duplicateField != null) {
+            switch (duplicateField) {
+                case "email":
+                    throw new ErrorException("The email is already taken.");
+                case "phone":
+                    throw new ErrorException("The phone number is already taken.");
+                default:
+                    throw new ErrorException("The tenant is already registered.");
+
+            }
+        }
+        String sql = "UPDATE tenants SET last_name = ?, first_name = ?, middle_initial = ?, units_id = ?, email = ?, phone_number = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, tenant.getLastName(), tenant.getFirstName(), tenant.getMiddleInitial(), tenant.getUnit(), tenant.getEmail(), tenant.getPhoneNumber(), id);
     }
 }

@@ -47,13 +47,15 @@ public class MonthlyReportRepository{
     public float sumPayments(int year, int month) {
         String sql = "SELECT COALESCE(SUM(amount), 0) FROM payments " +
                      "WHERE is_paid = 1 AND YEAR(paid_at) = ? AND MONTH(paid_at) = ?";
-        return jdbcTemplate.queryForObject(sql, Float.class, year, month);
+        Float sum = jdbcTemplate.queryForObject(sql, Float.class, year, month);
+        return sum != null ? sum : 0.0f;
     }
 
     public float sumExpenses(int year, int month) {
         String sql = "SELECT COALESCE(SUM(amount), 0) FROM expenses " +
                      "WHERE YEAR(date) = ? AND MONTH(date) = ?";
-        return jdbcTemplate.queryForObject(sql, Float.class, year, month);
+        Float sum = jdbcTemplate.queryForObject(sql, Float.class, year, month);
+        return sum != null ? sum : 0.0f;
     }
 
     public MonthlyReport findById(int id) {

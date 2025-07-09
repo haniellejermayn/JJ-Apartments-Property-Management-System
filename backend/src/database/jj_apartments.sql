@@ -39,34 +39,37 @@ CREATE TABLE IF NOT EXISTS users (
 -- Table `jj_apartments`.`units`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `jj_apartments`.`units` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `unit_number` VARCHAR(1) NULL,
-  `is_occupied` TINYINT NULL,
+  `name` VARCHAR(45) NULL,
+  `description` VARCHAR(45) NULL,
+  `num_occupants` INT NULL,
+  `contact_number` VARCHAR(15) NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
-INSERT INTO `jj_apartments`.`units` (`id`, `unit_number`, `is_occupied`) 
+INSERT INTO `jj_apartments`.`units` (`unit_number`, `num_occupants`) 
 VALUES
-(1, 'D', 1),
-(2, 'A', 0),
-(3, 'M', 1),
-(4, 'K', 0),
-(5, 'R', 1),
-(6, 'C', 0),
-(7, 'B', 1),
-(8, 'F', 0),
-(9, 'H', 1),
-(10, 'P', 0),
-(11, 'G', 1),
-(12, 'E', 0),
-(13, 'L', 1),
-(14, 'S', 0),
-(15, 'T', 1),
-(16, 'J', 0),
-(17, 'Q', 1),
-(18, 'N', 0),
-(19, 'U', 1),
-(20, 'V', 0);
+('D', 1),
+('A', 0),
+('M', 2),
+('K', 0),
+('R', 3),
+('C', 0),
+('B', 1),
+('F', 0),
+('H', 4),
+( 'P', 0),
+( 'G', 1),
+( 'E', 0),
+('L', 2),
+('S', 0),
+('T', 1),
+('J', 0),
+('Q', 1),
+('N', 0),
+('U', 2),
+('V', 0);
 
 SELECT * FROM units;
 -- -------------------------
@@ -187,9 +190,10 @@ CREATE TABLE IF NOT EXISTS monthly_reports (
   UNIQUE KEY unique_year_month (year, month)
 ) ENGINE = InnoDB;
 
-INSERT INTO monthly_reports(id, year, month, total_earnings, total_expenses, net_income, created_at)
+INSERT INTO monthly_reports(year, month, total_earnings, total_expenses, net_income)
 VALUES
-(1, 2025, 7, 514136.30, 20000, 494136.3, '2025-07-05 14:37:00');
+(2025, 6, 514136.30, 20000, 494136.3),
+(2025, 7, 514136.30, 20000, 494136.3);
 
 SELECT * FROM monthly_reports;
 

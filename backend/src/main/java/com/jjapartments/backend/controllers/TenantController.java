@@ -51,6 +51,17 @@ public class TenantController{
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Tenant not found");
         }
     }
+
+    // Update
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<?> updateTenant(@PathVariable int id, @RequestBody Tenant tenant) {
+        try {
+            tenantRepository.update(id, tenant);
+            return ResponseEntity.ok(tenantRepository.findById(id));
+        } catch (ErrorException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
     
 
 }

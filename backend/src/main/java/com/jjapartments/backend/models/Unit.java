@@ -3,8 +3,11 @@ package com.jjapartments.backend.models;
 public class Unit {
 
     private int id;
-    private String unit_number;
-    private boolean is_occupied;
+    private String unitNumber;
+    private String name;
+    private String description;
+    private int numOccupants;
+    private String contactNumber;
 
     public int getId() {
         return id;
@@ -15,19 +18,46 @@ public class Unit {
     }
 
     public String getUnitNumber() {
-        return unit_number;
+        return unitNumber;
     }
 
-    public void setUnitNumber(String unit_number) {
-        this.unit_number = unit_number;
+    public void setUnitNumber(String unitNumber) {
+        this.unitNumber = unitNumber;
     }
 
-    public boolean isOccupied() {
-        return is_occupied;
+    public String getName() {
+        return this.name;
     }
 
-    public void setIsOccupied(boolean is_occupied) {
-        this.is_occupied = is_occupied;
+    public void setName(String name) {
+        this.name = name;
     }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public int getNumOccupants() {
+        return this.numOccupants;
+    }
+
+    public void setNumOccupants(int numOccupants) {
+        this.numOccupants = numOccupants;
+    }
+
+
+    public String getContactNumber() {
+        return this.contactNumber;
+    }
+
+    public void setContactNumber(String contactNumber) {
+        this.contactNumber = contactNumber;
+    }
+
+   
 }
 

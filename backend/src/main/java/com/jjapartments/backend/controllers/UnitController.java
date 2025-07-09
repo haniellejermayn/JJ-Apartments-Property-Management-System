@@ -45,6 +45,17 @@ public class UnitController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Unit not found");
         }
     }
+
+    // Update
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<?> updateUnit(@PathVariable int id, @RequestBody Unit unit) {
+        try {
+            unitRepository.update(id, unit);
+            return ResponseEntity.ok(unitRepository.findById(id));
+        } catch (ErrorException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
     
 
 }
