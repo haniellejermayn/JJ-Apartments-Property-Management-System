@@ -48,4 +48,22 @@ public class RateRepository{
             throw new ErrorException("Rate with id " + id + " not found.");
         }
     }
+
+    public int update(int id, Rate rate) {
+        if (findById(id) == null) {
+            throw new ErrorException("Rate not found");
+        }
+
+        List<String> validTypes = List.of("Meralco", "Manila Water");
+        if (!validTypes.contains(rate.getType())) {
+            throw new ErrorException("Invalid rate type " + rate.getType());
+        }
+
+        if (rate.getRate() <= 0) {
+            throw new ErrorException("Amount cannot be 0 or below");
+        }
+        
+        String sql = "UPDATE rates SET type = ?, rate = ?, date = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, rate.getType(), rate.getRate(), rate.getDate(), id);
+    }
 }   

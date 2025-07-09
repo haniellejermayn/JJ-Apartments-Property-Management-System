@@ -38,7 +38,7 @@ public class ExpenseController {
     }
 
     // Delete
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteExpense(@PathVariable int id) {
         int rowsAffected = expenseRepository.delete(id);
         if (rowsAffected > 0) {
@@ -48,4 +48,14 @@ public class ExpenseController {
         }
     }
     
+    // Update
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<?> updateExpense(@PathVariable int id, @RequestBody Expense expense) {
+        try {
+            expenseRepository.update(id, expense);
+            return ResponseEntity.ok(expenseRepository.findById(id));
+        } catch (ErrorException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 }

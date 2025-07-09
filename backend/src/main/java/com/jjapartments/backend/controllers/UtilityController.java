@@ -47,6 +47,16 @@ public class UtilityController {
         }
     }
     
+    // Update
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<?> updateUtility(@PathVariable int id, @RequestBody Utility utility) {
+        try {
+            utilityRepository.update(id, utility);
+            return ResponseEntity.ok(utilityRepository.findById(id));
+        } catch (ErrorException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 
    
 
