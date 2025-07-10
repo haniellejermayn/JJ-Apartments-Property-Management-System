@@ -6,7 +6,7 @@ export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
         middleName: '',
         lastName: '',
         email: '',
-        cpNo: ''
+        phoneNumber: ''
     });
 
     // Populate form with editing data when editing
@@ -17,7 +17,7 @@ export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
                 middleName: editingTenant.middleName || '',
                 lastName: editingTenant.lastName || '',
                 email: editingTenant.email || '',
-                cpNo: editingTenant.cpNo || ''
+                phoneNumber: editingTenant.phoneNumber || ''
             });
         } else {
             // Reset form when not editing
@@ -26,7 +26,7 @@ export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
                 middleName: '',
                 lastName: '',
                 email: '',
-                cpNo: ''
+                phoneNumber: ''
             });
         }
     }, [isEditing, editingTenant]);
@@ -124,8 +124,8 @@ export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
                         </label>
                         <input
                             type="tel"
-                            name="cpNo"
-                            value={formData.cpNo}
+                            name="phoneNumber"
+                            value={formData.phoneNumber}
                             onChange={handleInputChange}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                             placeholder="e.g., 09123456789"
@@ -138,14 +138,14 @@ export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
                 <button
                     type="button"
                     onClick={toggleModal}
-                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all font-medium"
+                    className="flex-1 px-6 py-3 bg-yellow-300 text-black rounded-lg hover:bg-yellow-400 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all font-medium"
                 >
                     Cancel
                 </button>
                 <button
                     type="button"
                     onClick={handleSubmit}
-                    className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all font-medium shadow-sm"
+                    className="flex-1 px-6 py-3 bg-black text-yellow-300 rounded-lg hover:bg-gray-900 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all font-medium shadow-sm"
                 >
                     {isEditing ? 'Update Tenant' : 'Add Tenant'}
                 </button>

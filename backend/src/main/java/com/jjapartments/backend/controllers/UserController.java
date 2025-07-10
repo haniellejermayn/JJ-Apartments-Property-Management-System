@@ -65,7 +65,15 @@ public class UserController {
         }
     }
     
-
-   
+    // Add login endpoint
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody User user) {
+        try {
+            User existingUser = userRepository.findByUsernameAndPassword(user.getUsername(), user.getPassword());
+            return ResponseEntity.ok(existingUser);
+        } catch (ErrorException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
 
 }

@@ -69,5 +69,13 @@ public class UserRepository{
         }
     }
 
-    
+    // Add method to find user by username and password
+    public User findByUsernameAndPassword(String username, String password) {
+        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new UserRowMapper(), username, password);
+        } catch (EmptyResultDataAccessException e) {
+            throw new ErrorException("Invalid username or password.");
+        }
+    }
 }

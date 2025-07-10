@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +9,7 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -26,15 +28,35 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     setIsLoading(true);
     setError('');
 
     try {
+      const response = await fetch('/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      console.log("Login response status:", response.status);
       
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Login error:', errorData);
+        throw new Error(errorData.error || 'Failed to login');
+      }
+
+      const user = await response.json();
+      console.log("Login successful:", user);
+      alert(`Welcome, ${user.username}!`);
+      // Redirect to dashboard or home page after successful login
+      router.push('/apartment-overview');
     } catch (err) {
       console.error('Login error:', err);
-      setError('Failed to log in. Please check your credentials and try again.');
+      setError(err instanceof Error ? err.message : 'Failed to log in. Please check your credentials and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -162,6 +184,15 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
+
+          <div className="text-center mt-4">
+            <p className="text-sm text-gray-600">
+              Don&apos;t have an account?{' '}
+              <a href="/signup" className="text-yellow-500 hover:text-yellow-600">
+                Sign up here
+              </a>
+            </p>
+          </div>
 
           <div className="lg:hidden text-center pt-8">
             <Image 

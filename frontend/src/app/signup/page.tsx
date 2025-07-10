@@ -6,20 +6,26 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export default function SignInPage() {
   const [formData, setFormData] = useState({
     username: '',
-    password: ''
+    password: '',
+    isOwner: false,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const router = useRouter();
 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;          
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
   };
 
 
@@ -31,10 +37,24 @@ export default function SignInPage() {
     setError('');
 
     try {
-      
+      const response = await fetch('/api/users/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(errorMessage);
+      }
+
+      alert('User registered successfully!');
+      router.push('/login');
     } catch (err) {
-      console.error('Login error:', err);
-      setError('Failed to log in. Please check your credentials and try again.');
+      console.error('Sign-up error:', err);
+      setError('Failed to sign up. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -127,6 +147,21 @@ export default function SignInPage() {
                   </span>
                 </Button>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="isOwner" className="text-sm font-medium text-gray-700">
+                Is Owner
+              </Label>
+              <input
+                id="isOwner"
+                name="isOwner"
+                type="checkbox"
+                checked={formData.isOwner}
+                disabled={isLoading}
+                onChange={handleChange}
+                className="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
+              />
             </div>
 
             <div className="flex items-center justify-between">

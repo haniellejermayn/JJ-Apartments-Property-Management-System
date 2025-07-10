@@ -1,22 +1,75 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { TenantPopUp } from "@/components/TenantPopUp";
 import { TenantMgt } from "@/components/TenantMgt";
+import { Mail, Phone, Building, DoorClosed  } from "lucide-react";
+
+type Tenant = {
+    id: number;
+    firstName: string;
+    middleName?: string;
+    lastName: string;
+    email: string;
+    unit: number;
+    phoneNumber: string;
+    dateAdded: string;
+};
+
+type Unit = {
+    id: number;
+    unitNumber: string;
+    name: string;
+};
 
 export default function TenantsManagementPage() {
     const [modalOpen, setModalOpen] = useState(false);
-    const [editingTenant, setEditingTenant] = useState(null);
-    const [tenants, setTenants] = useState([
-        {
-            id: 1,
-            firstName: "Juan",
-            middleName: "A",
-            lastName: "Dela Cruz",
-            email: "juan.delacruz@email.com",
-            cpNo: "09123456789",
-            dateAdded: new Date().toISOString()
-        }
-    ]);
+    const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
+    const [tenants, setTenants] = useState<Tenant[]>([]);
+
+   
+    const [units, setUnits] = useState<Unit[]>([]);
+    
+    useEffect(() => {
+  
+        const fetchUnits = async () => {
+            try {
+                const response = await fetch("/api/units");
+                if (!response.ok) {
+                    throw new Error("Failed to fetch units");
+                }
+                const data = await response.json();
+                setUnits(data);
+                console.log("Units loaded:", data);
+            } catch (error) {
+                console.error("Error fetching units:", error);
+            }
+        };
+
+ 
+        const fetchTenants = async () => {
+            try {
+                const response = await fetch("/api/tenants"); 
+                if (!response.ok) {
+                    throw new Error("Failed to fetch tenants");
+                }
+                const data = await response.json();
+                
+                const processedTenants = data.map((tenant: Partial<Tenant>) => ({
+                    ...tenant,
+                    middleName: tenant.middleName,
+                    dateAdded: tenant.dateAdded || new Date().toISOString()
+                } as Tenant));
+                
+                setTenants(processedTenants);
+                console.log("Tenants loaded:", processedTenants);
+            } catch (error) {
+                console.error("Error fetching tenants:", error);
+            }
+        };
+
+        fetchUnits();
+        fetchTenants();
+    }, []);
 
     const toggleModal = () => {
         setModalOpen(!modalOpen);
@@ -30,8 +83,8 @@ export default function TenantsManagementPage() {
         return tenants.length > 0 ? Math.max(...tenants.map(t => t.id)) + 1 : 1;
     };
 
-    const handleAddTenant = (tenantData) => {
-        const newTenant = {
+    const handleAddTenant = (tenantData: Omit<Tenant, 'id' | 'dateAdded'>) => {
+        const newTenant: Tenant = {
             ...tenantData,
             id: generateId(),
             dateAdded: new Date().toISOString()
@@ -41,40 +94,52 @@ export default function TenantsManagementPage() {
         toggleModal();
     };
 
-    const handleEditTenant = (tenant) => {
+    const handleEditTenant = (tenant: Tenant) => {
         setEditingTenant(tenant);
         setModalOpen(true);
     };
 
-    const handleUpdateTenant = (updatedData) => {
-        setTenants(prev => 
-            prev.map(tenant => 
-                tenant.id === editingTenant.id 
-                    ? { ...tenant, ...updatedData }
-                    : tenant
-            )
-        );
-        console.log('Tenant updated:', updatedData);
-        toggleModal();
+    const handleUpdateTenant = (updatedData: Partial<Tenant>) => {
+        if (editingTenant) {
+            setTenants(prev => 
+                prev.map(tenant => 
+                    tenant.id === editingTenant.id 
+                        ? { ...tenant, ...updatedData }
+                        : tenant
+                )
+            );
+            console.log('Tenant updated:', updatedData);
+            toggleModal();
+        }
     };
 
-    const handleDeleteTenant = (tenantId) => {
+    const handleDeleteTenant = (tenantId: number) => {
         if (window.confirm('Are you sure you want to delete this tenant?')) {
             setTenants(prev => prev.filter(tenant => tenant.id !== tenantId));
             console.log('Tenant deleted:', tenantId);
         }
     };
 
-    const formatPhoneNumber = (phone) => {
+    const formatPhoneNumber = (phone: string) => {
         if (!phone) return 'N/A';
-        
         return phone;
     };
 
-    const formatName = (firstName, middleName, lastName) => {
+    const formatName = (firstName: string, lastName: string, middleName?: string) => {
         const middle = middleName ? ` ${middleName}` : '';
         return `${firstName}${middle} ${lastName}`;
     };
+
+
+    const getUnitInfo = (unitId: number) => {
+        const unit = units.find(u => u.id === unitId);
+        return {
+            unitNumber: unit?.unitNumber || 'Unknown',
+            buildingName: unit?.name || 'Unknown'
+        };
+    };
+
+    // Note: We'll use the getUnitInfo function directly in the JSX
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -91,7 +156,7 @@ export default function TenantsManagementPage() {
                         
                         <button
                             onClick={() => setModalOpen(true)}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium"
+                            className="px-4 py-2 text-yellow-300 bg-black hover:text-yellow-400 rounded-lg transition-all duration-200 text-sm font-medium border border-black hover:border-black"
                         >
                             Add Tenant
                         </button>
@@ -120,40 +185,46 @@ export default function TenantsManagementPage() {
                                     <div className="flex justify-between items-start">
                                         <div className="flex-1">
                                             <div className="flex items-center space-x-4">
-                                                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
-                                                    <span className="text-white font-semibold text-lg">
+                                                <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-md">
+                                                    <span className="text-yellow-300 font-semibold text-lg">
                                                         {tenant.firstName.charAt(0)}{tenant.lastName.charAt(0)}
                                                     </span>
                                                 </div>
                                                 <div className="flex-1">
                                                     <h3 className="font-semibold text-gray-900 text-lg group-hover:text-blue-900 transition-colors">
-                                                        {formatName(tenant.firstName, tenant.middleName, tenant.lastName)}
+                                                        {formatName(tenant.firstName, tenant.lastName, tenant.middleName)}
                                                     </h3>
                                                     <div className="flex items-center space-x-2 mt-1">
                                                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
                                                             Active
                                                         </span>
-                                                        <span className="text-sm text-gray-500">
-                                                            ID: #{tenant.id}
-                                                        </span>
                                                     </div>
                                                 </div>
                                             </div>
                                             
-                                            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm bg-gray-50 rounded-lg p-4">
-                                                <div className="flex items-center space-x-2">
-                                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                                                    </svg>
+                                            <div className="mt-4 flex flex-wrap justify-between items-center text-sm bg-gray-50 rounded-lg p-4">
+                                                <div className="flex items-center space-x-2 mb-2 md:mb-0">
+                                                    <Mail className="w-4 h-4 text-gray-400" />
                                                     <span className="font-medium text-gray-700">Email:</span>
                                                     <span className="text-gray-600">{tenant.email}</span>
                                                 </div>
-                                                <div className="flex items-center space-x-2">
-                                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                                    </svg>
+                                                
+                                                <div className="flex items-center space-x-2 mb-2 md:mb-0">
+                                                    <Phone className="w-4 h-4 text-gray-400" />
                                                     <span className="font-medium text-gray-700">Phone:</span>
-                                                    <span className="text-gray-600">{formatPhoneNumber(tenant.cpNo)}</span>
+                                                    <span className="text-gray-600">{formatPhoneNumber(tenant.phoneNumber)}</span>
+                                                </div>
+                                                
+                                                <div className="flex items-center space-x-2 mb-2 md:mb-0">
+                                                    <DoorClosed  className="w-4 h-4 text-gray-400" />
+                                                    <span className="font-medium text-gray-700">Unit:</span>
+                                                    <span className="text-gray-600">{getUnitInfo(tenant.unit).unitNumber}</span>
+                                                </div>
+                                                
+                                                <div className="flex items-center space-x-2">
+                                                    <Building className="w-4 h-4 text-gray-400" />
+                                                    <span className="font-medium text-gray-700">Building:</span>
+                                                    <span className="text-gray-600">{getUnitInfo(tenant.unit).buildingName}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -161,13 +232,13 @@ export default function TenantsManagementPage() {
                                         <div className="flex space-x-2 ml-6">
                                             <button
                                                 onClick={() => handleEditTenant(tenant)}
-                                                className="px-4 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-lg transition-all duration-200 text-sm font-medium border border-blue-200 hover:border-blue-300"
+                                                className="px-4 py-2 text-black bg-yellow-300 hover:bg-yellow-400 rounded-lg transition-all duration-200 text-sm font-medium border border-yellow-300 hover:border-yellow-400"
                                             >
                                                 Edit
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteTenant(tenant.id)}
-                                                className="px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-100 rounded-lg transition-all duration-200 text-sm font-medium border border-red-200 hover:border-red-300"
+                                                className="px-4 py-2 text-yellow-300 bg-black hover:text-yellow-400 rounded-lg transition-all duration-200 text-sm font-medium border border-black hover:border-black"
                                             >
                                                 Delete
                                             </button>
