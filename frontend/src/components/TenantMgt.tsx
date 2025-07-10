@@ -1,13 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-export function TenantMgt({ toggleModal, onSubmit }) {
+export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
     const [formData, setFormData] = useState({
         firstName: '',
         middleName: '',
         lastName: '',
-        apartmentRented: '',
-        apartmentUnit: ''
+        email: '',
+        cpNo: ''
     });
+
+    // Populate form with editing data when editing
+    useEffect(() => {
+        if (isEditing && editingTenant) {
+            setFormData({
+                firstName: editingTenant.firstName || '',
+                middleName: editingTenant.middleName || '',
+                lastName: editingTenant.lastName || '',
+                email: editingTenant.email || '',
+                cpNo: editingTenant.cpNo || ''
+            });
+        } else {
+            // Reset form when not editing
+            setFormData({
+                firstName: '',
+                middleName: '',
+                lastName: '',
+                email: '',
+                cpNo: ''
+            });
+        }
+    }, [isEditing, editingTenant]);
     
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -15,16 +37,18 @@ export function TenantMgt({ toggleModal, onSubmit }) {
     
     const handleSubmit = () => {
         onSubmit(formData);
-        toggleModal();
     };
     
     return (
-        <div className="p-8 bg-white">
-            {/* Header */}
+        <div className="p-8 bg-white max-w-4xl mx-auto">
             <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
                 <div>
-                    <h2 className="text-2xl font-semibold text-gray-900">Add New Tenant</h2>
-                    <p className="text-sm text-gray-600 mt-1">Enter tenant information below</p>
+                    <h2 className="text-2xl font-semibold text-gray-900">
+                        {isEditing ? 'Edit Tenant' : 'Add New Tenant'}
+                    </h2>
+                    <p className="text-sm text-gray-600 mt-1">
+                        {isEditing ? 'Update tenant information below' : 'Enter tenant information below'}
+                    </p>
                 </div>
                 <button
                     onClick={toggleModal}
@@ -34,9 +58,7 @@ export function TenantMgt({ toggleModal, onSubmit }) {
                 </button>
             </div>
 
-            {/* Form */}
             <div className="space-y-6">
-                {/* Name Fields Row */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -81,39 +103,37 @@ export function TenantMgt({ toggleModal, onSubmit }) {
                     </div>
                 </div>
 
-                {/* Apartment Fields Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Apartment Rented *
+                            Email *
                         </label>
                         <input
-                            type="text"
-                            name="apartmentRented"
-                            value={formData.apartmentRented}
+                            type="email"
+                            name="email"
+                            value={formData.email}
                             onChange={handleInputChange}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                            placeholder="e.g., Juan Dela Cruz Apartment"
+                            placeholder="e.g., juan.delacruz@email.com"
                         />
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Unit Number *
+                            Cellphone Number *
                         </label>
                         <input
-                            type="text"
-                            name="apartmentUnit"
-                            value={formData.apartmentUnit}
+                            type="tel"
+                            name="cpNo"
+                            value={formData.cpNo}
                             onChange={handleInputChange}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                            placeholder="e.g., 101"
+                            placeholder="e.g., 09123456789"
                         />
                     </div>
                 </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex gap-4 mt-8 pt-6 border-t border-gray-200">
                 <button
                     type="button"
@@ -127,7 +147,7 @@ export function TenantMgt({ toggleModal, onSubmit }) {
                     onClick={handleSubmit}
                     className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all font-medium shadow-sm"
                 >
-                    Add Tenant
+                    {isEditing ? 'Update Tenant' : 'Add Tenant'}
                 </button>
             </div>
         </div>

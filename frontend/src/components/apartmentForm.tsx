@@ -1,47 +1,175 @@
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
+import { ApartmentList } from "./apartmentList";
 // import axios from "axios";
 
 export function ApartmentForm() {
-  
+  type Unit = {
+    id: number;
+    unitNumber: string;
+    name: string;
+    description: string;
+    numOccupants: number;
+    contactNumber: string;
+  }
+  const [apartments, setApartments] = useState([
+    // { id: 1, number: '#110', status: 'Not available', apartment: 'Dela Cruz Apartment', description: '2 bedroom and 1 rest room', price: '12,000.00' },
+    // { id: 2, number: '#111', status: 'Available', apartment: 'Dela Cruz Apartment', description: '3 bedroom and 1 rest room', price: '15,000.00' },
+    // { id: 3, number: '#111', status: 'Available', apartment: 'Dela Cruz Apartment', description: '1 bedroom and 1 rest room', price: '10,000.00' },
+    // { id: 4, number: '#110', status: 'Occupied', apartment: 'Dela Cruz Apartment', description: '2 bedroom and 1 rest room', price: '11,000.00' },
+  ]); // dummy data
   const [formData, setFormData] = useState({
-      apartment: 'Dela Cruz Apartment',
-      apartmentNo: '',
+      id: null,
+      unitNumber: '',
+      name: '',
       description: '',
-      price: ''
+      numOccupants: '',
+      contactNumber: ''
   });
   const [units, setUnits] = useState([]);
-  const API_BASE_URL = 'http://localhost:8080/api/units';
+  const [editingId, setEditingId] = useState(null);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleDelete = async (id) => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    fetchUnits();
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    console.log(editingId);
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    
+    if (!editingId){
+      
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          unitNumber: formData.unitNumber,
+          name: formData.name,
+          description: formData.description,
+          numOccupants: parseInt(formData.numOccupants) || 0,
+          contactNumber: formData.contactNumber,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      
+      fetchUnits();
+
+      
+      console.log('Form submitted:', formData);
+      setFormData({
+        id: null,
+        unitNumber: '',
+        name: '',
+        description: '',
+        numOccupants: '',
+        contactNumber: ''
+      });
+    }
+    else{
+      // setApartments(apartments.map(
+      //   apt => apt.id == editingId ? 
+      //   {
+      //     ...apt,
+      //     unitNumber: formData.unitNumber,
+      //     name: formData.name,
+      //     description: formData.description,
+      //     numOccupants: formData.numOccupants,
+      //     contactNumber: formData.contactNumber
+      //   } : apt
+      // ));
+      console.log(editingId);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units/update/${editingId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          unitNumber: formData.unitNumber,
+          name: formData.name,
+          description: formData.description,
+          numOccupants: parseInt(formData.numOccupants) || 0,
+          contactNumber: formData.contactNumber,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      
+      fetchUnits();
+
+      
+
+      setFormData({
+        id: null,
+        unitNumber: '',
+        name: '',
+        description: '',
+        numOccupants: '',
+        contactNumber: ''
+      });
+
+    }
+
+    setEditingId(null);
   };
 
+  const handleEdit = (apt) => {
+    setFormData({
+      id: apt.id,
+      unitNumber: apt.unitNumber,
+      name: apt.name,
+      description: apt.description,
+      numOccupants: apt.numOccupants,
+      contactNumber: apt.contactNumber
+    });
+    setEditingId(apt.id);
+  }
+
+  const fetchUnits = async () =>{
+      try {
+        const [unitsResponse] = await Promise.all([
+          fetch('/api/units', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
+        ]);
+
+        const [unitsData] = await Promise.all([
+          unitsResponse.json()
+        ]);
+        setApartments(unitsData);
+        console.log(apartments);
+      } catch (error: any) {
+        console.error('Error fetching data:', error);
+      }
+      
+
+      
+  }
+
   useEffect(() => {
+    
+
     fetchUnits();
   }, []);
 
-  const fetchUnits = async () => {
-   
-    
-    // const response = await axios.get(API_BASE_URL);
-    setUnits(response.data);
-    
-  };
+  
 
 
 
   
   return (
+    <div className="flex flex-1">
+
     <div className="w-80  bg-white border-r border-gray-200 p-6 overflow-y-auto">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Apartment Form</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-2"> {editingId ? 'Edit' : 'Add'} Apartment Form</h2>
         <p className="text-sm text-gray-600">Add or edit apartment details</p>
       </div>
 
@@ -49,30 +177,42 @@ export function ApartmentForm() {
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Apartment
+            Apartment name
           </label>
-          <select 
-            name="apartment"
-            value={formData.apartment}
+          <input 
+            type="text"
+            name="name"
+            value={formData.name}
             onChange={handleInputChange}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
-          >
-            <option value="Dela Cruz Apartment">Dela Cruz Apartment</option>
-            <option value="Santos Apartment">Santos Apartment</option>
-            <option value="Garcia Apartment">Garcia Apartment</option>
-          </select>
+            placeholder="Jason's apartment"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Apartment No.
+            Unit No.
           </label>
           <input 
             type="text"
-            name="apartmentNo"
-            value={formData.apartmentNo}
+            name="unitNumber"
+            value={formData.unitNumber}
             onChange={handleInputChange}
             placeholder="e.g. #110"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Contact No.
+          </label>
+          <input 
+            type="number"
+            name="contactNumber"
+            value={formData.contactNumber}
+            onChange={handleInputChange}
+            placeholder="e.g. 09121234440"
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
@@ -93,14 +233,14 @@ export function ApartmentForm() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Price
+            Number of occupants
           </label>
           <div className="relative">
-            <span className="absolute left-3 top-3 text-gray-500">₱</span>
+          
             <input 
               type="number"
-              name="price"
-              value={formData.price}
+              name="numOccupants"
+              value={formData.numOccupants}
               onChange={handleInputChange}
               placeholder="0.00"
               className="w-full pl-8 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -123,16 +263,10 @@ export function ApartmentForm() {
           </button>
         </div>
 
-        <div className="pt-4 border-t border-gray-200">
-          <button 
-            type="button"
-            className="flex items-center justify-center gap-2 w-full py-2 px-4 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-          >
-            <Plus size={16} />
-            Add New Apartment
-          </button>
-        </div>
+        
       </div>
+    </div>
+    <ApartmentList apartments={apartments} onDelete={handleDelete} onEdit={handleEdit}/>
     </div>
   );
 
