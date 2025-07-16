@@ -3,8 +3,7 @@ package com.jjapartments.backend.models;
 public class Payment {
 
     private int id;
-    private int tenantId;
-    private String reason;
+    private int unitId;
     private String modeOfPayment;
     private float amount;
     private String dueDate;
@@ -21,20 +20,12 @@ public class Payment {
         this.id = id;
     }
 
-    public int getTenantId() {
-        return this.tenantId;
+    public int getUnitId() {
+        return this.unitId;
     }
 
-    public void setTenantId(int tenantId) {
-        this.tenantId = tenantId;
-    }
-
-    public String getReason() {
-        return this.reason;
-    }
-
-    public void setReason(String reason) {
-        this.reason = reason;
+    public void setUnitId(int unitId) {
+        this.unitId = unitId;
     }
 
     public boolean isIsPaid() {

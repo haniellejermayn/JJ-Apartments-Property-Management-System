@@ -12,7 +12,7 @@ import com.jjapartments.backend.repository.UnitRepository;
 import com.jjapartments.backend.exception.ErrorException;
 @RestController
 @RequestMapping("/api/units")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:3000")
 public class UnitController {
 
     @Autowired

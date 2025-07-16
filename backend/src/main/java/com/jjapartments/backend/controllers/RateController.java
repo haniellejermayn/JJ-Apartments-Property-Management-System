@@ -13,6 +13,7 @@ import com.jjapartments.backend.repository.RateRepository;
 
 @RestController
 @RequestMapping("/api/rates")
+@CrossOrigin(origins = "http://localhost:3000")
 public class RateController{
     @Autowired
     private RateRepository rateRepository;

@@ -13,7 +13,7 @@ public class Utility {
     private String monthOfEnd;
     private boolean isPaid;
     private String paidAt;
-    private int tenantId;
+    private int unitId;
     private int rateId;
     
 
@@ -105,12 +105,12 @@ public class Utility {
         this.paidAt = paidAt;
     }
 
-    public int getTenantId() {
-        return this.tenantId;
+    public int getUnitId() {
+        return this.unitId;
     }
 
-    public void setTenantId(int tenantId) {
-        this.tenantId = tenantId;
+    public void setUnitId(int unitId) {
+        this.unitId = unitId;
     }
 
     public int getRateId() {

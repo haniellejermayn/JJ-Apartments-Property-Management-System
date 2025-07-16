@@ -12,7 +12,7 @@ public class PaymentRowMapper implements RowMapper<Payment>{
     public Payment mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
         Payment payment = new Payment();
         payment.setId(rs.getInt("id"));
-        payment.setTenantId(rs.getInt("tenants_id"));
+        payment.setUnitId(rs.getInt("units_id"));
         payment.setModeOfPayment(rs.getString("mode_of_payment"));
         payment.setAmount(rs.getFloat("amount"));
         payment.setDueDate(rs.getString("due_date"));

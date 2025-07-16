@@ -1,6 +1,8 @@
 package com.jjapartments.backend.repository;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -19,7 +21,7 @@ public class UtilityRepository{
 
     @Transactional(readOnly = true)
     public List<Utility> findAll() {
-        String sql = "SELECT * FROM utilities"; 
+        String sql = "SELECT * FROM utilities ORDER BY is_paid ASC, COALESCE(due_date, month_of_end) ASC"; 
         return jdbcTemplate.query(sql, new UtilityRowMapper());
     }
 
@@ -46,9 +48,23 @@ public class UtilityRepository{
     }
 
     public int add(Utility utility) {
+        String rateSql = "SELECT id, rate FROM rates WHERE type = ? ORDER BY date DESC LIMIT 1";
+        Map<String, Object> rate = jdbcTemplate.queryForMap(rateSql, utility.getType());
+        int rateId = (int) rate.get("id");
+        float rateValue = ((BigDecimal) rate.get("rate")).floatValue();
+        
+        String meterSql = "SELECT current_reading FROM utilities WHERE units_id = ? AND type = ? ORDER BY month_of_end DESC LIMIT 1";
+        BigDecimal readingDecimal = jdbcTemplate.queryForObject(meterSql, BigDecimal.class, utility.getUnitId(), utility.getType());
+        float previousReading = (readingDecimal != null) ? readingDecimal.floatValue() : 0f;
+        if (utility.getCurrentReading() < previousReading) {
+            throw new ErrorException("Current reading cannot be less than previous reading");
+        }
+        float totalMeter = utility.getCurrentReading() - previousReading;
+        float totalAmount = totalMeter * rateValue;
+
         validate(utility);
-        String sql = "INSERT INTO utilities(type, previous_reading, current_reading, total_meter, total_amount, due_date, month_of_start, month_of_end, is_paid, paid_at, tenants_id, rates_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        return jdbcTemplate.update(sql, utility.getType(), utility.getPreviousReading(), utility.getCurrentReading(), utility.getTotalMeter(), utility.getTotalAmount(), utility.getDueDate(), utility.getMonthOfStart(), utility.getMonthOfEnd(), utility.getIsPaid(), utility.getPaidAt(), utility.getTenantId(), utility.getRateId());
+        String sql = "INSERT INTO utilities(type, previous_reading, current_reading, total_meter, total_amount, due_date, month_of_start, month_of_end, is_paid, paid_at, units_id, rates_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        return jdbcTemplate.update(sql, utility.getType(), previousReading, utility.getCurrentReading(), totalMeter, totalAmount, utility.getDueDate(), utility.getMonthOfStart(), utility.getMonthOfEnd(), utility.getIsPaid(), utility.getPaidAt(), utility.getUnitId(), rateId);
        
     }
 
@@ -71,5 +87,15 @@ public class UtilityRepository{
         validate(utility);
         String sql = "UPDATE utilities SET type = ?, previous_reading = ?, current_reading = ?, total_meter = ?, total_amount = ?, due_date = ?, month_of_start = ?, month_of_end = ?, is_paid = ?, paid_at = ? WHERE id = ?";
         return jdbcTemplate.update(sql, utility.getType(), utility.getPreviousReading(), utility.getCurrentReading(), utility.getTotalMeter(), utility.getTotalAmount(), utility.getDueDate(), utility.getMonthOfStart(), utility.getMonthOfEnd(), utility.getIsPaid(), utility.getPaidAt(), id);
+    }
+
+    public List<Utility> findByUnit(int id) {
+        String sql = "SELECT * FROM utilities WHERE units_id = ? ORDER BY is_paid ASC, due_date DESC";
+        return jdbcTemplate.query(sql, new UtilityRowMapper(), id);
+    }
+
+    public List<Utility> findByType(String type) {
+        String sql = "SELECT * FROM utilities WHERE type = ? ORDER BY due_date DESC"; 
+        return jdbcTemplate.query(sql, new UtilityRowMapper(), type);
     }
 }
