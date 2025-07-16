@@ -4,20 +4,8 @@ import { ApartmentList } from "./apartmentList";
 // import axios from "axios";
 
 export function ApartmentForm() {
-  type Unit = {
-    id: number;
-    unitNumber: string;
-    name: string;
-    description: string;
-    numOccupants: number;
-    contactNumber: string;
-  }
-  const [apartments, setApartments] = useState([
-    // { id: 1, number: '#110', status: 'Not available', apartment: 'Dela Cruz Apartment', description: '2 bedroom and 1 rest room', price: '12,000.00' },
-    // { id: 2, number: '#111', status: 'Available', apartment: 'Dela Cruz Apartment', description: '3 bedroom and 1 rest room', price: '15,000.00' },
-    // { id: 3, number: '#111', status: 'Available', apartment: 'Dela Cruz Apartment', description: '1 bedroom and 1 rest room', price: '10,000.00' },
-    // { id: 4, number: '#110', status: 'Occupied', apartment: 'Dela Cruz Apartment', description: '2 bedroom and 1 rest room', price: '11,000.00' },
-  ]); // dummy data
+  
+  const [apartments, setApartments] = useState([]);
   const [formData, setFormData] = useState({
       id: null,
       unitNumber: '',
@@ -26,7 +14,6 @@ export function ApartmentForm() {
       numOccupants: '',
       contactNumber: ''
   });
-  const [units, setUnits] = useState([]);
   const [editingId, setEditingId] = useState(null);
 
   const handleInputChange = (e) => {
@@ -74,17 +61,7 @@ export function ApartmentForm() {
       });
     }
     else{
-      // setApartments(apartments.map(
-      //   apt => apt.id == editingId ? 
-      //   {
-      //     ...apt,
-      //     unitNumber: formData.unitNumber,
-      //     name: formData.name,
-      //     description: formData.description,
-      //     numOccupants: formData.numOccupants,
-      //     contactNumber: formData.contactNumber
-      //   } : apt
-      // ));
+      
       console.log(editingId);
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units/update/${editingId}`, {
         method: "PATCH",

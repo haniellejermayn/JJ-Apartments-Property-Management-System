@@ -1,6 +1,7 @@
 package com.jjapartments.backend.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -75,4 +76,18 @@ public class UnitRepository {
         String likeKeyword = "%" + keyword.toLowerCase() + "%";
         return jdbcTemplate.query(sql, new UnitRowMapper(), likeKeyword, likeKeyword, likeKeyword);
     } 
+
+    public Optional<Unit> findByNameAndUnitNumber(String name, String unitNumber) {
+        String sql = "SELECT * FROM units WHERE name = ? AND unit_number = ?";
+
+        try {
+            Unit unit = jdbcTemplate.queryForObject(sql, new UnitRowMapper(), name, unitNumber);
+            return Optional.ofNullable(unit); 
+        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            return Optional.empty();
+        } catch (Exception e) {
+            System.err.println("Error finding unit by name and number: " + e.getMessage());
+            return Optional.empty();
+        }
+    }
 }

@@ -6,9 +6,9 @@ export function ApartmentList({apartments, onDelete, onEdit, setApartments, fetc
   
   const [searchTerm, setSearchTerm] = useState('');
   const areaRef = useRef<HTMLDivElement>(null);
-   const handleInputChange = (event) => {
-      setSearchTerm(event.target.value);
-    };
+  const handleInputChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
   const handleSearch = async (e) => {
     try{
       const response = await fetch(`http://localhost:8080/api/units/search?q=${encodeURIComponent(searchTerm)}`);
@@ -28,7 +28,7 @@ export function ApartmentList({apartments, onDelete, onEdit, setApartments, fetc
   useEffect(() =>{
     const handleKeyDown = (event) => {
         if (event.key === 'Escape') {
-            if (searchTerm !== '') { // Only cancel if there's an active search term
+            if (searchTerm !== '') {
                 cancelSearch();
             }
         }
