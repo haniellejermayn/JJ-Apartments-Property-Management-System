@@ -6,6 +6,7 @@ public class Unit {
     private String unitNumber;
     private String name;
     private String description;
+    private float price;
     private int numOccupants;
     private String contactNumber;
 
@@ -39,6 +40,14 @@ public class Unit {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public float getPrice() {
+        return this.price;
+    }
+
+    public void setPrice(float price) {
+        this.price = price;
     }
 
     public int getNumOccupants() {
