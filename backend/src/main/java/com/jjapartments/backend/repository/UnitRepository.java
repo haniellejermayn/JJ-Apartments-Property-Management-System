@@ -64,7 +64,7 @@ public class UnitRepository {
         Unit existingUnit = findById(id);
 
         if (unitExists(unit, existingUnit.getId())) {
-            throw new ErrorException("The unit number already exists.");
+            throw new ErrorException("The unit already exists.");
         }
         String sql = "UPDATE units SET unit_number = ?, name = ?, description = ?, price = ?, num_occupants = ?, contact_number = ? WHERE id = ?";
         return jdbcTemplate.update(sql, unit.getUnitNumber(), unit.getName(), unit.getDescription(), unit.getPrice(), unit.getNumOccupants(), unit.getContactNumber(), id);

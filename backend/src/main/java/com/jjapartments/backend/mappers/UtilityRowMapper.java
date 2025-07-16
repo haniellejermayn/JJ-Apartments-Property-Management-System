@@ -21,7 +21,7 @@ public class UtilityRowMapper implements RowMapper<Utility>{
         utility.setMonthOfEnd(rs.getString("month_of_end"));
         utility.setIsPaid(rs.getBoolean("is_paid"));
         utility.setPaidAt(rs.getString("paid_at"));
-        utility.setTenantId(rs.getInt("tenants_id"));
+        utility.setUnitId(rs.getInt("units_id"));
         utility.setRateId(rs.getInt("rates_id"));
         return utility;
     }
