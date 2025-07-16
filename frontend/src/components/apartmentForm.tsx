@@ -266,7 +266,7 @@ export function ApartmentForm() {
         
       </div>
     </div>
-    <ApartmentList apartments={apartments} onDelete={handleDelete} onEdit={handleEdit}/>
+    <ApartmentList apartments={apartments} onDelete={handleDelete} onEdit={handleEdit} setApartments={setApartments} fetchUnits={fetchUnits}/>
     </div>
   );
 

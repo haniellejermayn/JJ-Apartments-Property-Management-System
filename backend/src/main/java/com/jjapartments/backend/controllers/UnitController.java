@@ -57,6 +57,11 @@ public class UnitController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @GetMapping("/search")
+    public List<Unit> searchUnits(@RequestParam("q") String query){
+        return unitRepository.searchByKeyword(query);
+    }
     
 
 }

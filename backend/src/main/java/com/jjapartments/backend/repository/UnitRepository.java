@@ -69,4 +69,10 @@ public class UnitRepository {
         String sql = "UPDATE units SET unit_number = ?, name = ?, description = ?, num_occupants = ?, contact_number = ? WHERE id = ?";
         return jdbcTemplate.update(sql, unit.getUnitNumber(), unit.getName(), unit.getDescription(), unit.getNumOccupants(), unit.getContactNumber(), id);
     }
+
+    public List<Unit> searchByKeyword(String keyword) {
+        String sql = "SELECT * FROM units WHERE LOWER(name) LIKE ? OR LOWER(description) LIKE ? OR LOWER(unit_number) LIKE ?";
+        String likeKeyword = "%" + keyword.toLowerCase() + "%";
+        return jdbcTemplate.query(sql, new UnitRowMapper(), likeKeyword, likeKeyword, likeKeyword);
+    } 
 }
