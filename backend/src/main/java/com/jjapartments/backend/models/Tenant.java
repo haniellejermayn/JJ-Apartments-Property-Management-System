@@ -6,9 +6,10 @@ public class Tenant {
     private String lastName;
     private String firstName;
     private String middleInitial;
-    private int unit;
     private String email;
     private String phoneNumber;
+    private int unitId;
+
        
     public int getId() {
         return id;
@@ -42,14 +43,6 @@ public class Tenant {
         this.middleInitial = middleInitial;
     }
 
-    public int getUnit() {
-        return unit;
-    }
-
-    public void setUnit(int unit) {
-        this.unit = unit;
-    }
-
     public String getEmail() {
         return email;
     }
@@ -64,5 +57,13 @@ public class Tenant {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public int getUnitId() {
+        return unitId;
+    }
+
+    public void setUnitId(int unitId) {
+        this.unitId = unitId;
     }
 }
