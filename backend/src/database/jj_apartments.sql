@@ -40,36 +40,37 @@ CREATE TABLE IF NOT EXISTS users (
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `jj_apartments`.`units` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `unit_number` VARCHAR(1) NULL,
-  `name` VARCHAR(45) NULL,
+  `unit_number` VARCHAR(1) NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
   `description` VARCHAR(45) NULL,
+  `price` DECIMAL(10, 2) NOT NULL,
   `num_occupants` INT NULL,
   `contact_number` VARCHAR(15) NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
-INSERT INTO `jj_apartments`.`units` (`unit_number`, `num_occupants`) 
-VALUES
-('D', 1),
-('A', 0),
-('M', 2),
-('K', 0),
-('R', 3),
-('C', 0),
-('B', 1),
-('F', 0),
-('H', 4),
-( 'P', 0),
-( 'G', 1),
-( 'E', 0),
-('L', 2),
-('S', 0),
-('T', 1),
-('J', 0),
-('Q', 1),
-('N', 0),
-('U', 2),
-('V', 0);
+-- INSERT INTO `jj_apartments`.`units` (`unit_number`, `num_occupants`) 
+-- VALUES
+-- ('D', 1),
+-- ('A', 0),
+-- ('M', 2),
+-- ('K', 0),
+-- ('R', 3),
+-- ('C', 0),
+-- ('B', 1),
+-- ('F', 0),
+-- ('H', 4),
+-- ( 'P', 0),
+-- ( 'G', 1),
+-- ( 'E', 0),
+-- ('L', 2),
+-- ('S', 0),
+-- ('T', 1),
+-- ('J', 0),
+-- ('Q', 1),
+-- ('N', 0),
+-- ('U', 2),
+-- ('V', 0);
 
 SELECT * FROM units;
 -- -------------------------
