@@ -6,7 +6,9 @@ export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
         middleName: '',
         lastName: '',
         email: '',
-        phoneNumber: ''
+        phoneNumber: '',
+        unitName: '',
+        unitNum: ''
     });
 
     // Populate form with editing data when editing
@@ -17,7 +19,9 @@ export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
                 middleName: editingTenant.middleName || '',
                 lastName: editingTenant.lastName || '',
                 email: editingTenant.email || '',
-                phoneNumber: editingTenant.phoneNumber || ''
+                phoneNumber: editingTenant.phoneNumber || '',
+                unitName: editingTenant.unitName || '',
+                unitNum: editingTenant.unitNum || ''
             });
         } else {
             // Reset form when not editing
@@ -26,7 +30,9 @@ export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
                 middleName: '',
                 lastName: '',
                 email: '',
-                phoneNumber: ''
+                phoneNumber: '',
+                unitName: '',
+                unitNum: ''
             });
         }
     }, [isEditing, editingTenant]);
@@ -126,6 +132,36 @@ export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
                             type="tel"
                             name="phoneNumber"
                             value={formData.phoneNumber}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            placeholder="e.g., 09123456789"
+                        />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Building Name *
+                        </label>
+                        <input
+                            type="text"
+                            name="unitName"
+                            value={formData.unitName}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            placeholder="e.g., juan.delacruz@email.com"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Unit no. *
+                        </label>
+                        <input
+                            type="text"
+                            name="unitNum"
+                            value={formData.unitNum}
                             onChange={handleInputChange}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                             placeholder="e.g., 09123456789"

@@ -31,45 +31,47 @@ export default function TenantsManagementPage() {
     
     useEffect(() => {
   
-        const fetchUnits = async () => {
-            try {
-                const response = await fetch("/api/units");
-                if (!response.ok) {
-                    throw new Error("Failed to fetch units");
-                }
-                const data = await response.json();
-                setUnits(data);
-                console.log("Units loaded:", data);
-            } catch (error) {
-                console.error("Error fetching units:", error);
-            }
-        };
+        
 
  
-        const fetchTenants = async () => {
-            try {
-                const response = await fetch("/api/tenants"); 
-                if (!response.ok) {
-                    throw new Error("Failed to fetch tenants");
-                }
-                const data = await response.json();
-                
-                const processedTenants = data.map((tenant: Partial<Tenant>) => ({
-                    ...tenant,
-                    middleName: tenant.middleName,
-                    dateAdded: tenant.dateAdded || new Date().toISOString()
-                } as Tenant));
-                
-                setTenants(processedTenants);
-                console.log("Tenants loaded:", processedTenants);
-            } catch (error) {
-                console.error("Error fetching tenants:", error);
-            }
-        };
+        
 
         fetchUnits();
         fetchTenants();
     }, []);
+    const fetchUnits = async () => {
+        try {
+            const response = await fetch("/api/units");
+            if (!response.ok) {
+                throw new Error("Failed to fetch units");
+            }
+            const data = await response.json();
+            setUnits(data);
+            console.log("Units loaded:", data);
+        } catch (error) {
+            console.error("Error fetching units:", error);
+        }
+    };
+    const fetchTenants = async () => {
+        try {
+            const response = await fetch("/api/tenants"); 
+            if (!response.ok) {
+                throw new Error("Failed to fetch tenants");
+            }
+            const data = await response.json();
+            
+            const processedTenants = data.map((tenant: Partial<Tenant>) => ({
+                ...tenant,
+                middleName: tenant.middleName,
+                dateAdded: tenant.dateAdded || new Date().toISOString()
+            } as Tenant));
+            
+            setTenants(processedTenants);
+            console.log("Tenants loaded:", processedTenants);
+        } catch (error) {
+            console.error("Error fetching tenants:", error);
+        }
+    };
 
     const toggleModal = () => {
         setModalOpen(!modalOpen);
@@ -79,19 +81,86 @@ export default function TenantsManagementPage() {
         }
     };
 
-    const generateId = () => {
-        return tenants.length > 0 ? Math.max(...tenants.map(t => t.id)) + 1 : 1;
+
+    const getUnit_id = async (unitName, unitNumber) => {
+        try {
+        console.log("DEBUG (Frontend): getUnit_id received - unitName:", unitName, ", unitNumber:", unitNumber);
+        const encodedUnitName = unitName ? encodeURIComponent(unitName) : '';
+        const encodedUnitNumber = unitNumber ? encodeURIComponent(unitNumber) : '';
+
+        const url = `http://localhost:8080/api/units/findUnitId?name=${encodedUnitName}&unitNumber=${encodedUnitNumber}`;
+        console.log("DEBUG (Frontend): Full URL being sent:", url);
+        
+        const res = await fetch(url);
+        
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ message: 'No specific error response from server.' }));
+            console.error(`getUnit_id: Backend responded with ${res.status} error. StatusText: ${res.statusText}, ErrorData:`, errorData);
+            
+            if (res.status === 404 || res.status === 400) { 
+                return null; 
+            }
+            throw new Error(`HTTP error! status: ${res.status} - ${errorData.message || res.statusText}`);
+        }
+        
+        const data = await res.json();
+        console.log("DEBUG (Frontend): getUnit_id Raw response data:", data);
+        
+        
+        if (typeof data.id === 'number') {
+            console.log("DEBUG (Frontend): getUnit_id Returning numeric ID:", data.id);
+            return data.id;
+        } else if (typeof data === 'number') { 
+            console.log("DEBUG (Frontend): getUnit_id Raw response data was a number:", data);
+            return data;
+        } else {
+            console.warn("DEBUG (Frontend): getUnit_id: 'id' property not found or not a number in API response, or data is not a bare number:", data);
+            return null; 
+        }
+    } catch (e) {
+        console.error("DEBUG (Frontend): getUnit_id: Caught error in try-catch:", e);
+        return null; 
+    }
+        
+        
     };
 
-    const handleAddTenant = (tenantData: Omit<Tenant, 'id' | 'dateAdded'>) => {
-        const newTenant: Tenant = {
-            ...tenantData,
-            id: generateId(),
-            dateAdded: new Date().toISOString()
+    const handleAddTenant = async (formData) => {
+        // get unit_id and put in tenantData
+
+        const unitId = await getUnit_id(formData.unitName, formData.unitNum);
+        console.log(unitId);
+        // if (unitId === null || unitId === undefined) {
+        //     console.error('Error: Could not retrieve unit ID for the given unit name and number.');
+        //     alert('Failed to add tenant: Unit not found or invalid unit details provided.');
+        //     return; 
+        // }
+        
+
+
+        const tenantDataPayload = {
+            firstName: formData.firstName,
+            middleName: formData.middleName || null, 
+            lastName: formData.lastName,
+            email: formData.email,
+            phoneNumber: formData.phoneNumber,
+            unit: unitId 
         };
-        setTenants(prev => [...prev, newTenant]);
-        console.log('New tenant added:', newTenant);
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants/add`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(tenantDataPayload),
+        })
+        
+        if (!res.ok){
+            const errorData = await res.json().catch(() => ({ message: 'Unknown error' }));
+            throw new Error(`Failed to add tenant: ${res.status} ${res.statusText} - ${errorData.message || ''}`);
+        }
         toggleModal();
+        fetchTenants();
     };
 
     const handleEditTenant = (tenant: Tenant) => {

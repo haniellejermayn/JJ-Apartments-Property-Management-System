@@ -71,9 +71,9 @@ public class UnitController {
         Optional<Unit> unitOptional = unitRepository.findByNameAndUnitNumber(name, unitNumber);
 
         if (unitOptional.isPresent()) {
-            return ResponseEntity.ok(unitOptional.get().getId()); // Returns the Integer ID (body) and 200 OK (status)
+            return ResponseEntity.ok(unitOptional.get().getId()); 
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Returns 404 NOT_FOUND (status) and no body
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); 
         }
     }
 
