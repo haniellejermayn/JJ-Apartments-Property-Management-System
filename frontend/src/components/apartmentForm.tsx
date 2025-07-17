@@ -4,29 +4,17 @@ import { ApartmentList } from "./apartmentList";
 // import axios from "axios";
 
 export function ApartmentForm() {
-  type Unit = {
-    id: number;
-    unitNumber: string;
-    name: string;
-    description: string;
-    numOccupants: number;
-    contactNumber: string;
-  }
-  const [apartments, setApartments] = useState([
-    // { id: 1, number: '#110', status: 'Not available', apartment: 'Dela Cruz Apartment', description: '2 bedroom and 1 rest room', price: '12,000.00' },
-    // { id: 2, number: '#111', status: 'Available', apartment: 'Dela Cruz Apartment', description: '3 bedroom and 1 rest room', price: '15,000.00' },
-    // { id: 3, number: '#111', status: 'Available', apartment: 'Dela Cruz Apartment', description: '1 bedroom and 1 rest room', price: '10,000.00' },
-    // { id: 4, number: '#110', status: 'Occupied', apartment: 'Dela Cruz Apartment', description: '2 bedroom and 1 rest room', price: '11,000.00' },
-  ]); // dummy data
+  
+  const [apartments, setApartments] = useState([]);
   const [formData, setFormData] = useState({
       id: null,
       unitNumber: '',
       name: '',
       description: '',
       numOccupants: '',
-      contactNumber: ''
+      contactNumber: '',
+      price: ''
   });
-  const [units, setUnits] = useState([]);
   const [editingId, setEditingId] = useState(null);
 
   const handleInputChange = (e) => {
@@ -56,6 +44,7 @@ export function ApartmentForm() {
           description: formData.description,
           numOccupants: parseInt(formData.numOccupants) || 0,
           contactNumber: formData.contactNumber,
+          price: formData.price
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -70,21 +59,12 @@ export function ApartmentForm() {
         name: '',
         description: '',
         numOccupants: '',
-        contactNumber: ''
+        contactNumber: '',
+        price: ''
       });
     }
     else{
-      // setApartments(apartments.map(
-      //   apt => apt.id == editingId ? 
-      //   {
-      //     ...apt,
-      //     unitNumber: formData.unitNumber,
-      //     name: formData.name,
-      //     description: formData.description,
-      //     numOccupants: formData.numOccupants,
-      //     contactNumber: formData.contactNumber
-      //   } : apt
-      // ));
+      
       console.log(editingId);
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units/update/${editingId}`, {
         method: "PATCH",
@@ -95,6 +75,7 @@ export function ApartmentForm() {
           description: formData.description,
           numOccupants: parseInt(formData.numOccupants) || 0,
           contactNumber: formData.contactNumber,
+          price: formData.price
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -109,7 +90,8 @@ export function ApartmentForm() {
         name: '',
         description: '',
         numOccupants: '',
-        contactNumber: ''
+        contactNumber: '',
+        price: ''
       });
 
     }
@@ -124,7 +106,8 @@ export function ApartmentForm() {
       name: apt.name,
       description: apt.description,
       numOccupants: apt.numOccupants,
-      contactNumber: apt.contactNumber
+      contactNumber: apt.contactNumber,
+      price: apt.price
     });
     setEditingId(apt.id);
   }
@@ -248,6 +231,23 @@ export function ApartmentForm() {
           </div>
         </div>
 
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Price
+          </label>
+          <div className="relative">
+          
+            <input 
+              type="number"
+              name="price"
+              value={formData.price}
+              onChange={handleInputChange}
+              placeholder="0.00"
+              className="w-full pl-8 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+        </div>
+
         <div className="flex gap-3 pt-6">
           <button 
             onClick={handleSubmit}
@@ -266,7 +266,7 @@ export function ApartmentForm() {
         
       </div>
     </div>
-    <ApartmentList apartments={apartments} onDelete={handleDelete} onEdit={handleEdit}/>
+    <ApartmentList apartments={apartments} onDelete={handleDelete} onEdit={handleEdit} setApartments={setApartments} fetchUnits={fetchUnits}/>
     </div>
   );
 

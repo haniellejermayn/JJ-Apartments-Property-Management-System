@@ -1,10 +1,58 @@
 import { Edit, Trash2 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 
-export function ApartmentList({apartments, onDelete, onEdit}){
+export function ApartmentList({apartments, onDelete, onEdit, setApartments, fetchUnits}){
   
-  
+  const [searchTerm, setSearchTerm] = useState('');
+  const areaRef = useRef<HTMLDivElement>(null);
+  const handleInputChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+  const handleSearch = async (e) => {
+    try{
+      const response = await fetch(`http://localhost:8080/api/units/search?q=${encodeURIComponent(searchTerm)}`);
+      if (!response.ok) throw new Error("Something went wrong");
+      const data = await response.json(); 
+      setApartments(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const cancelSearch = () => {
+    setSearchTerm('');
+    fetchUnits();
+  }
+
+  useEffect(() =>{
+    const handleKeyDown = (event) => {
+        if (event.key === 'Escape') {
+            if (searchTerm !== '') {
+                cancelSearch();
+            }
+        }
+    };
+
+    const handleClickOutside = (event) => {
+        
+        if (areaRef.current && !areaRef.current.contains(event.target)) {
+            if (searchTerm !== '') {
+                cancelSearch();
+            }
+        }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener('mousedown', handleClickOutside);
+    };
+
+  }, [searchTerm, fetchUnits])
+
   return (
     <div className="flex-1 bg-gray-50 p-6 overflow-auto">
 
@@ -15,16 +63,24 @@ export function ApartmentList({apartments, onDelete, onEdit}){
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Search:</span>
             <input 
-              type="text" 
+              type="text"
               className="px-3 py-1 border border-gray-300 rounded text-sm w-48"
               placeholder="Search apartments..."
+              value={searchTerm}
+              onChange={handleInputChange}
+              onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                
+                handleSearch();
+              }
+            }}
             />
           </div>
         </div>
       </div>
 
         
-      <div className="bg-white rounded-lg shadow-sm overflow-auto h-80">
+      <div className="bg-white rounded-lg shadow-sm overflow-auto h-80" ref={areaRef}>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -33,6 +89,7 @@ export function ApartmentList({apartments, onDelete, onEdit}){
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit no, contact</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Apartment Name</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">number of occupants</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
               </tr>
@@ -51,7 +108,9 @@ export function ApartmentList({apartments, onDelete, onEdit}){
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{apartment.name}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{apartment.description}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Number of occupants: {apartment.numOccupants}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{apartment.numOccupants}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{apartment.price}</td>
+
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <div className="flex gap-2">
                       <button 
@@ -78,20 +137,7 @@ export function ApartmentList({apartments, onDelete, onEdit}){
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-700">
-              Showing 1 to 4 of 4 entries
-            </div>
-            <div className="flex gap-2">
-              <button 
-              
-              className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-500 bg-gray-100">
-                Previous
-              </button>
-              <button className="px-3 py-1 border border-blue-500 bg-blue-500 text-white rounded text-sm">
-                1
-              </button>
-              <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-500 bg-gray-100">
-                Next
-              </button>
+              Showing <span className="font-semibold">{apartments.length}</span> entries
             </div>
           </div>
         </div>

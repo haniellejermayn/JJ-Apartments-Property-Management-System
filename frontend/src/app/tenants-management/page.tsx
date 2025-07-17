@@ -10,9 +10,10 @@ type Tenant = {
     middleName?: string;
     lastName: string;
     email: string;
-    unit: number;
+    unit: string;
     phoneNumber: string;
     dateAdded: string;
+
 };
 
 type Unit = {
@@ -20,56 +21,66 @@ type Unit = {
     unitNumber: string;
     name: string;
 };
+type TenantWithUnitDetails = Omit<Tenant, 'unit'> & {
+    unit: Unit; 
+};
 
 export default function TenantsManagementPage() {
     const [modalOpen, setModalOpen] = useState(false);
-    const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
-    const [tenants, setTenants] = useState<Tenant[]>([]);
+    const [editingTenant, setEditingTenant] = useState<TenantWithUnitDetails | null>(null);
+    const [tenants, setTenants] = useState<TenantWithUnitDetails[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
    
     const [units, setUnits] = useState<Unit[]>([]);
     
+    
     useEffect(() => {
-  
-        const fetchUnits = async () => {
-            try {
-                const response = await fetch("/api/units");
-                if (!response.ok) {
-                    throw new Error("Failed to fetch units");
-                }
-                const data = await response.json();
-                setUnits(data);
-                console.log("Units loaded:", data);
-            } catch (error) {
-                console.error("Error fetching units:", error);
-            }
-        };
-
- 
-        const fetchTenants = async () => {
-            try {
-                const response = await fetch("/api/tenants"); 
-                if (!response.ok) {
-                    throw new Error("Failed to fetch tenants");
-                }
-                const data = await response.json();
-                
-                const processedTenants = data.map((tenant: Partial<Tenant>) => ({
-                    ...tenant,
-                    middleName: tenant.middleName,
-                    dateAdded: tenant.dateAdded || new Date().toISOString()
-                } as Tenant));
-                
-                setTenants(processedTenants);
-                console.log("Tenants loaded:", processedTenants);
-            } catch (error) {
-                console.error("Error fetching tenants:", error);
-            }
-        };
-
         fetchUnits();
-        fetchTenants();
-    }, []);
+    }, []); 
+
+    
+    useEffect(() => {
+        if (units.length > 0) { 
+            fetchTenants();
+        }
+    }, [units]);
+    const fetchUnits = async () => {
+        try {
+            const response = await fetch("/api/units");
+            if (!response.ok) {
+                throw new Error("Failed to fetch units");
+            }
+            const data = await response.json();
+            setUnits(data);
+            console.log("Units loaded:", data);
+        } catch (error) {
+            console.error("Error fetching units:", error);
+        }
+    };
+    const fetchTenants = async () => {
+        try {
+            const response = await fetch("/api/tenants"); 
+            if (!response.ok) {
+                throw new Error("Failed to fetch tenants");
+            }
+            const rawTenants: TenantApiData[] = await response.json(); 
+            
+            const processedTenants: TenantWithUnitDetails[] = rawTenants.map(rawTenant => {
+                const unitInfo = units.find(u => u.id === rawTenant.unit); 
+
+                return {
+                    ...rawTenant,
+                    
+                    unit: unitInfo ? unitInfo : { id: rawTenant.unit, name: 'Unknown Building', unitNumber: 'Unknown Unit' }
+                };
+            });
+            
+            setTenants(processedTenants);
+            console.log("Tenants loaded:", processedTenants);
+        } catch (error) {
+            console.error("Error fetching tenants:", error);
+        }
+    };
 
     const toggleModal = () => {
         setModalOpen(!modalOpen);
@@ -79,44 +90,145 @@ export default function TenantsManagementPage() {
         }
     };
 
-    const generateId = () => {
-        return tenants.length > 0 ? Math.max(...tenants.map(t => t.id)) + 1 : 1;
+
+    const getUnit_id = async (unitName, unitNumber) => {
+        try {
+        console.log("DEBUG (Frontend): getUnit_id received - unitName:", unitName, ", unitNumber:", unitNumber);
+        const encodedUnitName = unitName ? encodeURIComponent(unitName) : '';
+        const encodedUnitNumber = unitNumber ? encodeURIComponent(unitNumber) : '';
+
+        const url = `http://localhost:8080/api/units/findUnitId?name=${encodedUnitName}&unitNumber=${encodedUnitNumber}`;
+        console.log("DEBUG (Frontend): Full URL being sent:", url);
+        
+        const res = await fetch(url);
+        
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ message: 'No specific error response from server.' }));
+            console.error(`getUnit_id: Backend responded with ${res.status} error. StatusText: ${res.statusText}, ErrorData:`, errorData);
+            
+            if (res.status === 404 || res.status === 400) { 
+                return null; 
+            }
+            throw new Error(`HTTP error! status: ${res.status} - ${errorData.message || res.statusText}`);
+        }
+        
+        const data = await res.json();
+        console.log("DEBUG (Frontend): getUnit_id Raw response data:", data);
+        
+        
+        if (typeof data.id === 'number') {
+            console.log("DEBUG (Frontend): getUnit_id Returning numeric ID:", data.id);
+            return data.id;
+        } else if (typeof data === 'number') { 
+            console.log("DEBUG (Frontend): getUnit_id Raw response data was a number:", data);
+            return data;
+        } else {
+            console.warn("DEBUG (Frontend): getUnit_id: 'id' property not found or not a number in API response, or data is not a bare number:", data);
+            return null; 
+        }
+    } catch (e) {
+        console.error("DEBUG (Frontend): getUnit_id: Caught error in try-catch:", e);
+        return null; 
+    }
+        
+        
     };
 
-    const handleAddTenant = (tenantData: Omit<Tenant, 'id' | 'dateAdded'>) => {
-        const newTenant: Tenant = {
-            ...tenantData,
-            id: generateId(),
-            dateAdded: new Date().toISOString()
+    const handleAddTenant = async (formData) => {
+        const unitId = await getUnit_id(formData.unitName, formData.unitNum);
+        if (unitId === null || unitId === undefined) {
+            console.error('Error: Could not retrieve unit ID for the given unit name and number.');
+            alert('Failed to add tenant: Unit not found or invalid unit details provided.');
+            return; 
+        }
+        
+        const tenantDataPayload = {
+            firstName: formData.firstName,
+            middleName: formData.middleName || null, 
+            lastName: formData.lastName,
+            email: formData.email,
+            phoneNumber: formData.phoneNumber,
+            unit: unitId 
         };
-        setTenants(prev => [...prev, newTenant]);
-        console.log('New tenant added:', newTenant);
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants/add`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(tenantDataPayload),
+        })
+        
+        if (!res.ok){
+            const errorData = await res.json().catch(() => ({ message: 'Unknown error' }));
+            throw new Error(`Failed to add tenant: ${res.status} ${res.statusText} - ${errorData.message || ''}`);
+        }
         toggleModal();
+        fetchTenants();
     };
 
-    const handleEditTenant = (tenant: Tenant) => {
+    const handleEditTenant = (tenant: TenantWithUnitDetails) => {
         setEditingTenant(tenant);
         setModalOpen(true);
     };
 
-    const handleUpdateTenant = (updatedData: Partial<Tenant>) => {
-        if (editingTenant) {
-            setTenants(prev => 
-                prev.map(tenant => 
-                    tenant.id === editingTenant.id 
-                        ? { ...tenant, ...updatedData }
-                        : tenant
-                )
-            );
-            console.log('Tenant updated:', updatedData);
-            toggleModal();
+    const handleUpdateTenant = async (updatedData: any) => {
+        if (!editingTenant) {
+            console.error('No tenant selected for update.');
+            return;
+        }
+        let unitIdForUpdate = editingTenant.unit.id; 
+        if (updatedData.unitName !== editingTenant.unit.name || updatedData.unitNum !== editingTenant.unit.unitNumber) {
+            console.log("Unit details in form changed. Attempting to find new unit ID...");
+            const newUnitId = await getUnit_id(updatedData.unitName, updatedData.unitNum);
+            if (newUnitId === null || newUnitId === undefined) {
+                console.error('Error: Could not retrieve new unit ID for the updated unit details. Please ensure the Unit Name and Unit No. are valid.');
+                alert('Failed to update tenant: New unit not found or invalid unit details. Please check the Unit Name and Unit No.');
+                return;
+            }
+            unitIdForUpdate = newUnitId;
+        }
+        
+        const tenantUpdatePayload = {
+            firstName: updatedData.firstName,
+            middleName: updatedData.middleName || null,
+            lastName: updatedData.lastName,
+            email: updatedData.email,
+            phoneNumber: updatedData.phoneNumber,
+            unit: unitIdForUpdate 
+        };
+
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/tenants/update/${editingTenant.id}`, {
+                method: 'PATCH',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(tenantUpdatePayload)
+            });
+            
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ message: 'Unknown error' }));
+                throw new Error(`Failed to update tenant: ${res.status} ${res.statusText} - ${errorData.message || ''}`);
+            }
+            
+            console.log('Tenant updated successfully:', updatedData);
+            toggleModal(); 
+            fetchTenants(); 
+        } catch (error) {
+            console.error('Error updating tenant:', error);
+            alert('Error updating tenant. Please check console for details.');
         }
     };
 
-    const handleDeleteTenant = (tenantId: number) => {
+    const handleDeleteTenant = async (tenantId: number) => {
         if (window.confirm('Are you sure you want to delete this tenant?')) {
-            setTenants(prev => prev.filter(tenant => tenant.id !== tenantId));
-            console.log('Tenant deleted:', tenantId);
+            // setTenants(prev => prev.filter(tenant => tenant.id !== tenantId));
+            // console.log('Tenant deleted:', tenantId);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants/${tenantId}`, {
+                method: 'DELETE',
+                headers: { "Content-Type": "application/json" },
+            })
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            fetchUnits();
         }
     };
 
@@ -230,13 +342,13 @@ export default function TenantsManagementPage() {
                                                 <div className="flex items-center space-x-2 mb-2 md:mb-0">
                                                     <DoorClosed  className="w-4 h-4 text-gray-400" />
                                                     <span className="font-medium text-gray-700">Unit:</span>
-                                                    <span className="text-gray-600">{getUnitInfo(tenant.unit).unitNumber}</span>
+                                                    <span className="text-gray-600">{getUnitInfo(tenant.unit.id).unitNumber}</span>
                                                 </div>
                                                 
                                                 <div className="flex items-center space-x-2">
                                                     <Building className="w-4 h-4 text-gray-400" />
                                                     <span className="font-medium text-gray-700">Building:</span>
-                                                    <span className="text-gray-600">{getUnitInfo(tenant.unit).buildingName}</span>
+                                                    <span className="text-gray-600">{getUnitInfo(tenant.unit.id).buildingName}</span>
                                                 </div>
                                             </div>
                                         </div>

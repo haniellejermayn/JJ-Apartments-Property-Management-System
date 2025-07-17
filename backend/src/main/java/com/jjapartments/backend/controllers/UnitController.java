@@ -1,6 +1,7 @@
 package com.jjapartments.backend.controllers;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -57,6 +58,23 @@ public class UnitController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+    // Search
+    @GetMapping("/search")
+    public List<Unit> searchUnits(@RequestParam("q") String query){
+        return unitRepository.searchByKeyword(query);
+    }
     
+    @GetMapping("/findUnitId")
+    public ResponseEntity<Integer> findUnitId(
+            @RequestParam("name") String name,
+            @RequestParam("unitNumber") String unitNumber) {
+        Optional<Unit> unitOptional = unitRepository.findByNameAndUnitNumber(name, unitNumber);
+
+        if (unitOptional.isPresent()) {
+            return ResponseEntity.ok(unitOptional.get().getId()); 
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); 
+        }
+    }
 
 }
