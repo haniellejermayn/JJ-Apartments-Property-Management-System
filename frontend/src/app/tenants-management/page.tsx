@@ -219,10 +219,16 @@ export default function TenantsManagementPage() {
         }
     };
 
-    const handleDeleteTenant = (tenantId: number) => {
+    const handleDeleteTenant = async (tenantId: number) => {
         if (window.confirm('Are you sure you want to delete this tenant?')) {
-            setTenants(prev => prev.filter(tenant => tenant.id !== tenantId));
-            console.log('Tenant deleted:', tenantId);
+            // setTenants(prev => prev.filter(tenant => tenant.id !== tenantId));
+            // console.log('Tenant deleted:', tenantId);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants/${tenantId}`, {
+                method: 'DELETE',
+                headers: { "Content-Type": "application/json" },
+            })
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            fetchUnits();
         }
     };
 

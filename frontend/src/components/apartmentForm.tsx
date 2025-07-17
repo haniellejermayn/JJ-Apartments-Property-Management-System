@@ -12,7 +12,8 @@ export function ApartmentForm() {
       name: '',
       description: '',
       numOccupants: '',
-      contactNumber: ''
+      contactNumber: '',
+      price: ''
   });
   const [editingId, setEditingId] = useState(null);
 
@@ -43,6 +44,7 @@ export function ApartmentForm() {
           description: formData.description,
           numOccupants: parseInt(formData.numOccupants) || 0,
           contactNumber: formData.contactNumber,
+          price: formData.price
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -57,7 +59,8 @@ export function ApartmentForm() {
         name: '',
         description: '',
         numOccupants: '',
-        contactNumber: ''
+        contactNumber: '',
+        price: ''
       });
     }
     else{
@@ -72,6 +75,7 @@ export function ApartmentForm() {
           description: formData.description,
           numOccupants: parseInt(formData.numOccupants) || 0,
           contactNumber: formData.contactNumber,
+          price: formData.price
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -86,7 +90,8 @@ export function ApartmentForm() {
         name: '',
         description: '',
         numOccupants: '',
-        contactNumber: ''
+        contactNumber: '',
+        price: ''
       });
 
     }
@@ -101,7 +106,8 @@ export function ApartmentForm() {
       name: apt.name,
       description: apt.description,
       numOccupants: apt.numOccupants,
-      contactNumber: apt.contactNumber
+      contactNumber: apt.contactNumber,
+      price: apt.price
     });
     setEditingId(apt.id);
   }
@@ -218,6 +224,23 @@ export function ApartmentForm() {
               type="number"
               name="numOccupants"
               value={formData.numOccupants}
+              onChange={handleInputChange}
+              placeholder="0.00"
+              className="w-full pl-8 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Price
+          </label>
+          <div className="relative">
+          
+            <input 
+              type="number"
+              name="price"
+              value={formData.price}
               onChange={handleInputChange}
               placeholder="0.00"
               className="w-full pl-8 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

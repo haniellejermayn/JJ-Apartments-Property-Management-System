@@ -89,6 +89,7 @@ export function ApartmentList({apartments, onDelete, onEdit, setApartments, fetc
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit no, contact</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Apartment Name</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">number of occupants</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
               </tr>
@@ -107,7 +108,9 @@ export function ApartmentList({apartments, onDelete, onEdit, setApartments, fetc
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{apartment.name}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{apartment.description}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Number of occupants: {apartment.numOccupants}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{apartment.numOccupants}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{apartment.price}</td>
+
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <div className="flex gap-2">
                       <button 
@@ -134,20 +137,7 @@ export function ApartmentList({apartments, onDelete, onEdit, setApartments, fetc
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-700">
-              Showing 1 to 4 of 4 entries
-            </div>
-            <div className="flex gap-2">
-              <button 
-              
-              className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-500 bg-gray-100">
-                Previous
-              </button>
-              <button className="px-3 py-1 border border-blue-500 bg-blue-500 text-white rounded text-sm">
-                1
-              </button>
-              <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-500 bg-gray-100">
-                Next
-              </button>
+              Showing <span className="font-semibold">{apartments.length}</span> entries
             </div>
           </div>
         </div>
