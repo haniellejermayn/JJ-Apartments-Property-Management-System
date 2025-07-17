@@ -14,6 +14,7 @@ import com.jjapartments.backend.repository.ExpenseRepository;
 
 @RestController
 @RequestMapping("/api/expenses")
+@CrossOrigin(origins = "http://localhost:3000")
 public class ExpenseController {
 
     @Autowired

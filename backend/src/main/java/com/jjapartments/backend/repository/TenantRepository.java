@@ -67,8 +67,8 @@ public class TenantRepository{
 
             }
         }
-        String sql = "INSERT INTO tenants(last_name, first_name, middle_initial, units_id, email, phone_number) VALUES (?, ?, ?, ?, ?, ?)"; 
-        return jdbcTemplate.update(sql, tenant.getLastName(), tenant.getFirstName(), tenant.getMiddleInitial(), tenant.getUnit(), tenant.getEmail(), tenant.getPhoneNumber());
+        String sql = "INSERT INTO tenants(last_name, first_name, middle_initial, email, phone_number, units_id) VALUES (?, ?, ?, ?, ?, ?)"; 
+        return jdbcTemplate.update(sql, tenant.getLastName(), tenant.getFirstName(), tenant.getMiddleInitial(), tenant.getEmail(), tenant.getPhoneNumber(), tenant.getUnitId());
       
     }
 
@@ -101,7 +101,7 @@ public class TenantRepository{
 
             }
         }
-        String sql = "UPDATE tenants SET last_name = ?, first_name = ?, middle_initial = ?, units_id = ?, email = ?, phone_number = ? WHERE id = ?";
-        return jdbcTemplate.update(sql, tenant.getLastName(), tenant.getFirstName(), tenant.getMiddleInitial(), tenant.getUnit(), tenant.getEmail(), tenant.getPhoneNumber(), id);
+        String sql = "UPDATE tenants SET last_name = ?, first_name = ?, middle_initial = ?, email = ?, phone_number = ?, units_id = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, tenant.getLastName(), tenant.getFirstName(), tenant.getMiddleInitial(), tenant.getEmail(), tenant.getPhoneNumber(), tenant.getUnitId(), id);
     }
 }

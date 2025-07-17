@@ -15,9 +15,9 @@ public class TenantRowMapper implements RowMapper<Tenant>{
         tenant.setLastName(rs.getString("last_name"));
         tenant.setFirstName(rs.getString("first_name"));
         tenant.setMiddleInitial(rs.getString("middle_initial"));
-        tenant.setUnit(rs.getInt("units_id"));
         tenant.setEmail(rs.getString("email"));
         tenant.setPhoneNumber(rs.getString("phone_number"));
+        tenant.setUnitId(rs.getInt("units_id"));
         return tenant;
     }
 }

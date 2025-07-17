@@ -13,6 +13,7 @@ import com.jjapartments.backend.repository.PaymentRepository;
 import com.jjapartments.backend.exception.ErrorException;
 @RestController
 @RequestMapping("/api/payments")
+@CrossOrigin(origins = "http://localhost:3000")
 public class PaymentController {
     @Autowired
     private PaymentRepository paymentRepository;

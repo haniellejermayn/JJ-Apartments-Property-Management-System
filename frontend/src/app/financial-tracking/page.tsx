@@ -1,7 +1,10 @@
 "use client";
 import React from 'react';
-import FinancialList from '@/components/FinancialList';
-import ExpenseList from '@/components/ExpenseList';
+import UtilitiesList from '@/components/utilities-list';
+import ExpenseList from '@/components/expenses-list';
+import PaymentList from '@/components/payments-list';
+import FinancialTabs from '@/components/financial-tabs'
+
 
 const MainContent = () => (
   <div className="flex-1 flex flex-col min-h-screen">
@@ -10,14 +13,11 @@ const MainContent = () => (
         <h1 className="text-2xl font-bold text-gray-900">Financial Tracking</h1>
       </div>
     </header>
-    <div className="flex flex-1">
-      <div className="w-1/2 p-2">
-        <FinancialList />
-      </div>
-      <div className="w-1/2 p-2">
-        <ExpenseList />
-      </div>
-    </div>
+    <FinancialTabs
+      utilitiesContent={<UtilitiesList />}
+      paymentsContent={<PaymentList />}
+      expensesContent={<ExpenseList />}
+    />
   </div>
 );
 

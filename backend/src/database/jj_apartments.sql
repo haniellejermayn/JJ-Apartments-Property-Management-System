@@ -3,7 +3,7 @@ CREATE SCHEMA IF NOT EXISTS `jj_apartments` DEFAULT CHARACTER SET utf8mb4 COLLAT
 USE `jj_apartments` ;
 
 
--- Disable checks temporarily (for safe table creation with foreign keys)
+-- Disable checks tutilitiesemporarily (for safe table creation with foreign keys)
 SET @OLD_UNIQUE_CHECKS = @@UNIQUE_CHECKS, UNIQUE_CHECKS = 0;
 SET @OLD_FOREIGN_KEY_CHECKS = @@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS = 0;
 SET @OLD_SQL_MODE = @@SQL_MODE, SQL_MODE = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
@@ -49,6 +49,14 @@ CREATE TABLE IF NOT EXISTS `jj_apartments`.`units` (
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
+INSERT INTO units (unit_number, name, description, price, num_occupants, contact_number)
+VALUES 
+('A', 'Maple Residences', 'Studio Apartment', 12000.00, 1, '09171234567'),
+('B', 'Maple Residences', '1 Bedroom', 15000.00, 2, '09181234567'),
+('C', 'Palm Grove Towers', '2 Bedroom', 18000.00, 3, '09192233445'),
+('D', 'Palm Grove Towers', 'Studio Apartment', 12500.00, 1, '09201234567'),
+('E', 'Sunrise Villas', '1 Bedroom', 15500.00, 2, '09179998888');
+
 -- INSERT INTO `jj_apartments`.`units` (`unit_number`, `num_occupants`) 
 -- VALUES
 -- ('D', 1),
@@ -91,6 +99,7 @@ CREATE TABLE IF NOT EXISTS `jj_apartments`.`tenants` (
   CONSTRAINT `fk_tenants_units1`
     FOREIGN KEY (`units_id`)
     REFERENCES `jj_apartments`.`units` (`id`)
+    ON DELETE CASCADE
 ) ENGINE = InnoDB;
 INSERT INTO `jj_apartments`.`tenants` 
 (`last_name`, `first_name`, `middle_initial`, `email`, `phone_number`, `units_id`) 
@@ -114,8 +123,7 @@ SELECT * FROM tenants;
 -- -------------------------
 CREATE TABLE IF NOT EXISTS payments (
   id INT NOT NULL AUTO_INCREMENT,
-  tenant_id INT NOT NULL,
-  reason VARCHAR(45) NOT NULL,
+  units_id INT NULL,
   mode_of_payment VARCHAR(45) NULL DEFAULT NULL,
   amount DECIMAL(10,2) NOT NULL,
   due_date DATE NULL DEFAULT NULL,
@@ -124,9 +132,17 @@ CREATE TABLE IF NOT EXISTS payments (
   is_paid TINYINT NOT NULL,
   paid_at DATE NULL DEFAULT NULL,
   PRIMARY KEY (id),
-  INDEX tenant_id_idx (tenant_id ASC),
-  CONSTRAINT tenant_id FOREIGN KEY (tenant_id) REFERENCES tenants (id)
+  INDEX units_id_idx (units_id ASC),
+  CONSTRAINT units_id FOREIGN KEY (units_id) REFERENCES units (id) ON DELETE SET NULL
 ) ENGINE = InnoDB;
+
+INSERT INTO payments (units_id, mode_of_payment, amount, due_date, month_of_start, month_of_end, is_paid, paid_at)
+VALUES 
+  (2, 'GCash',         11500.00, '2025-08-01', '2025-08-01', '2025-08-31', TRUE,  '2025-07-28'),
+  (3, 'Bank Transfer', 1800.00,  '2025-08-03', '2025-08-01', '2025-08-31', FALSE, NULL),
+  (5, 'Cash',          2200.00,  '2025-08-05', '2025-08-01', '2025-08-31', TRUE,  '2025-08-01'),
+  (1, 'Online Payment',11000.00, '2025-08-02', '2025-08-01', '2025-08-31', FALSE, NULL),
+  (4, 'Cash',          950.00,   '2025-08-06', '2025-08-01', '2025-08-31', TRUE,  '2025-08-06');
 
 -- -------------------------
 -- Table: rates
@@ -138,6 +154,10 @@ CREATE TABLE IF NOT EXISTS rates (
   date DATE NOT NULL,
   PRIMARY KEY (id)
 ) ENGINE = InnoDB;
+
+INSERT INTO rates (type, rate, date) VALUES
+('Meralco', 15.02, '2025-07-17'),
+('Manila Water', 50, '2025-07-17');
 
 
 -- -------------------------
@@ -155,26 +175,58 @@ CREATE TABLE IF NOT EXISTS utilities (
   month_of_end DATE NOT NULL,
   is_paid TINYINT NULL,
   paid_at DATE NULL DEFAULT NULL,
-  tenants_id INT NOT NULL,
-  rates_id INT NOT NULL,
+  units_id INT NULL,
+  rates_id INT NULL,
   PRIMARY KEY (id),
-  INDEX fk_utilities_tenants1_idx (tenants_id ASC),
+  INDEX fk_utilities_units1_idx (units_id ASC),
   INDEX fk_utilities_rates1_idx (rates_id ASC),
-  CONSTRAINT fk_utilities_tenants1 FOREIGN KEY (tenants_id) REFERENCES tenants (id),
-  CONSTRAINT fk_utilities_rates1 FOREIGN KEY (rates_id) REFERENCES rates (id)
+  CONSTRAINT fk_utilities_units1 FOREIGN KEY (units_id) REFERENCES units (id) ON DELETE SET NULL,
+  CONSTRAINT fk_utilities_rates1 FOREIGN KEY (rates_id) REFERENCES rates (id) ON DELETE SET NULL
 ) ENGINE = InnoDB;
 
+-- Insert Meralco Utility
+INSERT INTO utilities (
+  type, previous_reading, current_reading, total_meter, total_amount, 
+  due_date, month_of_start, month_of_end, is_paid, paid_at, 
+  units_id, rates_id
+) VALUES 
+('Meralco', 120.0, 145.0, 25.0, 625.00, '2025-07-25', '2025-06-01', '2025-06-30', false, NULL, 1, 1),
+('Meralco', 100.0, 122.5, 22.5, 562.50, '2025-07-20', '2025-06-01', '2025-06-30', true, '2025-07-10', 2, 1);
+
+-- Insert Manila Water Utility
+INSERT INTO utilities (
+  type, previous_reading, current_reading, total_meter, total_amount, 
+  due_date, month_of_start, month_of_end, is_paid, paid_at, 
+  units_id, rates_id
+) VALUES 
+('Manila Water', 30.0, 45.0, 15.0, 300.00, '2025-07-22', '2025-06-01', '2025-06-30', false, NULL, 1, 2),
+('Manila Water', 28.0, 40.0, 12.0, 240.00, '2025-07-18', '2025-06-01', '2025-06-30', true, '2025-07-08', 2, 2);
 
 -- -------------------------
 -- Table: expenses
 -- -------------------------
 CREATE TABLE IF NOT EXISTS expenses (
   id INT NOT NULL AUTO_INCREMENT,
+  units_id INT NULL,
   amount DECIMAL(10,2) NOT NULL,
   reason VARCHAR(45) NOT NULL,
   date DATE NOT NULL,
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  INDEX `fk_expenses_units1_idx` (`units_id` ASC) VISIBLE,
+  CONSTRAINT `fk_expenses_units1`
+    FOREIGN KEY (`units_id`)
+    REFERENCES `jj_apartments`.`units` (`id`)
+    ON DELETE SET NULL
 ) ENGINE = InnoDB;
+
+INSERT INTO expenses (units_id, amount, reason, date)
+VALUES 
+  (1, 1500.00, 'Utility Bills', '2025-07-01'),
+  (3, 2200.00, 'Maintenance',   '2025-07-03'),
+  (4, 800.00,  'Miscellaneous', '2025-07-04'),
+  (2, 1750.00, 'Utility Bills', '2025-07-08'),
+  (6, 950.00,  'Miscellaneous', '2025-07-12'),
+  (2, 3000.00, 'Maintenance',   '2025-07-15');
 
 -- -------------------------
 -- Table: monthly_reports
