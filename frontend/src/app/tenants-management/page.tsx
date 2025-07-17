@@ -10,9 +10,10 @@ type Tenant = {
     middleName?: string;
     lastName: string;
     email: string;
-    unit: number;
+    unit: string;
     phoneNumber: string;
     dateAdded: string;
+
 };
 
 type Unit = {
@@ -20,25 +21,29 @@ type Unit = {
     unitNumber: string;
     name: string;
 };
+type TenantWithUnitDetails = Omit<Tenant, 'unit'> & {
+    unit: Unit; 
+};
 
 export default function TenantsManagementPage() {
     const [modalOpen, setModalOpen] = useState(false);
-    const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
-    const [tenants, setTenants] = useState<Tenant[]>([]);
+    const [editingTenant, setEditingTenant] = useState<TenantWithUnitDetails | null>(null);
+    const [tenants, setTenants] = useState<TenantWithUnitDetails[]>([]);
 
    
     const [units, setUnits] = useState<Unit[]>([]);
     
+    
     useEffect(() => {
-  
-        
-
- 
-        
-
         fetchUnits();
-        fetchTenants();
-    }, []);
+    }, []); 
+
+    
+    useEffect(() => {
+        if (units.length > 0) { 
+            fetchTenants();
+        }
+    }, [units]);
     const fetchUnits = async () => {
         try {
             const response = await fetch("/api/units");
@@ -58,13 +63,17 @@ export default function TenantsManagementPage() {
             if (!response.ok) {
                 throw new Error("Failed to fetch tenants");
             }
-            const data = await response.json();
+            const rawTenants: TenantApiData[] = await response.json(); 
             
-            const processedTenants = data.map((tenant: Partial<Tenant>) => ({
-                ...tenant,
-                middleName: tenant.middleName,
-                dateAdded: tenant.dateAdded || new Date().toISOString()
-            } as Tenant));
+            const processedTenants: TenantWithUnitDetails[] = rawTenants.map(rawTenant => {
+                const unitInfo = units.find(u => u.id === rawTenant.unit); 
+
+                return {
+                    ...rawTenant,
+                    
+                    unit: unitInfo ? unitInfo : { id: rawTenant.unit, name: 'Unknown Building', unitNumber: 'Unknown Unit' }
+                };
+            });
             
             setTenants(processedTenants);
             console.log("Tenants loaded:", processedTenants);
@@ -126,18 +135,13 @@ export default function TenantsManagementPage() {
     };
 
     const handleAddTenant = async (formData) => {
-        // get unit_id and put in tenantData
-
         const unitId = await getUnit_id(formData.unitName, formData.unitNum);
-        console.log(unitId);
-        // if (unitId === null || unitId === undefined) {
-        //     console.error('Error: Could not retrieve unit ID for the given unit name and number.');
-        //     alert('Failed to add tenant: Unit not found or invalid unit details provided.');
-        //     return; 
-        // }
+        if (unitId === null || unitId === undefined) {
+            console.error('Error: Could not retrieve unit ID for the given unit name and number.');
+            alert('Failed to add tenant: Unit not found or invalid unit details provided.');
+            return; 
+        }
         
-
-
         const tenantDataPayload = {
             firstName: formData.firstName,
             middleName: formData.middleName || null, 
@@ -163,20 +167,24 @@ export default function TenantsManagementPage() {
         fetchTenants();
     };
 
-    const handleEditTenant = (tenant: Tenant) => {
+    const handleEditTenant = (tenant: TenantWithUnitDetails) => {
         setEditingTenant(tenant);
         setModalOpen(true);
     };
 
-    const handleUpdateTenant = (updatedData: Partial<Tenant>) => {
+    const handleUpdateTenant = async (updatedData: any) => {
         if (editingTenant) {
-            setTenants(prev => 
-                prev.map(tenant => 
-                    tenant.id === editingTenant.id 
-                        ? { ...tenant, ...updatedData }
-                        : tenant
-                )
-            );
+            
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants/update/${editingTenant.id}`,{
+                method: 'PATCH',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedData)
+            })
+
+
+            if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+
+            
             console.log('Tenant updated:', updatedData);
             toggleModal();
         }
@@ -287,13 +295,13 @@ export default function TenantsManagementPage() {
                                                 <div className="flex items-center space-x-2 mb-2 md:mb-0">
                                                     <DoorClosed  className="w-4 h-4 text-gray-400" />
                                                     <span className="font-medium text-gray-700">Unit:</span>
-                                                    <span className="text-gray-600">{getUnitInfo(tenant.unit).unitNumber}</span>
+                                                    <span className="text-gray-600">{getUnitInfo(tenant.unit.id).unitNumber}</span>
                                                 </div>
                                                 
                                                 <div className="flex items-center space-x-2">
                                                     <Building className="w-4 h-4 text-gray-400" />
                                                     <span className="font-medium text-gray-700">Building:</span>
-                                                    <span className="text-gray-600">{getUnitInfo(tenant.unit).buildingName}</span>
+                                                    <span className="text-gray-600">{getUnitInfo(tenant.unit.id).buildingName}</span>
                                                 </div>
                                             </div>
                                         </div>

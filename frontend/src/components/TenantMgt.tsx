@@ -13,15 +13,23 @@ export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
 
     // Populate form with editing data when editing
     useEffect(() => {
+        console.log("TenantMgt: useEffect triggered.");
+        console.log("TenantMgt: isEditing =", isEditing);
+        console.log("TenantMgt: received editingTenant =", editingTenant); // <<<--- THIS ONE IS THE MOST IMPORTANT
+
         if (isEditing && editingTenant) {
+            console.log("TenantMgt: Attempting to set formData with unit details:");
+            console.log("  unitName (from editingTenant.unit.name):", editingTenant.unit?.name);
+            console.log("  unitNum (from editingTenant.unit.unitNumber):", editingTenant.unit?.unitNumber);
+
             setFormData({
                 firstName: editingTenant.firstName || '',
                 middleName: editingTenant.middleName || '',
                 lastName: editingTenant.lastName || '',
                 email: editingTenant.email || '',
                 phoneNumber: editingTenant.phoneNumber || '',
-                unitName: editingTenant.unitName || '',
-                unitNum: editingTenant.unitNum || ''
+                unitName: editingTenant.unit?.name || '',       // <-- THIS IS THE CORRECT WAY
+                unitNum: editingTenant.unit?.unitNumber || ''
             });
         } else {
             // Reset form when not editing
@@ -150,7 +158,7 @@ export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
                             value={formData.unitName}
                             onChange={handleInputChange}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                            placeholder="e.g., juan.delacruz@email.com"
+                            
                         />
                     </div>
 
@@ -164,7 +172,7 @@ export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
                             value={formData.unitNum}
                             onChange={handleInputChange}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                            placeholder="e.g., 09123456789"
+                            placeholder="e.g., Z"
                         />
                     </div>
                 </div>
