@@ -57,29 +57,6 @@ VALUES
 ('D', 'Palm Grove Towers', 'Studio Apartment', 12500.00, 1, '09201234567'),
 ('E', 'Sunrise Villas', '1 Bedroom', 15500.00, 2, '09179998888');
 
--- INSERT INTO `jj_apartments`.`units` (`unit_number`, `num_occupants`) 
--- VALUES
--- ('D', 1),
--- ('A', 0),
--- ('M', 2),
--- ('K', 0),
--- ('R', 3),
--- ('C', 0),
--- ('B', 1),
--- ('F', 0),
--- ('H', 4),
--- ( 'P', 0),
--- ( 'G', 1),
--- ( 'E', 0),
--- ('L', 2),
--- ('S', 0),
--- ('T', 1),
--- ('J', 0),
--- ('Q', 1),
--- ('N', 0),
--- ('U', 2),
--- ('V', 0);
-
 SELECT * FROM units;
 -- -------------------------
 -- Table: tenants
@@ -209,6 +186,7 @@ CREATE TABLE IF NOT EXISTS expenses (
   id INT NOT NULL AUTO_INCREMENT,
   units_id INT NULL,
   amount DECIMAL(10,2) NOT NULL,
+  mode_of_payment VARCHAR(45) NULL,
   reason VARCHAR(45) NOT NULL,
   date DATE NOT NULL,
   PRIMARY KEY (id),

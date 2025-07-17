@@ -5,6 +5,7 @@ public class Expense {
     private int id;
     private int unitId;
     private float amount;
+    private String modeOfPayment;
     private String reason;
     private String date;
 
@@ -30,6 +31,14 @@ public class Expense {
 
     public void setAmount(float amount) {
         this.amount = amount;
+    }
+
+    public String getModeOfPayment() {
+        return this.modeOfPayment;
+    }
+
+    public void setModeOfPayment(String modeOfPayment) {
+        this.modeOfPayment = modeOfPayment;
     }
 
     public String getReason() {

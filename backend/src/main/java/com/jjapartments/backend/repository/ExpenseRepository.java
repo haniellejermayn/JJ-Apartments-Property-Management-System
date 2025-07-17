@@ -28,8 +28,8 @@ public class ExpenseRepository{
             throw new ErrorException("Amount cannot be ₱0 or below");
         }
 
-        String sql = "INSERT INTO expenses(units_id, amount, reason, date) VALUES (?, ?, ?, ?)";
-        return jdbcTemplate.update(sql, expense.getUnitId(), expense.getAmount(), expense.getReason(), expense.getDate());
+        String sql = "INSERT INTO expenses(units_id, amount, mode_of_payment, reason, date) VALUES (?, ?, ?, ?, ?)";
+        return jdbcTemplate.update(sql, expense.getUnitId(), expense.getAmount(), expense.getModeOfPayment(), expense.getReason(), expense.getDate());
     }
 
     public int delete(int id) {
@@ -54,7 +54,7 @@ public class ExpenseRepository{
             throw new ErrorException("Amount cannot be below ₱0");
         }
         
-        String sql = "UPDATE expenses SET unit_id = ?, amount = ?, reason = ?, date = ? WHERE id = ?";
-        return jdbcTemplate.update(sql, expense.getUnitId(), expense.getAmount(), expense.getReason(), expense.getDate(), id);
+        String sql = "UPDATE expenses SET unit_id = ?, amount = ?, mode_of_payment = ?, reason = ?, date = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, expense.getUnitId(), expense.getAmount(), expense.getModeOfPayment(), expense.getReason(), expense.getDate(), id);
     }
 }
