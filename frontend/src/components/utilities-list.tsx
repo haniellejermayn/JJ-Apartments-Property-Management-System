@@ -71,8 +71,11 @@ export default function UtilitiesList() {
       if (!res.ok) {
         throw new Error(`Update failed with status ${res.status}`);
       }
+      
 
       console.log("Utility updated successfully");
+      window.location.reload();
+
     } catch (error) {
       console.error("Error updating utility:", error);
     }

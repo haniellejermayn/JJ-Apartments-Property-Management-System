@@ -42,7 +42,6 @@ export default function EditPaymentCard({ open, onClose, onSave, payment }: Prop
     const handleSubmit = () => {
         onSave(form)
         onClose()
-        window.location.reload();
     }
 
     useEffect(() => {
@@ -74,7 +73,7 @@ export default function EditPaymentCard({ open, onClose, onSave, payment }: Prop
 
                 <div>
                     <Label className="py-1">Unit</Label>
-                    <Select value={form.unitId?.toString() || ""} onValueChange={(value) => handleChange("unitId", value)}>
+                    <Select value={form.unitId?.toString() || ""} onValueChange={(value) => handleChange("unitId", Number(value))}>
                         <SelectTrigger className="w-full h-11 rounded-md border px-3 text-left">
                             <SelectValue placeholder="Select Unit" />
                         </SelectTrigger>

@@ -39,7 +39,7 @@ public class ExpenseController {
     }
 
     // Delete
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteExpense(@PathVariable int id) {
         int rowsAffected = expenseRepository.delete(id);
         if (rowsAffected > 0) {

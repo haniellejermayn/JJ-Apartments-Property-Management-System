@@ -74,6 +74,7 @@ export default function ExpensesList() {
           }
     
           console.log("Expense updated successfully");
+          window.location.reload();
         } catch (error) {
           console.error("Error updating expense:", error);
         }
