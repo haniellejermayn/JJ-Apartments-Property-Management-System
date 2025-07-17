@@ -13,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/utilities")
+@CrossOrigin(origins = "http://localhost:3000")
 public class UtilityController {
 
     @Autowired
@@ -32,8 +33,8 @@ public class UtilityController {
     // Get all utilities
     @GetMapping
     public ResponseEntity<List<Utility>> getAllUtilities() {
-        List<Utility> utilitys = utilityRepository.findAll();
-        return ResponseEntity.ok(utilitys);
+        List<Utility> utilities = utilityRepository.findAll();
+        return ResponseEntity.ok(utilities);
     }
 
     // Delete
@@ -58,6 +59,19 @@ public class UtilityController {
         }
     }
 
-   
+    // Get from specific unit
+    @GetMapping("/unit/{id}")
+    public ResponseEntity<List<Utility>> getByUnit(@PathVariable int id) {
+        List<Utility> utilities = utilityRepository.findByUnit(id);
+        return ResponseEntity.ok(utilities);
+    }
+
+    @GetMapping("/type")
+    public ResponseEntity<List<Utility>> getByType(@RequestParam String type) {
+        List<Utility> utilities = utilityRepository.findByType(type);
+        return ResponseEntity.ok(utilities);
+    }
+
+
 
 }

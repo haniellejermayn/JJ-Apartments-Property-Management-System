@@ -14,6 +14,7 @@ import com.jjapartments.backend.exception.ErrorException;
 
 @RestController
 @RequestMapping("/api/monthlyreports")
+@CrossOrigin(origins = "http://localhost:3000")
 public class MonthlyReportController {
 
     @Autowired

@@ -3,6 +3,7 @@ package com.jjapartments.backend.models;
 public class Expense {
 
     private int id;
+    private int unitId;
     private float amount;
     private String reason;
     private String date;
@@ -13,6 +14,14 @@ public class Expense {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getUnitId() {
+        return this.unitId;
+    }
+
+    public void setUnitId(int unitId) {
+        this.unitId = unitId;
     }
 
     public float getAmount() {

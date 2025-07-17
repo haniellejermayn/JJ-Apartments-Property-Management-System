@@ -15,6 +15,7 @@ public class UnitRowMapper implements RowMapper<Unit>{
         unit.setUnitNumber(rs.getString("unit_number"));
         unit.setName(rs.getString("name"));
         unit.setDescription(rs.getString("description"));
+        unit.setPrice(rs.getFloat("price"));
         unit.setNumOccupants(rs.getInt("num_occupants"));
         unit.setContactNumber(rs.getString("contact_number"));
         return unit;
