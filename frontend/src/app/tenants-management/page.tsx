@@ -25,7 +25,7 @@ export default function TenantsManagementPage() {
     const [modalOpen, setModalOpen] = useState(false);
     const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
     const [tenants, setTenants] = useState<Tenant[]>([]);
-
+    const [searchQuery, setSearchQuery] = useState("");
    
     const [units, setUnits] = useState<Unit[]>([]);
     
@@ -152,8 +152,15 @@ export default function TenantsManagementPage() {
                             <p className="text-sm text-gray-600 mt-1">
                                 Manage your property tenants ({tenants.length} total)
                             </p>
-                        </div>
-                        
+                        </div> 
+                        <input
+                            type="text"
+                            placeholder="Search tenant name..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                        />
+                                                
                         <button
                             onClick={() => setModalOpen(true)}
                             className="px-4 py-2 text-yellow-300 bg-black hover:text-yellow-400 rounded-lg transition-all duration-200 text-sm font-medium border border-black hover:border-black"
@@ -180,7 +187,12 @@ export default function TenantsManagementPage() {
                         </div>
                     ) : (
                         <div className="divide-y divide-gray-100">
-                            {tenants.map((tenant) => (
+                            {tenants.filter((tenant) =>
+                                        `${tenant.firstName} ${tenant.middleName || ""} ${tenant.lastName}`
+                                        .toLowerCase()
+                                        .includes(searchQuery.toLowerCase())
+                                    )
+                                    .map((tenant) => (
                                 <div key={tenant.id} className="p-6 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 group">
                                     <div className="flex justify-between items-start">
                                         <div className="flex-1">
