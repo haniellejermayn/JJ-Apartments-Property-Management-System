@@ -54,7 +54,7 @@ public class ExpenseRepository{
             throw new ErrorException("Amount cannot be below ₱0");
         }
         
-        String sql = "UPDATE expenses SET unit_id = ?, amount = ?, mode_of_payment = ?, reason = ?, date = ? WHERE id = ?";
+        String sql = "UPDATE expenses SET units_id = ?, amount = ?, mode_of_payment = ?, reason = ?, date = ? WHERE id = ?";
         return jdbcTemplate.update(sql, expense.getUnitId(), expense.getAmount(), expense.getModeOfPayment(), expense.getReason(), expense.getDate(), id);
     }
 }

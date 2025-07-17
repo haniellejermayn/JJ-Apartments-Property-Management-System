@@ -46,7 +46,7 @@ export default function AddExpenseButton() {
         e.stopPropagation();
 
         const body = {
-            unitId,
+            unitId: Number(unitId),
             amount: Number(amount),
             modeOfPayment,
             reason,

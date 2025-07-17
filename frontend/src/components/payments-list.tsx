@@ -68,6 +68,7 @@ export default function PaymentsList() {
         }
   
         console.log("Payment updated successfully");
+        window.location.reload();
       } catch (error) {
         console.error("Error updating payment:", error);
       }

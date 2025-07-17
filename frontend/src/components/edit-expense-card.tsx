@@ -44,7 +44,6 @@ export default function EditExpenseCard({ open, onClose, onSave, expense }: Prop
     const handleSubmit = () => {
         onSave(form)
         onClose()
-        window.location.reload();
     }
 
     useEffect(() => {
@@ -75,7 +74,7 @@ export default function EditExpenseCard({ open, onClose, onSave, expense }: Prop
             <div className="grid gap-4 py-2">
                 <div>
                     <Label className="py-1">Unit</Label>
-                    <Select value={form.unitId?.toString() || ""} onValueChange={(value) => handleChange("unitId", value)}>
+                    <Select value={form.unitId?.toString() || ""} onValueChange={(value) => handleChange("unitId", Number(value))}>
                         <SelectTrigger className="w-full h-11 rounded-md border px-3 text-left">
                             <SelectValue placeholder="Select Unit" />
                         </SelectTrigger>
@@ -100,7 +99,7 @@ export default function EditExpenseCard({ open, onClose, onSave, expense }: Prop
                         }}
                         />
                 </div>
-                
+
                 <div>
                     <Label className="py-1">Mode Of Payment</Label>
                     <Select value={form.modeOfPayment?.toString() || ""} onValueChange={(value) => handleChange("modeOfPayment", value)}>
