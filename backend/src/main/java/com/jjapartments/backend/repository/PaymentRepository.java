@@ -27,7 +27,7 @@ public class PaymentRepository{
         if (payment.getAmount() <= 0) {
             throw new ErrorException("Amount cannot be ₱0 or below");
         }
-        String sql = "INSERT INTO payments(units_id, mode_of_payment, amount, due_date, month_of_start, month_of_end, is_paid, paid_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO payments(units_id, mode_of_payment, amount, due_date, month_of_start, month_of_end, is_paid, paid_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         return jdbcTemplate.update(sql, payment.getUnitId(), payment.getModeOfPayment(), payment.getAmount(), payment.getDueDate(), payment.getMonthOfStart(), payment.getMonthOfEnd(), payment.getIsPaid(), payment.getPaidAt());
        
     }

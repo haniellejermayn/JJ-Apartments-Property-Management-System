@@ -129,7 +129,7 @@ CREATE TABLE IF NOT EXISTS payments (
   due_date DATE NULL DEFAULT NULL,
   month_of_start DATE NULL DEFAULT NULL,
   month_of_end DATE NULL DEFAULT NULL,
-  is_paid TINYINT NOT NULL,
+  is_paid TINYINT NULL,
   paid_at DATE NULL DEFAULT NULL,
   PRIMARY KEY (id),
   INDEX units_id_idx (units_id ASC),

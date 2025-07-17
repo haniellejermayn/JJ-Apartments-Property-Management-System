@@ -2,7 +2,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Unit } from '@/components/expenses-list'
-
+import AddPaymentButton from "@/components/add-payment-button";
 
 type Payment = {
     id: number,
@@ -70,11 +70,7 @@ export default function PaymentsList() {
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h2 className="text-lg font-medium text-gray-900">Payments</h2>
-        <Button
-            // onClick={() => setModalOpen(true)}
-        >
-            Add
-        </Button>
+        <AddPaymentButton/>
       </div>
       <div className="overflow-x-auto rounded shadow border">
         <table className="w-full">
