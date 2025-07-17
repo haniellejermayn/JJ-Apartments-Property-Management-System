@@ -10,10 +10,12 @@ import {
   LogOut 
 } from 'lucide-react';
 import Image from 'next/image';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Sidebar() {
 
   const pathname = usePathname();
+  const { logout } = useAuth();
 
   const menuItems = [
     {
@@ -36,12 +38,11 @@ export default function Sidebar() {
       href: '/financial-tracking',
       icon: DollarSign,
     },
-    {
-      name: 'Logout',
-      href: '/login',
-      icon: LogOut,
-    },
   ];
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <div className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-white shadow-lg border-r z-40">
@@ -82,6 +83,17 @@ export default function Sidebar() {
                 </li>
               );
             })}
+            
+            {/* Logout Button */}
+            <li>
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="font-medium">Logout</span>
+              </button>
+            </li>
           </ul>
         </nav>
 

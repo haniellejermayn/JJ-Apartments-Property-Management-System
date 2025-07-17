@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.jjapartments.backend.models.User;
 import com.jjapartments.backend.exception.ErrorException;
@@ -18,11 +19,15 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+    
+    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     // Create
     @PostMapping("/add")
     public ResponseEntity<String> addUser(@RequestBody User user) {        
         try { // returns 201 created
+            // Hash the password before saving
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.add(user);
             return ResponseEntity.status(HttpStatus.CREATED).body("User created successfully");
         } catch(ErrorException e) { // returns 400 bad request
@@ -70,8 +75,14 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
         try {
-            User existingUser = userRepository.findByUsernameAndPassword(user.getUsername(), user.getPassword());
-            return ResponseEntity.ok(existingUser);
+            User existingUser = userRepository.findByUsername(user.getUsername());
+            if (existingUser != null && passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
+                // Don't return the password in the response
+                existingUser.setPassword(null);
+                return ResponseEntity.ok(existingUser);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+            }
         } catch (ErrorException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }

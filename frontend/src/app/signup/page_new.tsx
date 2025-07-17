@@ -1,74 +1,40 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
-export default function LoginPage() {
-  const router = useRouter();
-  const { isLoggedIn, isLoading: authLoading, login } = useAuth();
+export default function SignUpPage() {
   const [formData, setFormData] = useState({
     username: '',
-    password: ''
+    password: '',
+    isOwner: false
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // Check if user is already logged in
-  useEffect(() => {
-    if (!authLoading && isLoggedIn) {
-      router.replace('/');
-    }
-  }, [isLoggedIn, authLoading, router]);
-
-  // Handle browser back button to ensure proper navigation flow
-  useEffect(() => {
-    const handlePopState = () => {
-      if (isLoggedIn) {
-        router.replace('/');
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, [isLoggedIn, router]);
-
-  // Show loading while auth is being checked
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  // Don't render if user is logged in (prevents flash)
-  if (isLoggedIn) {
-    return null;
-  }
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;          
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+    
     setIsLoading(true);
     setError('');
 
     try {
-      const response = await fetch('/api/users/login', {
+      const response = await fetch('/api/users/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,16 +44,14 @@ export default function LoginPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to login');
+        throw new Error(errorData.error || 'Failed to sign up');
       }
 
-      const user = await response.json();
-      
-      // Use the login function from useAuth for proper history management
-      login(user.username);
+      alert('User registered successfully!');
+      router.push('/login');
     } catch (err) {
-      console.error('Login error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to log in. Please check your credentials and try again.');
+      console.error('Sign-up error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to sign up. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -117,8 +81,8 @@ export default function LoginPage() {
               className="object-contain mx-auto mb-6"
               priority
             />
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Log in to your account</h2>
-            <p className="text-gray-600">Access your property management dashboard</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h2>
+            <p className="text-gray-600">Sign up to access the property management system</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -181,6 +145,21 @@ export default function LoginPage() {
               </div>
             </div>
 
+            <div className="flex items-center">
+              <input
+                id="isOwner"
+                name="isOwner"
+                type="checkbox"
+                checked={formData.isOwner}
+                disabled={isLoading}
+                onChange={handleChange}
+                className="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
+              />
+              <label htmlFor="isOwner" className="ml-2 block text-sm text-gray-700">
+                Register as property owner
+              </label>
+            </div>
+
             <Button 
               type="submit" 
               className="w-full h-12 bg-black hover:bg-black text-yellow-300 font-medium text-base"
@@ -189,19 +168,19 @@ export default function LoginPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Logging in...
+                  Creating account...
                 </>
               ) : (
-                'Login'
+                'Sign up'
               )}
             </Button>
           </form>
 
           <div className="text-center mt-4">
             <p className="text-sm text-gray-600">
-              Don&apos;t have an account?{' '}
-              <a href="/signup" className="text-yellow-500 hover:text-yellow-600">
-                Sign up here
+              Already have an account?{' '}
+              <a href="/login" className="text-yellow-500 hover:text-yellow-600">
+                Sign in here
               </a>
             </p>
           </div>

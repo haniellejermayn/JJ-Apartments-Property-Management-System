@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 
 import {
   Card,
@@ -23,9 +25,12 @@ import {
   CalendarIcon,
   DollarSignIcon,
   TrendingUpIcon,
+  Loader2,
 } from 'lucide-react';
 
 export default function Home() {
+  const { isLoggedIn, isLoading } = useAuth();
+  const router = useRouter();
 
   type MonthlyReport = {
     id: number;
@@ -62,6 +67,28 @@ export default function Home() {
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth() + 1; 
   const currentYear = currentDate.getFullYear();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn) {
+      router.replace('/login');
+    }
+  }, [isLoggedIn, isLoading, router]);
+
+  // Handle browser back button to prevent unauthorized access
+  useEffect(() => {
+    const handlePopState = () => {
+      if (!isLoggedIn) {
+        router.replace('/login');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [isLoggedIn, router]);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -111,16 +138,57 @@ export default function Home() {
         setTenants(tenantsData);
         setUnits(unitsData);
 
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error fetching data:', error);
-        setError(error.message || 'Failed to fetch data');
+        setError(error instanceof Error ? error.message : 'Failed to fetch data');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAllData();
-  }, []);
+    // Only fetch data if user is logged in
+    if (isLoggedIn && !isLoading) {
+      fetchAllData();
+    }
+  }, [isLoggedIn, isLoading]);
+
+  // Show loading while auth is being checked
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // Don't render if user is not logged in (prevents flash)
+  if (!isLoggedIn) {
+    return null;
+  }
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+          <div className="text-lg text-gray-600">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not logged in (will redirect)
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+          <div className="text-lg text-gray-600">Redirecting...</div>
+        </div>
+      </div>
+    );
+  }
 
   const getCurrentMonthReport = () => {
     return monthlyReports.find(report => 
@@ -169,17 +237,17 @@ export default function Home() {
     }
 
     return {
-      monthRevenue: currentReport.totalEarnings.toFixed(2),
+      monthRevenue: currentReport.totalEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       monthRevenuePercentChange: calculatePercentChange(
         currentReport.totalEarnings, 
         previousReport?.totalEarnings || 0
       ),
-      monthExpenses: currentReport.totalExpenses.toFixed(2),
+      monthExpenses: currentReport.totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       monthExpensesPercentChange: calculatePercentChange(
         currentReport.totalExpenses, 
         previousReport?.totalExpenses || 0
       ),
-      netIncome: currentReport.netIncome.toFixed(2),
+      netIncome: currentReport.netIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       netIncomePercentChange: calculatePercentChange(
         currentReport.netIncome, 
         previousReport?.netIncome || 0

@@ -38,8 +38,8 @@ public class UserRepository{
         if (userExists(user)){
             throw new ErrorException("The username is already taken.");
         } else {
-            String sql = "INSERT INTO users(username, password, is_owner) VALUES (?, ?, ?)";
-            return jdbcTemplate.update(sql, user.getUsername(), user.getPassword(), user.getIsOwner());
+            String sql = "INSERT INTO users(username, password) VALUES (?, ?)";
+            return jdbcTemplate.update(sql, user.getUsername(), user.getPassword());
         }
             
     }
@@ -64,18 +64,18 @@ public class UserRepository{
         if (userExists(user, existingUser.getId())) {
             throw new ErrorException("The username is already taken.");
         } else {
-            String sql = "UPDATE users SET username = ?, password = ?, is_owner = ? WHERE id = ?";
-            return jdbcTemplate.update(sql, user.getUsername(), user.getPassword(), user.getIsOwner(), id);
+            String sql = "UPDATE users SET username = ?, password = ? WHERE id = ?";
+            return jdbcTemplate.update(sql, user.getUsername(), user.getPassword(), id);
         }
     }
 
-    // Add method to find user by username and password
-    public User findByUsernameAndPassword(String username, String password) {
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+    // Add method to find user by username
+    public User findByUsername(String username) {
+        String sql = "SELECT * FROM users WHERE username = ?";
         try {
-            return jdbcTemplate.queryForObject(sql, new UserRowMapper(), username, password);
+            return jdbcTemplate.queryForObject(sql, new UserRowMapper(), username);
         } catch (EmptyResultDataAccessException e) {
-            throw new ErrorException("Invalid username or password.");
+            throw new ErrorException("User with username " + username + " not found.");
         }
     }
 }

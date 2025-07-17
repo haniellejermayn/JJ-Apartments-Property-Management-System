@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import { TenantPopUp } from "@/components/TenantPopUp";
 import { TenantMgt } from "@/components/TenantMgt";
 import { Mail, Phone, Building, DoorClosed  } from "lucide-react";
@@ -26,12 +28,20 @@ type TenantWithUnitDetails = Omit<Tenant, 'unit'> & {
 };
 
 export default function TenantsManagementPage() {
+    const { isLoggedIn, isLoading } = useAuth();
+    const router = useRouter();
     const [modalOpen, setModalOpen] = useState(false);
     const [editingTenant, setEditingTenant] = useState<TenantWithUnitDetails | null>(null);
     const [tenants, setTenants] = useState<TenantWithUnitDetails[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
    
     const [units, setUnits] = useState<Unit[]>([]);
+
+    useEffect(() => {
+        if (!isLoading && !isLoggedIn) {
+            router.replace('/login');
+        }
+    }, [isLoggedIn, isLoading, router]);
     
     
     useEffect(() => {
@@ -252,6 +262,21 @@ export default function TenantsManagementPage() {
     };
 
     // Note: We'll use the getUnitInfo function directly in the JSX
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-100">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+                    <div className="text-lg text-gray-600">Loading...</div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!isLoggedIn) {
+        return null;
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">

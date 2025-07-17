@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,28 +7,62 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 
-export default function SignInPage() {
+export default function SignUpPage() {
   const [formData, setFormData] = useState({
     username: '',
-    password: '',
-    isOwner: false,
+    password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { isLoggedIn, isLoading: authLoading } = useAuth();
 
+  // Check if user is already logged in
+  useEffect(() => {
+    if (!authLoading && isLoggedIn) {
+      router.replace('/');
+    }
+  }, [isLoggedIn, authLoading, router]);
+
+  // Handle browser back button to ensure proper navigation flow
+  useEffect(() => {
+    const handlePopState = () => {
+      if (isLoggedIn) {
+        router.replace('/');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [isLoggedIn, router]);
+
+  // Show loading while auth is being checked
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // Don't render if user is logged in (prevents flash)
+  if (isLoggedIn) {
+    return null;
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
+    const { name, value } = e.target;
+    setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: value
     }));
   };
-
-
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -46,15 +80,15 @@ export default function SignInPage() {
       });
 
       if (!response.ok) {
-        const errorMessage = await response.text();
-        throw new Error(errorMessage);
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to sign up');
       }
 
       alert('User registered successfully!');
-      router.push('/login');
+      router.replace('/login');
     } catch (err) {
       console.error('Sign-up error:', err);
-      setError('Failed to sign up. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to sign up. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -84,10 +118,9 @@ export default function SignInPage() {
               className="object-contain mx-auto mb-6"
               priority
             />
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign in to your account</h2>
-            <p className="text-gray-600">Access your property management dashboard</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h2>
+            <p className="text-gray-600">Sign up to access the property management system</p>
           </div>
-
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
@@ -149,35 +182,6 @@ export default function SignInPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="isOwner" className="text-sm font-medium text-gray-700">
-                Is Owner
-              </Label>
-              <input
-                id="isOwner"
-                name="isOwner"
-                type="checkbox"
-                checked={formData.isOwner}
-                disabled={isLoading}
-                onChange={handleChange}
-                className="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                  Remember me
-                </label>
-              </div>
-            </div>
-
             <Button 
               type="submit" 
               className="w-full h-12 bg-black hover:bg-black text-yellow-300 font-medium text-base"
@@ -186,13 +190,22 @@ export default function SignInPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Signing in...
+                  Creating account...
                 </>
               ) : (
-                'Sign in'
+                'Sign up'
               )}
             </Button>
           </form>
+
+          <div className="text-center mt-4">
+            <p className="text-sm text-gray-600">
+              Already have an account?{' '}
+              <a href="/login" className="text-yellow-500 hover:text-yellow-600">
+                Sign in here
+              </a>
+            </p>
+          </div>
 
           <div className="lg:hidden text-center pt-8">
             <Image 
