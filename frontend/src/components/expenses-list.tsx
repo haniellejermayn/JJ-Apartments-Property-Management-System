@@ -1,11 +1,20 @@
 "use client";
-import { useEffect, useState, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState, useMemo } from 'react'
+import { Button } from '@/components/ui/button'
+import AddExpenseButton from '@/components/add-expense-button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import EditExpenseCard from './edit-expense-card';
 
-type Expense = {
+export type Expense = {
     id: number,
     unitId: number,
     amount: number,
+    modeOfPayment: string,
     reason: string,
     date: string
 }
@@ -25,7 +34,51 @@ export default function ExpensesList() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [editOpen, setEditOpen] = useState(false)
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null)
+  
+    const handleEdit = (u: Expense) => {
+      setSelectedExpense(u)
+      setEditOpen(true)
+    }
+  
+    const handleDelete = async (id: number) => {
+      try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/${id}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+          });
+  
+          if (!res.ok) {
+            throw new Error(`Delete failed with status ${res.status}`);
+          }
+          console.log("Expense deleted successfully");
+  
+          window.location.reload();
+      } catch (error) {
+          console.error("Error deleting expense:", error);
+      }
+    }
+    
+    const handleSave = async (updated: Expense) => {
+        const body = updated
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/update/${updated.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+    
+          if (!res.ok) {
+            throw new Error(`Update failed with status ${res.status}`);
+          }
+    
+          console.log("Expense updated successfully");
+        } catch (error) {
+          console.error("Error updating expense:", error);
+        }
+    
+      }
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
@@ -69,11 +122,7 @@ export default function ExpensesList() {
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h2 className="text-lg font-medium text-gray-900">Expenses</h2>
-        <Button
-          // onClick={() => setModalOpen(true)}
-        >
-          Add
-        </Button>
+        <AddExpenseButton/>
       </div>
       <div className="overflow-x-auto rounded shadow border">
         <table className="w-full">
@@ -82,7 +131,9 @@ export default function ExpensesList() {
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
               <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mode Of Expense</th>
               <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -95,8 +146,31 @@ export default function ExpensesList() {
                   <td className="px-4 py-4 text-right text-sm font-medium text-gray-900">
                     ₱{e.amount.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 text-center text-sm text-gray-900">
+                  <td className="px-4 py-4 text-sm text-gray-900">{e.modeOfPayment}</td>
+                  <td className="px-4 py-4 text-center text-sm text-gray-900">
                     {new Date(e.date).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          ⋮
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem 
+                        onClick={() => handleEdit(e)}
+                        >
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                        onClick={() => handleDelete(e.id)} 
+                        className="text-red-600 focus:text-red-700">
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                 </tr>
               );
@@ -113,6 +187,14 @@ export default function ExpensesList() {
   return (
     <div className="space-y-2">
       {createTable(expenses)}
+      {selectedExpense && (
+        <EditExpenseCard
+          open={editOpen}
+          onClose={() => {setEditOpen(false), setSelectedExpense(null)}}
+          onSave={handleSave}
+          expense={selectedExpense}
+        />
+      )}
     </div>
   );
 }

@@ -14,6 +14,7 @@ public class ExpenseRowMapper implements RowMapper<Expense>{
         expense.setId(rs.getInt("id"));
         expense.setUnitId(rs.getInt("units_id"));
         expense.setAmount(rs.getFloat("amount"));
+        expense.setModeOfPayment(rs.getString("mode_of_payment"));
         expense.setReason(rs.getString("reason"));
         expense.setDate(rs.getString("date"));
         return expense;

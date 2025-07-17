@@ -2,8 +2,16 @@
 import { useEffect, useState, useMemo } from 'react';
 import AddUtilityButton from '@/components/add-utility-button';
 import { Unit } from '@/components/expenses-list'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
+import EditUtilityCard from './edit-utility-card';
 
-type Utility = {
+export type Utility = {
   id: number,
   type: string,
   previousReading: number,
@@ -25,7 +33,51 @@ export default function UtilitiesList() {
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false)
+  const [selectedUtility, setSelectedUtility] = useState<Utility | null>(null)
 
+  const handleEdit = (u: Utility) => {
+    setSelectedUtility(u)
+    setEditOpen(true)
+  }
+
+  const handleDelete = async (id: number) => {
+    try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/utilities/${id}`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Delete failed with status ${res.status}`);
+        }
+        console.log("Utility deleted successfully");
+
+        window.location.reload();
+    } catch (error) {
+        console.error("Error deleting utility:", error);
+    }
+  }
+
+  const handleSave = async (updated: Utility) => {
+    const body = updated
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/utilities/update/${updated.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Update failed with status ${res.status}`);
+      }
+
+      console.log("Utility updated successfully");
+    } catch (error) {
+      console.error("Error updating utility:", error);
+    }
+
+  }
   useEffect(() => {
     const fetchUtilities = async () => {
       try {
@@ -71,10 +123,11 @@ export default function UtilitiesList() {
     });
     return map;
   }, [units]);
-  
+
   const createTable = (data: Utility[], type: string) => {
     const isMeralco = type.toLowerCase().includes("meralco");
     const unitLabel = isMeralco ? "kWh" : "Cubic";
+
     return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
@@ -94,6 +147,7 @@ export default function UtilitiesList() {
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">For the Month Of</th>
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid</th>
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid At</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -128,6 +182,29 @@ export default function UtilitiesList() {
                       ? new Date(u.paidAt).toLocaleDateString()
                       : '—'}
                   </td>
+                  <td className="px-6 py-4 text-sm text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          ⋮
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem 
+                        onClick={() => handleEdit(u)}
+                        >
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                        onClick={() => handleDelete(u.id)} 
+                        className="text-red-600 focus:text-red-700">
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+
                 </tr>
               );
             })}
@@ -144,6 +221,15 @@ export default function UtilitiesList() {
     <div className="space-y-2">
       {createTable(meralco, "Meralco")}
       {createTable(water, "Manila Water")}
+      {selectedUtility && (
+      <EditUtilityCard
+        open={editOpen}
+        onClose={() => {setEditOpen(false), setSelectedUtility(null)}}
+        onSave={handleSave}
+        utility={selectedUtility}
+      />
+    )}
     </div>
+    
   );
 }

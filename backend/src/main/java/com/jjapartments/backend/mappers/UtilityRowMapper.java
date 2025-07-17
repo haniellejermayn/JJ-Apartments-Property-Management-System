@@ -12,6 +12,7 @@ public class UtilityRowMapper implements RowMapper<Utility>{
     public Utility mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
         Utility utility = new Utility();
         utility.setId(rs.getInt("id"));
+        utility.setType(rs.getString("type"));
         utility.setPreviousReading(rs.getFloat("previous_reading"));
         utility.setCurrentReading(rs.getFloat("current_reading"));
         utility.setTotalMeter(rs.getFloat("total_meter"));

@@ -3,7 +3,6 @@ import {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
@@ -20,16 +19,16 @@ import { Input } from "@/components/ui/input"
 import {DatePicker} from "@/components/date-picker"
 
 
-export default function AddUtilityButton() {
+export default function AddPaymentButton() {
     const [isOpen, setIsOpen] = useState(false);
     const [unitId, setUnitId] = useState<number>(0);
-    const [type, setType] = useState("");
-    const [currentReading, setCurrentReading] = useState<string>("");
+    const [modeOfPayment, setModeOfPayment] = useState("");
+    const [amount, setAmount] = useState<string>("");
     const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
     const [monthOfStart, setMonthOfStart] = useState<Date | undefined>(undefined);
     const [monthOfEnd, setMonthOfEnd] = useState<Date | undefined>(undefined);
     const [units, setUnits] = useState<Unit[]>([]);
-
+    const modeOptions = ["Cash", "GCash", "Bank Transfer", "Online Payment", "Other"];
     useEffect(() => {
         const fetchUnits = async () => {
             try {
@@ -47,30 +46,30 @@ export default function AddUtilityButton() {
         e.stopPropagation();
 
         const body = {
-            type,
-            currentReading: Number(currentReading),
+            unitId,
+            modeOfPayment,
+            amount: Number(amount),
             dueDate: dueDate?.toISOString().split("T")[0],
             monthOfStart: monthOfStart?.toISOString().split("T")[0],
             monthOfEnd: monthOfEnd?.toISOString().split("T")[0],
-            unitId: Number(unitId)
         }
 
         try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/utilities/add`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create utility record");
+        throw new Error("Failed to create payment record");
       }
 
       setIsOpen(false);
-      window.location.reload(); // Optional: reload to reflect changes
+      window.location.reload();
 
     } catch (error) {
-      console.error("Error submitting utility:", error);
+      console.error("Error submitting payment:", error);
     }
     }
 
@@ -84,26 +83,9 @@ export default function AddUtilityButton() {
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <Card className="w-[600px] bg-card">
             <CardHeader>
-              <CardTitle>Add Utility Record</CardTitle>
+              <CardTitle>Add Payment Record</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="py-1 text-sm text-gray-900">
-                    Type
-                    <Select onValueChange={(value) => setType(value)}>
-                        <SelectTrigger className="w-full h-11 rounded-md border px-3 text-left">
-                            <SelectValue placeholder="Select Type" />
-                        </SelectTrigger>
-                        <SelectContent className="w-full">
-                            <SelectItem key="Meralco" value="Meralco">
-                                Meralco
-                            </SelectItem>
-                            <SelectItem key="Manila Water" value="Manila Water">
-                                Manila Water
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
                 <div className="py-1 text-sm text-gray-900">
                     Unit
                     <Select onValueChange={(value) => setUnitId(Number(value))}>
@@ -119,15 +101,33 @@ export default function AddUtilityButton() {
                         </SelectContent>
                     </Select>
                 </div>
+
+                <div className="py-1 text-sm text-gray-900">
+                    Mode Of Payment
+                    <Select onValueChange={(value) => setModeOfPayment(value)}>
+                        <SelectTrigger className="w-full h-11 rounded-md border px-3 text-left">
+                            <SelectValue placeholder="Select Mode of Payment" />
+                        </SelectTrigger>
+                        <SelectContent className="w-full">
+                            {modeOptions.map((mode) => (
+                                <SelectItem key={mode} value={mode}>
+                                    {mode}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                
                 
                
                 <div className="py-1 text-sm text-gray-900">
-                    Current Reading
+                    Amount
                     <Input
                         type="number"
-                        placeholder="Current Reading"
-                        value={currentReading}
-                        onChange={(e) => setCurrentReading(e.target.value)}
+                        placeholder="Amount"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
                     />
                 </div>
 
@@ -136,19 +136,20 @@ export default function AddUtilityButton() {
                     <DatePicker date={dueDate} setDate={setDueDate}/>
                 </div>
                             
-              <div className="grid gap-4 py-1">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="py-1 text-sm text-gray-900">
-                          Month Of Start
-                          <DatePicker date={monthOfStart} setDate={setMonthOfStart}/>
-                      </div>
+                <div className="grid gap-4 py-1">
+                    <div className="grid grid-cols-2 gap-4">
+                    <div className="py-1 text-sm text-gray-900">
+                            Month Of Start
+                            <DatePicker date={monthOfStart} setDate={setMonthOfStart}/>
+                        </div>
 
-                      <div className="py-1 text-sm text-gray-900">
-                          Month Of End
-                          <DatePicker date={monthOfEnd} setDate={setMonthOfEnd}/>
-                      </div>
+                        <div className="py-1 text-sm text-gray-900">
+                            Month Of End
+                            <DatePicker date={monthOfEnd} setDate={setMonthOfEnd}/>
+                        </div>
+                    </div>
                 </div>
-              </div>
+              
             </CardContent>
 
             <CardFooter className="flex justify-between">

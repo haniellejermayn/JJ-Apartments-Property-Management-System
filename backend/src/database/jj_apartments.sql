@@ -56,29 +56,6 @@ VALUES
 ('D', 'Palm Grove Towers', 'Studio Apartment', 12500.00, 1, '09201234567'),
 ('E', 'Sunrise Villas', '1 Bedroom', 15500.00, 2, '09179998888');
 
--- INSERT INTO `jj_apartments`.`units` (`unit_number`, `num_occupants`) 
--- VALUES
--- ('D', 1),
--- ('A', 0),
--- ('M', 2),
--- ('K', 0),
--- ('R', 3),
--- ('C', 0),
--- ('B', 1),
--- ('F', 0),
--- ('H', 4),
--- ( 'P', 0),
--- ( 'G', 1),
--- ( 'E', 0),
--- ('L', 2),
--- ('S', 0),
--- ('T', 1),
--- ('J', 0),
--- ('Q', 1),
--- ('N', 0),
--- ('U', 2),
--- ('V', 0);
-
 SELECT * FROM units;
 -- -------------------------
 -- Table: tenants
@@ -128,7 +105,7 @@ CREATE TABLE IF NOT EXISTS payments (
   due_date DATE NULL DEFAULT NULL,
   month_of_start DATE NULL DEFAULT NULL,
   month_of_end DATE NULL DEFAULT NULL,
-  is_paid TINYINT NOT NULL,
+  is_paid TINYINT NULL,
   paid_at DATE NULL DEFAULT NULL,
   PRIMARY KEY (id),
   INDEX units_id_idx (units_id ASC),
@@ -208,6 +185,7 @@ CREATE TABLE IF NOT EXISTS expenses (
   id INT NOT NULL AUTO_INCREMENT,
   units_id INT NULL,
   amount DECIMAL(10,2) NOT NULL,
+  mode_of_payment VARCHAR(45) NULL,
   reason VARCHAR(45) NOT NULL,
   date DATE NOT NULL,
   PRIMARY KEY (id),
@@ -218,14 +196,14 @@ CREATE TABLE IF NOT EXISTS expenses (
     ON DELETE SET NULL
 ) ENGINE = InnoDB;
 
-INSERT INTO expenses (units_id, amount, reason, date)
+INSERT INTO expenses (units_id, amount, reason, mode_of_payment, date)
 VALUES 
-  (1, 1500.00, 'Utility Bills', '2025-07-01'),
-  (3, 2200.00, 'Maintenance',   '2025-07-03'),
-  (4, 800.00,  'Miscellaneous', '2025-07-04'),
-  (2, 1750.00, 'Utility Bills', '2025-07-08'),
-  (6, 950.00,  'Miscellaneous', '2025-07-12'),
-  (2, 3000.00, 'Maintenance',   '2025-07-15');
+  (1, 1500.00, 'Utility Bills', 'Bank Transfer', '2025-07-01'),
+  (3, 2200.00, 'Maintenance',  'GCash', '2025-07-03'),
+  (4, 800.00,  'Miscellaneous', 'Cash','2025-07-04'),
+  (2, 1750.00, 'Utility Bills', 'Online Payment','2025-07-08'),
+  (6, 950.00,  'Miscellaneous', 'Cash','2025-07-12'),
+  (2, 3000.00, 'Maintenance',  'GCash', '2025-07-15');
 
 -- -------------------------
 -- Table: monthly_reports
