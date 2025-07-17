@@ -16,19 +16,19 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
-import {DatePicker} from "@/components/date-picker"
+import { DatePicker } from "@/components/date-picker"
 
 
-export default function AddPaymentButton() {
+export default function AddExpenseButton() {
     const [isOpen, setIsOpen] = useState(false);
     const [unitId, setUnitId] = useState<number>(0);
     const [modeOfPayment, setModeOfPayment] = useState("");
     const [amount, setAmount] = useState<string>("");
-    const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
-    const [monthOfStart, setMonthOfStart] = useState<Date | undefined>(undefined);
-    const [monthOfEnd, setMonthOfEnd] = useState<Date | undefined>(undefined);
+    const [reason, setReason] = useState<string>("");
+    const [date, setDate] = useState<Date | undefined>(undefined);
     const [units, setUnits] = useState<Unit[]>([]);
     const modeOptions = ["Cash", "GCash", "Bank Transfer", "Online Payment", "Other"];
+    const reasonOptions = ["Utility Bills", "Miscellaneous", "Maintenance"];
     useEffect(() => {
         const fetchUnits = async () => {
             try {
@@ -47,29 +47,28 @@ export default function AddPaymentButton() {
 
         const body = {
             unitId,
-            modeOfPayment,
             amount: Number(amount),
-            dueDate: dueDate?.toISOString().split("T")[0],
-            monthOfStart: monthOfStart?.toISOString().split("T")[0],
-            monthOfEnd: monthOfEnd?.toISOString().split("T")[0],
+            modeOfPayment,
+            reason,
+            date: date?.toISOString().split("T")[0],
         }
 
         try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/add`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create payment record");
+        throw new Error("Failed to create expense record");
       }
 
       setIsOpen(false);
       window.location.reload();
 
     } catch (error) {
-      console.error("Error submitting payment:", error);
+      console.error("Error submitting expense:", error);
     }
     }
 
@@ -83,7 +82,7 @@ export default function AddPaymentButton() {
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <Card className="w-[600px] bg-card">
             <CardHeader>
-              <CardTitle>Add Payment Record</CardTitle>
+              <CardTitle>Add Expense Record</CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="py-1 text-sm text-gray-900">
@@ -103,25 +102,6 @@ export default function AddPaymentButton() {
                 </div>
 
                 <div className="py-1 text-sm text-gray-900">
-                    Mode Of Payment
-                    <Select onValueChange={(value) => setModeOfPayment(value)}>
-                        <SelectTrigger className="w-full h-11 rounded-md border px-3 text-left">
-                            <SelectValue placeholder="Select Mode of Payment" />
-                        </SelectTrigger>
-                        <SelectContent className="w-full">
-                            {modeOptions.map((mode) => (
-                                <SelectItem key={mode} value={mode}>
-                                    {mode}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                
-                
-               
-                <div className="py-1 text-sm text-gray-900">
                     Amount
                     <Input
                         type="number"
@@ -130,25 +110,48 @@ export default function AddPaymentButton() {
                         onChange={(e) => setAmount(e.target.value)}
                     />
                 </div>
-
-                <div className="py-1 text-sm text-gray-900">
-                    Due Date
-                    <DatePicker date={dueDate} setDate={setDueDate}/>
-                </div>
-                            
                 <div className="grid gap-4 py-1">
                     <div className="grid grid-cols-2 gap-4">
-                    <div className="py-1 text-sm text-gray-900">
-                            Month Of Start
-                            <DatePicker date={monthOfStart} setDate={setMonthOfStart}/>
+                        <div className="py-1 text-sm text-gray-900">
+                            Mode Of Payment
+                            <Select onValueChange={(value) => setModeOfPayment(value)}>
+                                <SelectTrigger className="w-full h-11 rounded-md border px-3 text-left">
+                                    <SelectValue placeholder="Select Mode of Payment" />
+                                </SelectTrigger>
+                                <SelectContent className="w-full">
+                                    {modeOptions.map((mode) => (
+                                        <SelectItem key={mode} value={mode}>
+                                            {mode}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="py-1 text-sm text-gray-900">
-                            Month Of End
-                            <DatePicker date={monthOfEnd} setDate={setMonthOfEnd}/>
+                            Reason
+                            <Select onValueChange={(value) => setReason(value)}>
+                                <SelectTrigger className="w-full h-11 rounded-md border px-3 text-left">
+                                    <SelectValue placeholder="Select Reason" />
+                                </SelectTrigger>
+                                <SelectContent className="w-full">
+                                    {reasonOptions.map((reason) => (
+                                        <SelectItem key={reason} value={reason}>
+                                            {reason}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
+              </div>
+
+
+                <div className="py-1 text-sm text-gray-900">
+                    Date
+                    <DatePicker date={date} setDate={setDate}/>
                 </div>
+                            
               
             </CardContent>
 

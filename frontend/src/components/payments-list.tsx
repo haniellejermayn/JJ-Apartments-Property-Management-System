@@ -3,8 +3,14 @@ import { useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Unit } from '@/components/expenses-list'
 import AddPaymentButton from "@/components/add-payment-button";
-
-type Payment = {
+import EditPaymentCard from './edit-payment-card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+export type Payment = {
     id: number,
     unitId: number,
     modeOfPayment: string,
@@ -22,7 +28,51 @@ export default function PaymentsList() {
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false)
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
 
+  const handleEdit = (u: Payment) => {
+    setSelectedPayment(u)
+    setEditOpen(true)
+  }
+
+  const handleDelete = async (id: number) => {
+    try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/${id}`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Delete failed with status ${res.status}`);
+        }
+        console.log("Payment deleted successfully");
+
+        window.location.reload();
+    } catch (error) {
+        console.error("Error deleting payment:", error);
+    }
+  }
+  
+  const handleSave = async (updated: Payment) => {
+      const body = updated
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/update/${updated.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+  
+        if (!res.ok) {
+          throw new Error(`Update failed with status ${res.status}`);
+        }
+  
+        console.log("Payment updated successfully");
+      } catch (error) {
+        console.error("Error updating payment:", error);
+      }
+  
+    }
   useEffect(() => {
     const fetchPayments = async () => {
       try {
@@ -83,6 +133,7 @@ export default function PaymentsList() {
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">For the Month Of</th>
               <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Paid</th>
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid At</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -117,6 +168,28 @@ export default function PaymentsList() {
                       ? new Date(p.paidAt).toLocaleDateString()
                       : '—'}
                   </td>
+                  <td className="px-6 py-4 text-sm text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          ⋮
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem 
+                        onClick={() => handleEdit(p)}
+                        >
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                        onClick={() => handleDelete(p.id)} 
+                        className="text-red-600 focus:text-red-700">
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
                 </tr>
               );
             })}
@@ -132,6 +205,15 @@ export default function PaymentsList() {
   return (
     <div className="space-y-2">
       {createTable(payments)}
+
+      {selectedPayment && (
+        <EditPaymentCard
+          open={editOpen}
+          onClose={() => {setEditOpen(false), setSelectedPayment(null)}}
+          onSave={handleSave}
+          payment={selectedPayment}
+        />
+      )}
     </div>
   );
 }

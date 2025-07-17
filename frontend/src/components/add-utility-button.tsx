@@ -52,7 +52,7 @@ export default function AddUtilityButton() {
             dueDate: dueDate?.toISOString().split("T")[0],
             monthOfStart: monthOfStart?.toISOString().split("T")[0],
             monthOfEnd: monthOfEnd?.toISOString().split("T")[0],
-            unitId
+            unitId: Number(unitId)
         }
 
         try {
@@ -87,7 +87,6 @@ export default function AddUtilityButton() {
               <CardTitle>Add Utility Record</CardTitle>
             </CardHeader>
             <CardContent>
-
                 <div className="py-1 text-sm text-gray-900">
                     Type
                     <Select onValueChange={(value) => setType(value)}>
@@ -137,16 +136,19 @@ export default function AddUtilityButton() {
                     <DatePicker date={dueDate} setDate={setDueDate}/>
                 </div>
                             
-                <div className="py-1 text-sm text-gray-900">
-                    Month Of Start
-                    <DatePicker date={monthOfStart} setDate={setMonthOfStart}/>
-                </div>
+              <div className="grid gap-4 py-1">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="py-1 text-sm text-gray-900">
+                          Month Of Start
+                          <DatePicker date={monthOfStart} setDate={setMonthOfStart}/>
+                      </div>
 
-                <div className="py-1 text-sm text-gray-900">
-                    Month Of End
-                    <DatePicker date={monthOfEnd} setDate={setMonthOfEnd}/>
+                      <div className="py-1 text-sm text-gray-900">
+                          Month Of End
+                          <DatePicker date={monthOfEnd} setDate={setMonthOfEnd}/>
+                      </div>
                 </div>
-              
+              </div>
             </CardContent>
 
             <CardFooter className="flex justify-between">

@@ -54,8 +54,15 @@ public class UtilityRepository{
         float rateValue = ((BigDecimal) rate.get("rate")).floatValue();
         
         String meterSql = "SELECT current_reading FROM utilities WHERE units_id = ? AND type = ? ORDER BY month_of_end DESC LIMIT 1";
-        BigDecimal readingDecimal = jdbcTemplate.queryForObject(meterSql, BigDecimal.class, utility.getUnitId(), utility.getType());
-        float previousReading = (readingDecimal != null) ? readingDecimal.floatValue() : 0f;
+        List<BigDecimal> readings = jdbcTemplate.query(
+            meterSql,
+            (rs, rowNum) -> rs.getBigDecimal("current_reading"),
+            utility.getUnitId(),
+            utility.getType()
+        );
+        BigDecimal readingDecimal = readings.isEmpty() ? BigDecimal.ZERO : readings.get(0);
+
+        float previousReading = readingDecimal.floatValue();    
         if (utility.getCurrentReading() < previousReading) {
             throw new ErrorException("Current reading cannot be less than previous reading");
         }
@@ -74,7 +81,7 @@ public class UtilityRepository{
     }
 
     public Utility findById(int id) {
-        String sql = "SELECT * FROM utilites WHERE id = ?";
+        String sql = "SELECT * FROM utilities WHERE id = ?";
         try {
             return jdbcTemplate.queryForObject(sql, new UtilityRowMapper(), id);
         } catch (EmptyResultDataAccessException e) {
@@ -85,8 +92,24 @@ public class UtilityRepository{
     public int update(int id, Utility utility) {
         findById(id);
         validate(utility);
-        String sql = "UPDATE utilities SET type = ?, previous_reading = ?, current_reading = ?, total_meter = ?, total_amount = ?, due_date = ?, month_of_start = ?, month_of_end = ?, is_paid = ?, paid_at = ? WHERE id = ?";
-        return jdbcTemplate.update(sql, utility.getType(), utility.getPreviousReading(), utility.getCurrentReading(), utility.getTotalMeter(), utility.getTotalAmount(), utility.getDueDate(), utility.getMonthOfStart(), utility.getMonthOfEnd(), utility.getIsPaid(), utility.getPaidAt(), id);
+        // Auto-calculate total meter and total amount
+        Float prev = utility.getPreviousReading();
+        Float curr = utility.getCurrentReading();
+
+        if (prev != null && curr != null && curr >= prev) {
+            float totalMeter = curr - prev;
+            utility.setTotalMeter(totalMeter);
+
+            String rateSql = "SELECT rate FROM rates WHERE id = ?";
+            Float rate = jdbcTemplate.queryForObject(rateSql, Float.class, utility.getRateId());
+
+            if (rate == null) {
+                throw new RuntimeException("Rate not found for rate ID: " + utility.getRateId());
+            }
+            utility.setTotalAmount(utility.getTotalMeter() * rate);
+        }
+        String sql = "UPDATE utilities SET type = ?, units_id = ?, previous_reading = ?, current_reading = ?, total_meter = ?, total_amount = ?, due_date = ?, month_of_start = ?, month_of_end = ?, is_paid = ?, paid_at = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, utility.getType(), utility.getUnitId(), utility.getPreviousReading(), utility.getCurrentReading(), utility.getTotalMeter(), utility.getTotalAmount(), utility.getDueDate(), utility.getMonthOfStart(), utility.getMonthOfEnd(), utility.getIsPaid(), utility.getPaidAt(), id);
     }
 
     public List<Utility> findByUnit(int id) {
