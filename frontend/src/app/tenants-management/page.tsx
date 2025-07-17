@@ -173,20 +173,49 @@ export default function TenantsManagementPage() {
     };
 
     const handleUpdateTenant = async (updatedData: any) => {
-        if (editingTenant) {
-            
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants/update/${editingTenant.id}`,{
+        if (!editingTenant) {
+            console.error('No tenant selected for update.');
+            return;
+        }
+        let unitIdForUpdate = editingTenant.unit.id; 
+        if (updatedData.unitName !== editingTenant.unit.name || updatedData.unitNum !== editingTenant.unit.unitNumber) {
+            console.log("Unit details in form changed. Attempting to find new unit ID...");
+            const newUnitId = await getUnit_id(updatedData.unitName, updatedData.unitNum);
+            if (newUnitId === null || newUnitId === undefined) {
+                console.error('Error: Could not retrieve new unit ID for the updated unit details. Please ensure the Unit Name and Unit No. are valid.');
+                alert('Failed to update tenant: New unit not found or invalid unit details. Please check the Unit Name and Unit No.');
+                return;
+            }
+            unitIdForUpdate = newUnitId;
+        }
+        
+        const tenantUpdatePayload = {
+            firstName: updatedData.firstName,
+            middleName: updatedData.middleName || null,
+            lastName: updatedData.lastName,
+            email: updatedData.email,
+            phoneNumber: updatedData.phoneNumber,
+            unit: unitIdForUpdate 
+        };
+
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/tenants/update/${editingTenant.id}`, {
                 method: 'PATCH',
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(updatedData)
-            })
-
-
-            if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-
+                body: JSON.stringify(tenantUpdatePayload)
+            });
             
-            console.log('Tenant updated:', updatedData);
-            toggleModal();
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ message: 'Unknown error' }));
+                throw new Error(`Failed to update tenant: ${res.status} ${res.statusText} - ${errorData.message || ''}`);
+            }
+            
+            console.log('Tenant updated successfully:', updatedData);
+            toggleModal(); 
+            fetchTenants(); 
+        } catch (error) {
+            console.error('Error updating tenant:', error);
+            alert('Error updating tenant. Please check console for details.');
         }
     };
 
