@@ -9,7 +9,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import EditUtilityCard from './edit-utility-card';
+import EditUtilityCard from './edit-utility-card'
+import FilterModal from './filter-modal'
+import { SlidersHorizontal } from 'lucide-react';
 
 export type Utility = {
   id: number,
@@ -33,8 +35,35 @@ export default function UtilitiesList() {
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [editOpen, setEditOpen] = useState(false)
-  const [selectedUtility, setSelectedUtility] = useState<Utility | null>(null)
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedUtility, setSelectedUtility] = useState<Utility | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filters, setFilters] = useState<{unit?: String, month?: String, year?: String}>({});
+
+  const unitMap = useMemo(() => {
+    const map = new Map<number, string>();
+    units.forEach((u) => {
+      map.set(u.id, `Unit ${u.unitNumber} - ${u.name}`);
+    });
+    return map;
+  }, [units]);
+
+  const handleApplyFilters = (newFilters: typeof filters) => {
+    setFilters(newFilters);
+    window.location.reload();
+  }
+
+  const filteredUtility = (data : Utility[]) => {
+    return data.filter((u) => {
+    const unit = unitMap.get(u.unitId)?.toLowerCase() || "";
+    const date = new Date(u.paidAt);
+    const matchesUnit = !filters.unit || unit.includes(filters.unit.toLowerCase());
+    const matchesMonth = !filters.month || String(date.getMonth() + 1).padStart(2, "0") === filters.month;
+    const matchesYear = !filters.year || String(date.getFullYear()) === filters.year;
+
+    return matchesUnit && matchesMonth && matchesYear;
+    })
+  }
 
   const handleEdit = (u: Utility) => {
     setSelectedUtility(u)
@@ -119,13 +148,6 @@ export default function UtilitiesList() {
     fetchUtilities();
   }, []);
 
-  const unitMap = useMemo(() => {
-    const map = new Map<number, string>();
-    units.forEach((u) => {
-      map.set(u.id, `Unit ${u.unitNumber} - ${u.name}`);
-    });
-    return map;
-  }, [units]);
 
   const createTable = (data: Utility[], type: string) => {
     const isMeralco = type.toLowerCase().includes("meralco");
@@ -135,7 +157,14 @@ export default function UtilitiesList() {
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h2 className="text-lg font-medium text-gray-900">{type}</h2>
+        <div className="flex items-center gap-2">
           <AddUtilityButton />
+          <Button variant="outline" size="icon" onClick={() => setFilterOpen(true)}>
+            <SlidersHorizontal className="w-5 h-5" />
+          </Button>
+        </div>
+          
+          
       </div>
       <div className="overflow-x-auto rounded shadow border">
         <table className="w-full">
@@ -222,8 +251,8 @@ export default function UtilitiesList() {
   if (error) return <p className="text-red-600">{error}</p>;
   return (
     <div className="space-y-2">
-      {createTable(meralco, "Meralco")}
-      {createTable(water, "Manila Water")}
+      {createTable(filteredUtility(meralco), "Meralco")}
+      {createTable(filteredUtility(water), "Manila Water")}
       {selectedUtility && (
       <EditUtilityCard
         open={editOpen}
@@ -231,7 +260,16 @@ export default function UtilitiesList() {
         onSave={handleSave}
         utility={selectedUtility}
       />
-    )}
+      )}
+      <FilterModal 
+            open={filterOpen}
+            onClose={() => {setFilterOpen(false)}}
+            onApply={(newFilters) => {
+              handleApplyFilters(newFilters);
+              setFilterOpen(false);
+            }}
+          />
+      
     </div>
     
   );
