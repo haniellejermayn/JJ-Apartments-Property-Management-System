@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button"
 import EditUtilityCard from './edit-utility-card'
 import FilterModal from './filter-modal'
+import { DeleteModal } from './delete-modal';
 import { SlidersHorizontal } from 'lucide-react';
 
 export type Utility = {
@@ -39,6 +40,8 @@ export default function UtilitiesList() {
   const [selectedUtility, setSelectedUtility] = useState<Utility | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState<{unit?: number, month?: String, year?: String}>({});
+  const [showConfirm, setShowConfirm] = useState(false);
+
 
   
 
@@ -62,23 +65,33 @@ export default function UtilitiesList() {
     setEditOpen(true)
   }
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = (u: Utility) => {
+    setSelectedUtility(u)
+    setShowConfirm(true)
+  }
+
+  const confirmDelete = async (id: number) => {
+    setShowConfirm(false);
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/utilities/${id}`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-        });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/utilities/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
 
-        if (!res.ok) {
-          throw new Error(`Delete failed with status ${res.status}`);
-        }
-        console.log("Utility deleted successfully");
+      if (!res.ok) {
+        throw new Error(`Delete failed with status ${res.status}`);
+      }
+      console.log("Utility deleted successfully");
 
-        window.location.reload();
+      window.location.reload();
     } catch (error) {
         console.error("Error deleting utility:", error);
     }
-  }
+  };
+
+  const cancelDelete = () => {
+    setShowConfirm(false);
+  };
 
   const handleSave = async (updated: Utility) => {
     const body = updated
@@ -228,7 +241,7 @@ export default function UtilitiesList() {
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem 
-                        onClick={() => handleDelete(u.id)} 
+                        onClick={() => handleDelete(u)} 
                         className="text-red-600 focus:text-red-700">
                           Delete
                         </DropdownMenuItem>
@@ -269,6 +282,14 @@ export default function UtilitiesList() {
         }}
         units={units}
       />
+      {selectedUtility && <DeleteModal
+        open={showConfirm}
+        title="Delete Record"
+        message="Are you sure you want to delete this record? This action cannot be undone."
+        onCancel={cancelDelete}
+        onConfirm={() => confirmDelete(selectedUtility.id)}
+      />}
+      
       
     </div>
     

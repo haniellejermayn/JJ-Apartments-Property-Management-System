@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import EditExpenseCard from './edit-expense-card';
 import FilterModal from './filter-modal';
+import { DeleteModal } from './delete-modal';
 import { SlidersHorizontal } from 'lucide-react';
 
 export type Expense = {
@@ -40,7 +41,7 @@ export default function ExpensesList() {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null)
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState<{unit?: number, month?: String, year?: String}>({});
-  
+  const [showConfirm, setShowConfirm] = useState(false);
   
   const handleApplyFilters = (newFilters: typeof filters) => {
     setFilters(newFilters);
@@ -57,28 +58,56 @@ export default function ExpensesList() {
     })
   }
     
-  const handleEdit = (u: Expense) => {
-    setSelectedExpense(u)
+  const handleEdit = (e: Expense) => {
+    setSelectedExpense(e)
     setEditOpen(true)
   }
-
-  const handleDelete = async (id: number) => {
+  const handleDelete = (e: Expense) => {
+    setSelectedExpense(e)
+    setShowConfirm(true)
+  }
+  
+  const confirmDelete = async (id: number) => {
+    setShowConfirm(false);
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/${id}`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-        });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
 
-        if (!res.ok) {
-          throw new Error(`Delete failed with status ${res.status}`);
-        }
-        console.log("Expense deleted successfully");
+      if (!res.ok) {
+        throw new Error(`Delete failed with status ${res.status}`);
+      }
+      console.log("Expense deleted successfully");
 
-        window.location.reload();
+      window.location.reload();
     } catch (error) {
         console.error("Error deleting expense:", error);
     }
-  }
+  };
+
+const cancelDelete = () => {
+  setShowConfirm(false);
+};
+
+  // const handleDelete = async (id: number) => {
+  //   try {
+  //     if (!window.confirm("Are you sure you want to delete this record?")) return;
+  //     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/${id}`, {
+  //       method: "DELETE",
+  //       headers: { "Content-Type": "application/json" },
+  //     });
+
+  //     if (!res.ok) {
+  //       throw new Error(`Delete failed with status ${res.status}`);
+  //     }
+  //     console.log("Expense deleted successfully");
+
+  //     window.location.reload();
+  //   } catch (error) {
+  //       console.error("Error deleting expense:", error);
+  //   }
+  // }
   
   const handleSave = async (updated: Expense) => {
       const body = updated
@@ -191,7 +220,7 @@ export default function ExpensesList() {
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem 
-                        onClick={() => handleDelete(e.id)} 
+                        onClick={() => handleDelete(e)} 
                         className="text-red-600 focus:text-red-700">
                           Delete
                         </DropdownMenuItem>
@@ -230,6 +259,14 @@ export default function ExpensesList() {
         }}
         units={units}
       />
+      {selectedExpense && 
+        <DeleteModal
+          open={showConfirm}
+          title="Delete Record"
+          message="Are you sure you want to delete this record? This action cannot be undone."
+          onCancel={cancelDelete}
+          onConfirm={() => confirmDelete(selectedExpense.id)}
+        />}
     </div>
   );
 }

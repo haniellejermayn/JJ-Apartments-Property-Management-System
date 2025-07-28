@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import FilterModal from './filter-modal';
+import { DeleteModal } from './delete-modal';
 import { SlidersHorizontal } from 'lucide-react';
 
 export type Payment = {
@@ -35,7 +36,7 @@ export default function PaymentsList() {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState<{unit?: number, month?: String, year?: String}>({});
-
+  const [showConfirm, setShowConfirm] = useState(false);
   
 
   const handleApplyFilters = (newFilters: typeof filters) => {
@@ -53,28 +54,37 @@ export default function PaymentsList() {
     })
   }
   
-  const handleEdit = (u: Payment) => {
-    setSelectedPayment(u)
+  const handleEdit = (p: Payment) => {
+    setSelectedPayment(p)
     setEditOpen(true)
   }
-
-  const handleDelete = async (id: number) => {
-    try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/${id}`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-        });
-
-        if (!res.ok) {
-          throw new Error(`Delete failed with status ${res.status}`);
-        }
-        console.log("Payment deleted successfully");
-
-        window.location.reload();
-    } catch (error) {
-        console.error("Error deleting payment:", error);
-    }
+  const handleDelete = (p: Payment) => {
+    setSelectedPayment(p)
+    setShowConfirm(true)
   }
+    
+  const confirmDelete = async (id: number) => {
+    setShowConfirm(false);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Delete failed with status ${res.status}`);
+      }
+      console.log("Payment deleted successfully");
+
+      window.location.reload();
+    } catch (error) {
+      console.error("Error deleting payment:", error);
+    }
+  };
+  
+  const cancelDelete = () => {
+    setShowConfirm(false);
+  };
   
   const handleSave = async (updated: Payment) => {
       const body = updated
@@ -211,7 +221,7 @@ export default function PaymentsList() {
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem 
-                        onClick={() => handleDelete(p.id)} 
+                        onClick={() => handleDelete(p)} 
                         className="text-red-600 focus:text-red-700">
                           Delete
                         </DropdownMenuItem>
@@ -251,7 +261,14 @@ export default function PaymentsList() {
         }}
         units={units}
       />
-
+      {selectedPayment && 
+        <DeleteModal
+          open={showConfirm}
+          title="Delete Record"
+          message="Are you sure you want to delete this record? This action cannot be undone."
+          onCancel={cancelDelete}
+          onConfirm={() => confirmDelete(selectedPayment.id)}
+      />}
     </div>
   );
 }
