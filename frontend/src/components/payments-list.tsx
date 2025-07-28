@@ -10,6 +10,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import FilterModal from './filter-modal';
+import { SlidersHorizontal } from 'lucide-react';
+
 export type Payment = {
     id: number,
     unitId: number,
@@ -30,7 +33,26 @@ export default function PaymentsList() {
   const [error, setError] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false)
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filters, setFilters] = useState<{unit?: number, month?: String, year?: String}>({});
 
+  
+
+  const handleApplyFilters = (newFilters: typeof filters) => {
+    setFilters(newFilters);
+  }
+
+  const filteredPayments = (data : Payment[]) => {
+    return data.filter((p) => {
+    const date = new Date(p.paidAt);
+    const matchesUnit = !filters.unit || p.unitId == filters.unit;
+    const matchesMonth = !filters.month || String(date.getMonth() + 1).padStart(2, "0") === filters.month;
+    const matchesYear = !filters.year || String(date.getFullYear()) === filters.year;
+
+    return matchesUnit && matchesMonth && matchesYear;
+    })
+  }
+  
   const handleEdit = (u: Payment) => {
     setSelectedPayment(u)
     setEditOpen(true)
@@ -121,7 +143,12 @@ export default function PaymentsList() {
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h2 className="text-lg font-medium text-gray-900">Payments</h2>
-        <AddPaymentButton/>
+        <div className="flex items-center gap-2">
+          <AddPaymentButton/>
+          <Button variant="outline" size="icon" onClick={() => setFilterOpen(true)}>
+            <SlidersHorizontal className="w-5 h-5" />
+          </Button>
+        </div>
       </div>
       <div className="overflow-x-auto rounded shadow border">
         <table className="w-full">
@@ -205,7 +232,7 @@ export default function PaymentsList() {
   if (error) return <p className="text-red-600">{error}</p>;
   return (
     <div className="space-y-2">
-      {createTable(payments)}
+      {createTable(filteredPayments(payments))}
 
       {selectedPayment && (
         <EditPaymentCard
@@ -215,6 +242,16 @@ export default function PaymentsList() {
           payment={selectedPayment}
         />
       )}
+      <FilterModal 
+        open={filterOpen}
+        onClose={() => {setFilterOpen(false)}}
+        onApply={(newFilters) => {
+          handleApplyFilters(newFilters);
+          setFilterOpen(false);
+        }}
+        units={units}
+      />
+
     </div>
   );
 }

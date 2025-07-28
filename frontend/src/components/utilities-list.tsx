@@ -38,26 +38,18 @@ export default function UtilitiesList() {
   const [editOpen, setEditOpen] = useState(false);
   const [selectedUtility, setSelectedUtility] = useState<Utility | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [filters, setFilters] = useState<{unit?: String, month?: String, year?: String}>({});
+  const [filters, setFilters] = useState<{unit?: number, month?: String, year?: String}>({});
 
-  const unitMap = useMemo(() => {
-    const map = new Map<number, string>();
-    units.forEach((u) => {
-      map.set(u.id, `Unit ${u.unitNumber} - ${u.name}`);
-    });
-    return map;
-  }, [units]);
+  
 
   const handleApplyFilters = (newFilters: typeof filters) => {
     setFilters(newFilters);
-    window.location.reload();
   }
 
   const filteredUtility = (data : Utility[]) => {
     return data.filter((u) => {
-    const unit = unitMap.get(u.unitId)?.toLowerCase() || "";
     const date = new Date(u.paidAt);
-    const matchesUnit = !filters.unit || unit.includes(filters.unit.toLowerCase());
+    const matchesUnit = !filters.unit || u.unitId == filters.unit;
     const matchesMonth = !filters.month || String(date.getMonth() + 1).padStart(2, "0") === filters.month;
     const matchesYear = !filters.year || String(date.getFullYear()) === filters.year;
 
@@ -148,6 +140,13 @@ export default function UtilitiesList() {
     fetchUtilities();
   }, []);
 
+  const unitMap = useMemo(() => {
+    const map = new Map<number, string>();
+    units.forEach((u) => {
+      map.set(u.id, `Unit ${u.unitNumber} - ${u.name}`);
+    });
+    return map;
+  }, [units]);
 
   const createTable = (data: Utility[], type: string) => {
     const isMeralco = type.toLowerCase().includes("meralco");
@@ -262,13 +261,14 @@ export default function UtilitiesList() {
       />
       )}
       <FilterModal 
-            open={filterOpen}
-            onClose={() => {setFilterOpen(false)}}
-            onApply={(newFilters) => {
-              handleApplyFilters(newFilters);
-              setFilterOpen(false);
-            }}
-          />
+        open={filterOpen}
+        onClose={() => {setFilterOpen(false)}}
+        onApply={(newFilters) => {
+          handleApplyFilters(newFilters);
+          setFilterOpen(false);
+        }}
+        units={units}
+      />
       
     </div>
     

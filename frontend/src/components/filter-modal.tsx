@@ -5,23 +5,27 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
+import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "./ui/select"
+import { Unit } from "./expenses-list"
+
 
 type FilterModalProps = {
   open: boolean;
   onClose: () => void;
   onApply: (filters: {
-    unit?: string;
+    unit?: number;
     month?: string;
     year?: string;
   }) => void;
+  units: Unit[]
 };
 
-export default function FilterModal({ open, onClose, onApply }: FilterModalProps) {
+export default function FilterModal({ open, onClose, onApply, units }: FilterModalProps) {
   const [filterByUnit, setFilterByUnit] = useState(false);
   const [filterByMonth, setFilterByMonth] = useState(false);
   const [filterByYear, setFilterByYear] = useState(false);
 
-  const [unit, setUnit] = useState("");
+  const [unit, setUnit] = useState(0);
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
 
@@ -49,11 +53,18 @@ export default function FilterModal({ open, onClose, onApply }: FilterModalProps
             <label htmlFor="unit" className="text-sm">Filter by Unit</label>
           </div>
           {filterByUnit && (
-            <Input
-              placeholder="Enter unit number"
-              value={unit}
-              onChange={(e) => setUnit(e.target.value)}
-            />
+            <Select onValueChange={(value) => setUnit(Number(value))}>
+              <SelectTrigger className="w-full h-11 rounded-md border px-3 text-left">
+                  <SelectValue placeholder="Select Unit" />
+              </SelectTrigger>
+              <SelectContent className="w-full">
+                  {units.map((u) => (
+                  <SelectItem key={u.id} value={String(u.id)}>
+                      Unit {u.unitNumber} - {u.name}
+                  </SelectItem>
+                  ))}
+              </SelectContent>
+          </Select>
           )}
 
           {/* Filter by Month */}
@@ -62,17 +73,21 @@ export default function FilterModal({ open, onClose, onApply }: FilterModalProps
             <label htmlFor="month" className="text-sm">Filter by Month</label>
           </div>
           {filterByMonth && (
-            <select
-              className="w-full border rounded px-2 py-1"
-              value={month}
-              onChange={(e) => setMonth(e.target.value)}
-            >
-              <option value="">Select Month</option>
-              {Array.from({ length: 12 }, (_, i) => {
-                const m = String(i + 1).padStart(2, "0");
-                return <option key={m} value={m}>{m}</option>;
-              })}
-            </select>
+            <Select value={month} onValueChange={setMonth}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Month" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 12 }, (_, i) => {
+                  const m = String(i + 1).padStart(2, "0")
+                  return (
+                    <SelectItem key={m} value={m}>
+                      {m}
+                    </SelectItem>
+                  )
+                })}
+              </SelectContent>
+            </Select>
           )}
 
           {/* Filter by Year */}
