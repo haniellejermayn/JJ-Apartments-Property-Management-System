@@ -28,9 +28,9 @@ public class MonthlyReportRepository{
        
     // }
 
-    public int delete(int id, int year, int month) {
-        String sql = "DELETE FROM monthly_reports WHERE units_id = ? AND year = ? AND month = ?";
-        return jdbcTemplate.update(sql, id, year, month);
+    public int delete(int year, int month) {
+        String sql = "DELETE FROM monthly_reports WHERE year = ? AND month = ?";
+        return jdbcTemplate.update(sql, year, month);
     }
 
     public float sumPayments(int year, int month) {

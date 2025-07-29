@@ -59,7 +59,7 @@ public class ExpenseRepository{
     }
 
     public float getMonthlyAmountById(int id, int year, int month) {
-        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM expenses WHERE units_id = ? AND YEAR(date) = ? AND MONTH(date) = ?";
+        String sql = "SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE units_id = ? AND YEAR(date) = ? AND MONTH(date) = ?";
         Float amount = jdbcTemplate.queryForObject(sql, Float.class, id, year, month);
         return amount != null? amount : 0.0f;
     }

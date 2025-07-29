@@ -123,7 +123,7 @@ public class UtilityRepository{
     }
     
     public float getMonthlyAmountByUnitId(int id, int year, int month) {
-        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM utilities WHERE units_id = ? AND YEAR(date) = ? AND MONTH(date) = ? AND is_paid = 1";
+        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM utilities WHERE units_id = ? AND is_paid = 1 AND YEAR(paid_at) = ? AND MONTH(paid_at) = ? ";
         Float amount = jdbcTemplate.queryForObject(sql, Float.class, id, year, month);
         return amount != null? amount : 0.0f;
     }

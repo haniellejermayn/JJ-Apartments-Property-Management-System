@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.dao.DuplicateKeyException;
 
 import com.jjapartments.backend.models.MonthlyReport;
-import com.jjapartments.backend.models.Payment;
 import com.jjapartments.backend.repository.MonthlyReportRepository;
 import com.jjapartments.backend.repository.PaymentRepository;
 import com.jjapartments.backend.repository.UnitRepository;
@@ -17,7 +16,6 @@ import com.jjapartments.backend.repository.UtilityRepository;
 import com.jjapartments.backend.repository.ExpenseRepository;
 import com.jjapartments.backend.exception.ErrorException;
 import com.jjapartments.backend.models.Unit;
-import com.jjapartments.backend.models.Payment;
 @RestController
 @RequestMapping("/api/monthlyreports")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -25,9 +23,13 @@ public class MonthlyReportController {
 
     @Autowired
     private MonthlyReportRepository monthlyReportRepository;
+    @Autowired
     private UnitRepository unitRepository;
+    @Autowired
     private PaymentRepository paymentRepository;
+    @Autowired
     private ExpenseRepository expenseRepository;
+    @Autowired
     private UtilityRepository utilityRepository;
 
     @PostMapping("/add")
@@ -72,9 +74,9 @@ public class MonthlyReportController {
     }
 
     // Delete
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteMonthlyReport(@PathVariable int id, @RequestParam("year") int year, @RequestParam("month") int month) {
-        int rowsAffected = monthlyReportRepository.delete(id, year, month);
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteMonthlyReport(@RequestParam("year") int year, @RequestParam("month") int month) {
+        int rowsAffected = monthlyReportRepository.delete(year, month);
         if (rowsAffected > 0) {
             return ResponseEntity.ok("Monthly Report deleted successfully.");
         } else {
