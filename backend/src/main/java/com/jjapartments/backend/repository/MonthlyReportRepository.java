@@ -28,9 +28,9 @@ public class MonthlyReportRepository{
        
     // }
 
-    public int delete(int id) {
-        String sql = "DELETE FROM monthly_reports WHERE id = ?";
-        return jdbcTemplate.update(sql, id);
+    public int delete(int id, int year, int month) {
+        String sql = "DELETE FROM monthly_reports WHERE units_id = ? AND year = ? AND month = ?";
+        return jdbcTemplate.update(sql, id, year, month);
     }
 
     public float sumPayments(int year, int month) {
@@ -49,15 +49,28 @@ public class MonthlyReportRepository{
         return (expenseSum != null ? expenseSum : 0f) + (utilitySum != null ? utilitySum : 0f);
     }
 
+    // public int add(MonthlyReport report) {
+    //     String sql = "INSERT INTO monthly_reports(year, month, total_earnings, total_expenses, net_income) " +
+    //                  "VALUES (?, ?, ?, ?, ?)";
+    //     return jdbcTemplate.update(sql,
+    //             report.getYear(),
+    //             report.getMonth(),
+    //             report.getTotalEarnings(),
+    //             report.getTotalExpenses(),
+    //             report.getNetIncome());
+    // }
+
     public int add(MonthlyReport report) {
-        String sql = "INSERT INTO monthly_reports(year, month, total_earnings, total_expenses, net_income) " +
-                     "VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO monthly_reports(year, month, units_id, monthly_dues, utility_bills, expenses) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
         return jdbcTemplate.update(sql,
-                report.getYear(),
-                report.getMonth(),
-                report.getTotalEarnings(),
-                report.getTotalExpenses(),
-                report.getNetIncome());
+            report.getYear(),
+            report.getMonth(),
+            report.getUnitId(),
+            report.getMonthlyDues(),
+            report.getUtilityBills(),
+            report.getExpenses()
+        );
     }
 
     public MonthlyReport findById(int id) {

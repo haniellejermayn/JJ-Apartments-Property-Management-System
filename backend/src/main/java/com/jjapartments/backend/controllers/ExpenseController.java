@@ -61,9 +61,9 @@ public class ExpenseController {
     }
 
     // Find by year and month
-    @GetMapping("/{year}/{month}")
-    public ResponseEntity<List<Expense>> findByYearAndMonth(@PathVariable int year, @PathVariable int month) {
-        List<Expense> expenses = expenseRepository.findByYearAndMonth(year, month);
-        return ResponseEntity.ok(expenses);
+    @GetMapping("/{id}/{year}/{month}")
+    public ResponseEntity<Float> findByYearAndMonth(@PathVariable int id, @PathVariable int year, @PathVariable int month) {
+        float amount = expenseRepository.getMonthlyAmountById(id, year, month);
+        return ResponseEntity.ok(amount);
     }
 }

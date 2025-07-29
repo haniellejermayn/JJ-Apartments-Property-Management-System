@@ -14,9 +14,10 @@ public class MonthlyReportRowMapper implements RowMapper<MonthlyReport>{
         monthlyReport.setId(rs.getInt("id"));
         monthlyReport.setYear(rs.getInt("year"));
         monthlyReport.setMonth(rs.getInt("month"));
-        monthlyReport.setTotalEarnings(rs.getFloat("total_earnings"));
-        monthlyReport.setTotalExpenses(rs.getFloat("total_expenses"));
-        monthlyReport.setNetIncome(rs.getFloat("net_income"));
+        monthlyReport.setUnitId(rs.getInt("units_id"));
+        monthlyReport.setMonthlyDues(rs.getFloat("monthly_dues"));
+        monthlyReport.setUtilityBills(rs.getFloat("utility_bills"));
+        monthlyReport.setExpenses(rs.getFloat("expenses"));
         return monthlyReport;
     }
 }

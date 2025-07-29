@@ -58,8 +58,9 @@ public class ExpenseRepository{
         return jdbcTemplate.update(sql, expense.getUnitId(), expense.getAmount(), expense.getModeOfPayment(), expense.getReason(), expense.getDate(), id);
     }
 
-    public List<Expense> findByYearAndMonth(int year, int month) {
-        String sql = "SELECT * FROM expenses WHERE YEAR(date) = ? AND MONTH(date) = ?";
-        return jdbcTemplate.query(sql, new ExpenseRowMapper(), year, month);
+    public float getMonthlyAmountById(int id, int year, int month) {
+        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM expenses WHERE units_id = ? AND YEAR(date) = ? AND MONTH(date) = ?";
+        Float amount = jdbcTemplate.queryForObject(sql, Float.class, id, year, month);
+        return amount != null? amount : 0.0f;
     }
 }

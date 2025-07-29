@@ -73,9 +73,9 @@ public class UtilityController {
     }
 
     // Find by year and month
-    @GetMapping("/{year}/{month}")
-    public ResponseEntity<List<Utility>> findByYearAndMonth(@PathVariable int year, @PathVariable int month) {
-        List<Utility> utilities = utilityRepository.findByYearAndMonth(year, month);
+    @GetMapping("/{id}/{year}/{month}")
+    public ResponseEntity<Float> findByYearAndMonth(@PathVariable int id, @PathVariable int year, @PathVariable int month) {
+        float utilities = utilityRepository.getMonthlyAmountByUnitId(id, year, month);
         return ResponseEntity.ok(utilities);
     }
 

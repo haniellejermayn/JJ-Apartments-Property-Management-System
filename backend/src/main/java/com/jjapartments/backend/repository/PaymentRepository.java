@@ -8,9 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Repository;
 import org.springframework.dao.EmptyResultDataAccessException;
 
-import com.jjapartments.backend.models.Expense;
 import com.jjapartments.backend.models.Payment;
-import com.jjapartments.backend.mappers.ExpenseRowMapper;
 import com.jjapartments.backend.mappers.PaymentRowMapper;
 import com.jjapartments.backend.exception.ErrorException;
 
@@ -61,8 +59,9 @@ public class PaymentRepository{
         return jdbcTemplate.update(sql,  payment.getModeOfPayment(), payment.getAmount(), payment.getDueDate(), payment.getMonthOfStart(), payment.getMonthOfEnd(), payment.getIsPaid(), payment.getPaidAt(), id);
     }
 
-    public List<Payment> findByYearAndMonth(int year, int month) {
-        String sql = "SELECT * FROM payments WHERE YEAR(date) = ? AND MONTH(date) = ?";
-        return jdbcTemplate.query(sql, new PaymentRowMapper(), year, month);
+    public float getMonthlyAmountByUnitId(int id, int year, int month) {
+        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM payments WHERE units_id = ? AND YEAR(date) = ? AND MONTH(date) = ? AND is_paid = 1";
+        Float amount = jdbcTemplate.queryForObject(sql, Float.class, id, year, month);
+        return amount != null? amount : 0.0f;
     }
 }

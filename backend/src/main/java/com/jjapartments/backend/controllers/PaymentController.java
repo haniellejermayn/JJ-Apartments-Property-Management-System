@@ -58,9 +58,9 @@ public class PaymentController {
         }
     }
     // Find by year and month
-    @GetMapping("/{year}/{month}")
-    public ResponseEntity<List<Payment>> findByYearAndMonth(@PathVariable int year, @PathVariable int month) {
-        List<Payment> payments = paymentRepository.findByYearAndMonth(year, month);
-        return ResponseEntity.ok(payments);
+    @GetMapping("/{id}/{year}/{month}")
+    public ResponseEntity<Float> findByYearAndMonth(@PathVariable int id, @PathVariable int year, @PathVariable int month) {
+        float amount = paymentRepository.getMonthlyAmountByUnitId(id, year, month);
+        return ResponseEntity.ok(amount);
     }
 }
