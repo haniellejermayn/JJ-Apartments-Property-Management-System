@@ -10,8 +10,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Repository;
 
+import com.jjapartments.backend.models.Expense;
 import com.jjapartments.backend.models.Utility;
 import com.jjapartments.backend.exception.ErrorException;
+import com.jjapartments.backend.mappers.ExpenseRowMapper;
 import com.jjapartments.backend.mappers.UtilityRowMapper;
 
 @Repository
@@ -120,5 +122,10 @@ public class UtilityRepository{
     public List<Utility> findByType(String type) {
         String sql = "SELECT * FROM utilities WHERE type = ? ORDER BY due_date DESC"; 
         return jdbcTemplate.query(sql, new UtilityRowMapper(), type);
+    }
+    
+    public List<Utility> findByYearAndMonth(int year, int month) {
+        String sql = "SELECT * FROM utilities WHERE YEAR(date) = ? AND MONTH(date) = ?";
+        return jdbcTemplate.query(sql, new UtilityRowMapper(), year, month);
     }
 }

@@ -57,5 +57,10 @@ public class PaymentController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-    
+    // Find by year and month
+    @GetMapping("/{year}/{month}")
+    public ResponseEntity<List<Payment>> findByYearAndMonth(@PathVariable int year, @PathVariable int month) {
+        List<Payment> payments = paymentRepository.findByYearAndMonth(year, month);
+        return ResponseEntity.ok(payments);
+    }
 }

@@ -57,4 +57,9 @@ public class ExpenseRepository{
         String sql = "UPDATE expenses SET units_id = ?, amount = ?, mode_of_payment = ?, reason = ?, date = ? WHERE id = ?";
         return jdbcTemplate.update(sql, expense.getUnitId(), expense.getAmount(), expense.getModeOfPayment(), expense.getReason(), expense.getDate(), id);
     }
+
+    public List<Expense> findByYearAndMonth(int year, int month) {
+        String sql = "SELECT * FROM expenses WHERE YEAR(date) = ? AND MONTH(date) = ?";
+        return jdbcTemplate.query(sql, new ExpenseRowMapper(), year, month);
+    }
 }
