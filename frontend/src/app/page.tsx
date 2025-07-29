@@ -27,6 +27,7 @@ import {
   TrendingUpIcon,
   Loader2,
 } from 'lucide-react';
+import { Unit } from '@/components/expenses-list';
 
 export default function Home() {
   const { isLoggedIn, isLoading } = useAuth();
@@ -52,11 +53,11 @@ export default function Home() {
     phoneNumber: string;
   };
 
-  type Unit = {
-    id: number;
-    unitNumber: string;
-    occupied: boolean;
-  };
+  // type Unit = {
+  //   id: number;
+  //   unitNumber: string;
+  //   occupied: number;
+  // };
 
   const [monthlyReports, setMonthlyReports] = useState<MonthlyReport[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -290,7 +291,7 @@ export default function Home() {
   const chartData = getChartData();
 
   const getOccupiedUnitsCount = () => {
-    return units.filter(unit => unit.occupied).length || 0;
+    return units.filter(unit => unit.numOccupants > 0).length;
   }
 
   const getTotalTenantsCount = () => {
@@ -298,7 +299,7 @@ export default function Home() {
   }
 
   const getAvailableUnitsCount = () => {
-    return units.filter(unit => !unit.occupied).length || 0;
+    return units.filter(unit => unit.numOccupants == 0).length;
   }
 
   const getTotalUnitsCount = () => {
@@ -377,7 +378,7 @@ export default function Home() {
             <div className="flex w-full items-center justify-between py-1">
               <div className="text-center flex-1">
                 <div className="text-xl font-bold">{totalUnitsCount}</div>
-                <p className="text-text-primary text-sm leading-tight">Total Apartments</p>
+                <p className="text-text-primary text-xl leading-tight">Total Apartments</p>
               </div>
               <div className="mx-1 h-10 border-2 border-gray-300"></div>
               <div className="text-center flex-1">

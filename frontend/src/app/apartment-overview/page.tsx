@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { ApartmentForm } from '@/components/apartmentForm';
+import { ApartmentList } from '@/components/apartment-list';
 
 
 
@@ -17,7 +17,7 @@ const MainContent = () => {
 
       
       <div className="flex flex-1">
-        <ApartmentForm />
+        <ApartmentList />
       </div>
     </div>
   );
