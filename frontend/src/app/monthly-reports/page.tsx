@@ -2,24 +2,18 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import UtilitiesList from '@/components/utilities-list';
-import ExpenseList from '@/components/expenses-list';
-import PaymentList from '@/components/payments-list';
-import FinancialTabs from '@/components/financial-tabs'
+
+import ReportsList from '@/components/reports-list';
 
 
 const MainContent = () => (
   <div className="flex-1 flex flex-col min-h-screen">
     <header className="bg-white shadow-sm border-b p-4">
       <div className="flex items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Financial Tracking</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Monthly Reports</h1>
       </div>
     </header>
-    <FinancialTabs
-      paymentsContent={<PaymentList />}
-      utilitiesContent={<UtilitiesList />}
-      expensesContent={<ExpenseList />}
-    />
+    {<ReportsList />}
   </div>
 );
 
