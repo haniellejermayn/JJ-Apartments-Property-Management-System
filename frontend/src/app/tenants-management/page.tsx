@@ -41,11 +41,11 @@ export default function TenantsManagementPage() {
 
     const [units, setUnits] = useState<Unit[]>([]);
 
-    useEffect(() => {
-        if (!isLoading && !isLoggedIn) {
-            router.replace('/login');
-        }
-    }, [isLoggedIn, isLoading, router]);
+    // useEffect(() => {
+    //     if (!isLoading && !isLoggedIn) {
+    //         router.replace('/login');
+    //     }
+    // }, [isLoggedIn, isLoading, router]);
     
     
     useEffect(() => {
@@ -73,27 +73,31 @@ export default function TenantsManagementPage() {
     };
     const fetchTenants = async () => {
         try {
-            const response = await fetch("/api/tenants"); 
-            if (!response.ok) {
-                throw new Error("Failed to fetch tenants");
-            }
-            const rawTenants: TenantApiData[] = await response.json(); 
-            
-            const processedTenants: TenantWithUnitDetails[] = rawTenants.map(rawTenant => {
-                const unitInfo = units.find(u => u.id === rawTenant.unit); 
+        const [unitsResponse, tenantsResponse] = await Promise.all([
+            fetch("/api/units"),
+            fetch("/api/tenants")
+        ]);
 
-                return {
-                    ...rawTenant,
-                    
-                    unit: unitInfo ? unitInfo : { id: rawTenant.unit, name: 'Unknown Building', unitNumber: 'Unknown Unit' }
-                };
-            });
-            
-            setTenants(processedTenants);
-            console.log("Tenants loaded:", processedTenants);
-        } catch (error) {
-            console.error("Error fetching tenants:", error);
-        }
+        const units = await unitsResponse.json();
+        const tenants = await tenantsResponse.json();
+        
+        const processedTenants = tenants.map(t => {
+
+            const unitInfo = units.find(u => u.id === t.unitId);
+            return {
+                ...t,
+                unit: unitInfo ? unitInfo : {
+                    id: t.unit,
+                    name: 'Unknown Building',
+                    unitNumber: 'Unknown Unit'
+                }
+            };
+        });
+
+        setTenants(processedTenants);
+    } catch (err) {
+        console.error("Error fetching data", err);
+    }
     };
 
     const toggleModal = () => {
@@ -107,7 +111,7 @@ export default function TenantsManagementPage() {
 
     const getUnit_id = async (unitName, unitNumber) => {
         try {
-        console.log("DEBUG (Frontend): getUnit_id received - unitName:", unitName, ", unitNumber:", unitNumber);
+        
         const encodedUnitName = unitName ? encodeURIComponent(unitName) : '';
         const encodedUnitNumber = unitNumber ? encodeURIComponent(unitNumber) : '';
 
@@ -162,7 +166,7 @@ export default function TenantsManagementPage() {
             lastName: formData.lastName,
             email: formData.email,
             phoneNumber: formData.phoneNumber,
-            unit: unitId 
+            unitId: unitId
         };
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants/add`, {
@@ -177,6 +181,8 @@ export default function TenantsManagementPage() {
             const errorData = await res.json().catch(() => ({ message: 'Unknown error' }));
             throw new Error(`Failed to add tenant: ${res.status} ${res.statusText} - ${errorData.message || ''}`);
         }
+        
+
         toggleModal();
         fetchTenants();
     };
@@ -281,22 +287,24 @@ export default function TenantsManagementPage() {
         };
     };
 
+    
+
     // Note: We'll use the getUnitInfo function directly in the JSX
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-100">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-                    <div className="text-lg text-gray-600">Loading...</div>
-                </div>
-            </div>
-        );
-    }
+    // if (isLoading) {
+    //     return (
+    //         <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    //             <div className="text-center">
+    //                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+    //                 <div className="text-lg text-gray-600">Loading...</div>
+    //             </div>
+    //         </div>
+    //     );
+    // }
 
-    if (!isLoggedIn) {
-        return null;
-    }
+    // if (!isLoggedIn) {
+    //     return null;
+    // }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -387,13 +395,13 @@ export default function TenantsManagementPage() {
                                                 <div className="flex items-center space-x-2 mb-2 md:mb-0">
                                                     <DoorClosed  className="w-4 h-4 text-gray-400" />
                                                     <span className="font-medium text-gray-700">Unit:</span>
-                                                    <span className="text-gray-600">{getUnitInfo(tenant.unit.id).unitNumber}</span>
+                                                    <span className="text-gray-600">{tenant.unit.unitNumber}</span>
                                                 </div>
                                                 
                                                 <div className="flex items-center space-x-2">
                                                     <Building className="w-4 h-4 text-gray-400" />
                                                     <span className="font-medium text-gray-700">Building:</span>
-                                                    <span className="text-gray-600">{getUnitInfo(tenant.unit.id).buildingName}</span>
+                                                    <span className="text-gray-600">{tenant.unit.name}</span>
                                                 </div>
                                             </div>
                                         </div>
