@@ -67,6 +67,27 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
+    // Basic client-side validation
+    if (!formData.username.trim()) {
+      setError('Please enter a username.');
+      return;
+    }
+    
+    if (formData.username.length < 3) {
+      setError('Username must be at least 3 characters long.');
+      return;
+    }
+    
+    if (!formData.password.trim()) {
+      setError('Please enter a password.');
+      return;
+    }
+    
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+    
     setIsLoading(true);
     setError('');
 
@@ -81,10 +102,21 @@ export default function SignUpPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to sign up');
+        let errorMessage = errorData.error || 'Failed to sign up';
+        
+        // Map specific backend errors to user-friendly messages
+        if (errorMessage.includes('already taken')) {
+          errorMessage = 'This username is already taken. Please choose a different username.';
+        } else if (response.status === 400) {
+          errorMessage = errorMessage; // Keep the original message for validation errors
+        } else if (response.status >= 500) {
+          errorMessage = 'Server error. Please try again later.';
+        }
+        
+        throw new Error(errorMessage);
       }
 
-      alert('User registered successfully!');
+      alert('Account created successfully! You can now log in.');
       router.replace('/login');
     } catch (err) {
       console.error('Sign-up error:', err);

@@ -76,15 +76,20 @@ public class UserController {
     public ResponseEntity<?> login(@RequestBody User user) {
         try {
             User existingUser = userRepository.findByUsername(user.getUsername());
-            if (existingUser != null && passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
-                // Don't return the password in the response
-                existingUser.setPassword(null);
-                return ResponseEntity.ok(existingUser);
+            if (existingUser != null) {
+                if (passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
+                    // Don't return the password in the response
+                    existingUser.setPassword(null);
+                    return ResponseEntity.ok(existingUser);
+                } else {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid password. Please check your password and try again.");
+                }
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found. Please check your username or create a new account.");
             }
         } catch (ErrorException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            // This catches the "User with username X not found" from repository
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found. Please check your username or create a new account.");
         }
     }
 
