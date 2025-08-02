@@ -17,9 +17,11 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import {DatePicker} from "@/components/date-picker"
+import { useDataRefresh } from "@/contexts/DataContext";
 
 
 export default function AddPaymentButton() {
+    const { triggerRefresh } = useDataRefresh();
     const [isOpen, setIsOpen] = useState(false);
     const [unitId, setUnitId] = useState<number>(0);
     const [modeOfPayment, setModeOfPayment] = useState("");
@@ -66,6 +68,8 @@ export default function AddPaymentButton() {
       }
 
       setIsOpen(false);
+      // Trigger refresh in other components
+      triggerRefresh();
       window.location.reload();
 
     } catch (error) {

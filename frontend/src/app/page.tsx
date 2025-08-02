@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useDataRefresh } from '@/contexts/DataContext';
 
 import {
   Card,
@@ -31,15 +32,17 @@ import { Unit } from '@/components/expenses-list';
 
 export default function Home() {
   const { isLoggedIn, isLoading } = useAuth();
+  const { refreshTrigger } = useDataRefresh();
   const router = useRouter();
 
   type MonthlyReport = {
     id: number;
     month: number;
     year: number;
-    totalEarnings: number;
-    totalExpenses: number;
-    netIncome: number;
+    unitId: number;
+    monthlyDues: number;
+    utilityBills: number;
+    expenses: number;
     createdAt: string;
   };
 
@@ -59,9 +62,22 @@ export default function Home() {
   //   occupied: number;
   // };
 
+  type Payment = {
+    id: number;
+    unitId: number;
+    modeOfPayment: string;
+    amount: number;
+    dueDate: string;
+    monthOfStart: string;
+    monthOfEnd: string;
+    isPaid: boolean;
+    paidAt: string;
+  };
+
   const [monthlyReports, setMonthlyReports] = useState<MonthlyReport[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -97,7 +113,7 @@ export default function Home() {
         setLoading(true);
         setError(null);
         
-        const [monthlyResponse, tenantsResponse, unitsResponse] = await Promise.all([
+        const [monthlyResponse, tenantsResponse, unitsResponse, paymentsResponse] = await Promise.all([
           fetch('/api/monthlyreports', {
             method: 'GET',
             headers: {
@@ -115,6 +131,12 @@ export default function Home() {
             headers: {
               'Content-Type': 'application/json',
             },
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
           })
         ]);
 
@@ -128,16 +150,21 @@ export default function Home() {
         if (!unitsResponse.ok) {
           throw new Error(`Units API error: ${unitsResponse.status}`);
         }
+        if (!paymentsResponse.ok) {
+          throw new Error(`Payments API error: ${paymentsResponse.status}`);
+        }
 
-        const [monthlyData, tenantsData, unitsData] = await Promise.all([
+        const [monthlyData, tenantsData, unitsData, paymentsData] = await Promise.all([
           monthlyResponse.json(),
           tenantsResponse.json(),
-          unitsResponse.json()
+          unitsResponse.json(),
+          paymentsResponse.json()
         ]);
 
         setMonthlyReports(monthlyData);
         setTenants(tenantsData);
         setUnits(unitsData);
+        setPayments(paymentsData);
 
       } catch (error: unknown) {
         console.error('Error fetching data:', error);
@@ -151,7 +178,7 @@ export default function Home() {
     if (isLoggedIn && !isLoading) {
       fetchAllData();
     }
-  }, [isLoggedIn, isLoading]);
+  }, [isLoggedIn, isLoading, refreshTrigger]);
 
   // Show loading while auth is being checked
   if (isLoading) {
@@ -192,7 +219,7 @@ export default function Home() {
   }
 
   const getCurrentMonthReport = () => {
-    return monthlyReports.find(report => 
+    return monthlyReports.filter(report => 
       report.month === currentMonth && report.year === currentYear
     );
   };
@@ -201,7 +228,7 @@ export default function Home() {
     const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
     const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
     
-    return monthlyReports.find(report => 
+    return monthlyReports.filter(report => 
       report.month === prevMonth && report.year === prevYear
     );
   };
@@ -223,35 +250,51 @@ export default function Home() {
   };
 
   const getMonthlyStats = () => {
-    const currentReport = getCurrentMonthReport();
-    const previousReport = getPreviousMonthReport();
+    // Calculate revenue from actual payments (real-time data)
+    const currentMonthPayments = payments.filter(payment => {
+      if (!payment.isPaid || !payment.paidAt) return false;
+      const paidDate = new Date(payment.paidAt);
+      return paidDate.getMonth() + 1 === currentMonth && paidDate.getFullYear() === currentYear;
+    });
 
-    if (!currentReport) {
-      return {
-        monthRevenue: '0.00',
-        monthRevenuePercentChange: 0,
-        monthExpenses: '0.00',
-        monthExpensesPercentChange: 0,
-        netIncome: '0.00',
-        netIncomePercentChange: 0
-      };
-    }
+    const previousMonthPayments = payments.filter(payment => {
+      if (!payment.isPaid || !payment.paidAt) return false;
+      const paidDate = new Date(payment.paidAt);
+      const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+      const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+      return paidDate.getMonth() + 1 === prevMonth && paidDate.getFullYear() === prevYear;
+    });
+
+    const currentTotalEarnings = currentMonthPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    const previousTotalEarnings = previousMonthPayments.reduce((sum, payment) => sum + payment.amount, 0);
+
+    // Calculate expenses from monthly reports
+    const currentReports = getCurrentMonthReport();
+    const previousReports = getPreviousMonthReport();
+
+    const currentTotalExpenses = currentReports.reduce((sum, report) => 
+      sum + (report.utilityBills || 0) + (report.expenses || 0), 0);
+    const previousTotalExpenses = previousReports.reduce((sum, report) => 
+      sum + (report.utilityBills || 0) + (report.expenses || 0), 0);
+
+    const currentNetIncome = currentTotalEarnings - currentTotalExpenses;
+    const previousNetIncome = previousTotalEarnings - previousTotalExpenses;
 
     return {
-      monthRevenue: currentReport.totalEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      monthRevenue: currentTotalEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       monthRevenuePercentChange: calculatePercentChange(
-        currentReport.totalEarnings, 
-        previousReport?.totalEarnings || 0
+        currentTotalEarnings, 
+        previousTotalEarnings
       ),
-      monthExpenses: currentReport.totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      monthExpenses: currentTotalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       monthExpensesPercentChange: calculatePercentChange(
-        currentReport.totalExpenses, 
-        previousReport?.totalExpenses || 0
+        currentTotalExpenses, 
+        previousTotalExpenses
       ),
-      netIncome: currentReport.netIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      netIncome: currentNetIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       netIncomePercentChange: calculatePercentChange(
-        currentReport.netIncome, 
-        previousReport?.netIncome || 0
+        currentNetIncome, 
+        previousNetIncome
       )
     };
   };
@@ -273,15 +316,29 @@ export default function Home() {
     const fullYearData = monthNames.map((monthName, index) => {
       const monthNumber = index + 1;
       
-      const reportForMonth = monthlyReports.find(report => 
+      // Calculate revenue from actual payments for this month
+      const paymentsForMonth = payments.filter(payment => {
+        if (!payment.isPaid || !payment.paidAt) return false;
+        const paidDate = new Date(payment.paidAt);
+        return paidDate.getMonth() + 1 === monthNumber && paidDate.getFullYear() === currentYear;
+      });
+      
+      const totalRevenue = paymentsForMonth.reduce((sum, payment) => sum + payment.amount, 0);
+      
+      // Calculate expenses from monthly reports (fallback to this for expenses)
+      const reportsForMonth = monthlyReports.filter(report => 
         report.month === monthNumber && report.year === currentYear
       );
       
+      const totalExpenses = reportsForMonth.reduce((sum, report) => 
+        sum + (report.utilityBills || 0) + (report.expenses || 0), 0);
+      const netIncome = totalRevenue - totalExpenses;
+      
       return {
         month: monthName,
-        revenue: reportForMonth ? reportForMonth.totalEarnings : 0,
-        expenses: reportForMonth ? reportForMonth.totalExpenses : 0,
-        netIncome: reportForMonth ? reportForMonth.netIncome : 0,
+        revenue: totalRevenue,
+        expenses: totalExpenses,
+        netIncome: netIncome,
       };
     });
     

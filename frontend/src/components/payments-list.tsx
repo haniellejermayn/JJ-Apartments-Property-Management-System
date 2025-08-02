@@ -13,6 +13,7 @@ import {
 import FilterModal from './filter-modal';
 import { DeleteModal } from './delete-modal';
 import { SlidersHorizontal } from 'lucide-react';
+import { useDataRefresh } from '@/contexts/DataContext';
 
 export type Payment = {
     id: number,
@@ -28,6 +29,7 @@ export type Payment = {
 
 
 export default function PaymentsList() {
+  const { triggerRefresh } = useDataRefresh();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,6 +78,8 @@ export default function PaymentsList() {
       }
       console.log("Payment deleted successfully");
 
+      // Trigger refresh in other components
+      triggerRefresh();
       window.location.reload();
     } catch (error) {
       console.error("Error deleting payment:", error);
@@ -100,6 +104,8 @@ export default function PaymentsList() {
         }
   
         console.log("Payment updated successfully");
+        // Trigger refresh in other components
+        triggerRefresh();
         window.location.reload();
       } catch (error) {
         console.error("Error updating payment:", error);
