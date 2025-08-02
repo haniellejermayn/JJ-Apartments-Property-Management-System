@@ -212,18 +212,25 @@ CREATE TABLE IF NOT EXISTS monthly_reports (
   id INT NOT NULL AUTO_INCREMENT,
   year INT NOT NULL,
   month INT NOT NULL,
-  total_earnings DECIMAL(10,2) NOT NULL,
-  total_expenses DECIMAL(10,2) NOT NULL,
-  net_income DECIMAL(10,2) NOT NULL,
+  units_id INT NULL,
+  monthly_dues DECIMAL(10, 2) NULL,
+  utility_bills DECIMAL(10,2) NULL,
+  expenses DECIMAL(10,2) NULL,
   created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  UNIQUE KEY unique_year_month (year, month)
+  UNIQUE KEY unique_unit_year_month (units_id, year, month),
+  INDEX fk_monthlyreports_units1_idx (units_id ASC),
+  CONSTRAINT fk_monthlyreports_units1 FOREIGN KEY (units_id) REFERENCES units (id) ON DELETE SET NULL
 ) ENGINE = InnoDB;
 
-INSERT INTO monthly_reports(year, month, total_earnings, total_expenses, net_income)
+-- INSERT INTO monthly_reports(year, month, total_earnings, total_expenses, net_income)
+-- VALUES
+-- (2025, 6, 514136.30, 20000, 494136.3),
+-- (2025, 7, 514136.30, 20000, 494136.3);
+INSERT INTO monthly_reports(year, month, units_id, monthly_dues, utility_bills, expenses)
 VALUES
-(2025, 6, 514136.30, 20000, 494136.3),
-(2025, 7, 514136.30, 20000, 494136.3);
+(2025, 7, 1, 15000, 9000, 0),
+(2025, 7, 2, 10000, 5000, 0);
 
 SELECT * FROM monthly_reports;
 

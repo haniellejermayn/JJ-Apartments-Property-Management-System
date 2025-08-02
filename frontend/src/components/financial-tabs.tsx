@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 
-const tabs = ['Utilities', 'Payments', 'Expenses'];
+const tabs = ['Payments', 'Utilities', 'Expenses'];
 type FinancialTabsProps = {
   utilitiesContent: React.ReactNode;
   paymentsContent: React.ReactNode;
@@ -12,14 +12,14 @@ export default function FinancialTabs({
   paymentsContent,
   expensesContent,
 }: FinancialTabsProps) {
-  const [activeTab, setActiveTab] = useState('Utilities');
+  const [activeTab, setActiveTab] = useState('Payments');
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'Utilities':
-        return utilitiesContent;
       case 'Payments':
         return paymentsContent;
+      case 'Utilities':
+        return utilitiesContent;
       case 'Expenses':
         return expensesContent;
       default:

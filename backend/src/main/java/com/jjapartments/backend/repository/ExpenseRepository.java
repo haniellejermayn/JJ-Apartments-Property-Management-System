@@ -57,4 +57,10 @@ public class ExpenseRepository{
         String sql = "UPDATE expenses SET units_id = ?, amount = ?, mode_of_payment = ?, reason = ?, date = ? WHERE id = ?";
         return jdbcTemplate.update(sql, expense.getUnitId(), expense.getAmount(), expense.getModeOfPayment(), expense.getReason(), expense.getDate(), id);
     }
+
+    public float getMonthlyAmountById(int id, int year, int month) {
+        String sql = "SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE units_id = ? AND YEAR(date) = ? AND MONTH(date) = ?";
+        Float amount = jdbcTemplate.queryForObject(sql, Float.class, id, year, month);
+        return amount != null? amount : 0.0f;
+    }
 }

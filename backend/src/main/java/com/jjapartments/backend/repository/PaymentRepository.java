@@ -58,4 +58,10 @@ public class PaymentRepository{
         + "is_paid = ?, paid_at = ? WHERE id = ?";
         return jdbcTemplate.update(sql,  payment.getModeOfPayment(), payment.getAmount(), payment.getDueDate(), payment.getMonthOfStart(), payment.getMonthOfEnd(), payment.getIsPaid(), payment.getPaidAt(), id);
     }
+
+    public float getMonthlyAmountByUnitId(int id, int year, int month) {
+        String sql = "SELECT COALESCE(SUM(amount), 0) FROM payments WHERE units_id = ? AND is_paid = 1 AND YEAR(paid_at) = ? AND MONTH(paid_at) = ?";
+        Float amount = jdbcTemplate.queryForObject(sql, Float.class, id, year, month);
+        return amount != null? amount : 0.0f;
+    }
 }
