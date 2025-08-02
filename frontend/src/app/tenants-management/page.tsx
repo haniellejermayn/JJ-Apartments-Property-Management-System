@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { TenantPopUp } from "@/components/TenantPopUp";
 import { TenantMgt } from "@/components/TenantMgt";
 import { Mail, Phone, Building, DoorClosed  } from "lucide-react";
+import { DeleteModal } from "@/components/delete-modal";
 
 type Tenant = {
     id: number;
@@ -34,7 +35,10 @@ export default function TenantsManagementPage() {
     const [editingTenant, setEditingTenant] = useState<TenantWithUnitDetails | null>(null);
     const [tenants, setTenants] = useState<TenantWithUnitDetails[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
-   
+
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [tenantToDelete, setTenantToDelete] = useState<TenantWithUnitDetails | null>(null);
+
     const [units, setUnits] = useState<Unit[]>([]);
 
     useEffect(() => {
@@ -229,18 +233,34 @@ export default function TenantsManagementPage() {
         }
     };
 
-    const handleDeleteTenant = async (tenantId: number) => {
-        if (window.confirm('Are you sure you want to delete this tenant?')) {
-            // setTenants(prev => prev.filter(tenant => tenant.id !== tenantId));
-            // console.log('Tenant deleted:', tenantId);
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants/${tenantId}`, {
-                method: 'DELETE',
-                headers: { "Content-Type": "application/json" },
-            })
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            fetchUnits();
-        }
+    const handleDeleteTenant = (tenant: TenantWithUnitDetails) => {
+    setTenantToDelete(tenant);
+    setDeleteModalOpen(true);
     };
+
+    const confirmDeleteTenant = async () => {
+    if (!tenantToDelete) return;
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants/${tenantToDelete.id}`, {
+        method: 'DELETE',
+        headers: { "Content-Type": "application/json" },
+    });
+
+    if (!res.ok) {
+        alert("Failed to delete tenant.");
+        return;
+    }
+
+    setDeleteModalOpen(false);
+    setTenantToDelete(null);
+    fetchTenants();
+    };
+
+    const cancelDelete = () => {
+        setDeleteModalOpen(false);
+        setTenantToDelete(null);
+    };
+
 
     const formatPhoneNumber = (phone: string) => {
         if (!phone) return 'N/A';
@@ -386,7 +406,7 @@ export default function TenantsManagementPage() {
                                                 Edit
                                             </button>
                                             <button
-                                                onClick={() => handleDeleteTenant(tenant.id)}
+                                                onClick={() => handleDeleteTenant(tenant)}
                                                 className="px-4 py-2 text-yellow-300 bg-black hover:text-yellow-400 rounded-lg transition-all duration-200 text-sm font-medium border border-black hover:border-black"
                                             >
                                                 Delete
@@ -408,6 +428,15 @@ export default function TenantsManagementPage() {
                     isEditing={!!editingTenant}
                 />
             </TenantPopUp>
+
+             <DeleteModal
+                open={deleteModalOpen}
+                title="Delete Tenant"
+                message={`Are you sure you want to delete ${tenantToDelete ? formatName(tenantToDelete.firstName, tenantToDelete.lastName, tenantToDelete.middleName) : 'this tenant'}?`}
+                onCancel={cancelDelete}
+                onConfirm={confirmDeleteTenant}
+                />
+
         </div>
     );
 }
