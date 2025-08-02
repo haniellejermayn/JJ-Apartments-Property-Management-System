@@ -54,7 +54,21 @@ VALUES
 ('B', 'Maple Residences', '1 Bedroom', 15000.00, 2, '09181234567'),
 ('C', 'Palm Grove Towers', '2 Bedroom', 18000.00, 3, '09192233445'),
 ('D', 'Palm Grove Towers', 'Studio Apartment', 12500.00, 1, '09201234567'),
-('E', 'Sunrise Villas', '1 Bedroom', 15500.00, 2, '09179998888');
+('E', 'Sunrise Villas', '1 Bedroom', 15500.00, 2, '09179998888'),
+('F', 'Sunrise Villas', '2 Bedroom', 16500.00, 3, '09170000001'),
+('G', 'Sunrise Villas', 'Studio Apartment', 13000.00, 1, '09170000002'),
+('H', 'Palm Grove Towers', '3 Bedroom', 20000.00, 4, '09170000003'),
+('I', 'Palm Grove Towers', '1 Bedroom', 15000.00, 2, '09170000004'),
+('J', 'Palm Grove Towers', 'Penthouse', 30000.00, 5, '09170000005'),
+('K', 'Maple Residences', '3 Bedroom', 22000.00, 4, '09170000006'),
+('L', 'Maple Residences', '1 Bedroom', 15500.00, 2, '09170000007'),
+('M', 'Sunrise Villas', '2 Bedroom', 17000.00, 3, '09170000008'),
+('N', 'Sunrise Villas', '3 Bedroom', 19000.00, 4, '09170000009'),
+('O', 'Palm Grove Towers', 'Studio Apartment', 14000.00, 1, '09170000010'),
+('P', 'Palm Grove Towers', '1 Bedroom', 16000.00, 2, '09170000011'),
+('Q', 'Maple Residences', 'Penthouse', 28000.00, 5, '09170000012'),
+('R', 'Sunrise Villas', '1 Bedroom', 15500.00, 2, '09170000013'),
+('S', 'Palm Grove Towers', 'Studio Apartment', 13500.00, 1, '09170000014');
 
 SELECT * FROM units;
 -- -------------------------
@@ -229,12 +243,21 @@ CREATE TABLE IF NOT EXISTS monthly_reports (
 -- (2025, 7, 514136.30, 20000, 494136.3);
 INSERT INTO monthly_reports(year, month, units_id, monthly_dues, utility_bills, expenses)
 VALUES
-(2025, 7, 1, 15000, 9000, 0),
-(2025, 7, 2, 10000, 5000, 0);
+(2025, 7, 1, 11000.00, 925.00, 1500.00),
+(2025, 7, 2, 11500.00, 802.50, 4750.00),
+(2025, 7, 3, 1800.00, 0.00, 2200.00),
+(2025, 7, 4, 950.00, 0.00, 800.00),
+(2025, 7, 5, 2200.00, 0.00, 0.00),
+(2025, 7, 6, NULL, 0.00, 950.00),
+(2025, 8, 1, 11000.00, 0.00, 0.00),
+(2025, 8, 2, 11500.00, 0.00, 0.00),
+(2025, 8, 3, 1800.00, 0.00, 0.00),
+(2025, 8, 4, 950.00, 0.00, 0.00),
+(2025, 8, 5, 2200.00, 0.00, 0.00);
 
 SELECT * FROM monthly_reports;
 
-
+SELECT * FROM units;
 
 -- Restore original SQL modes and checks
 SET SQL_MODE = @OLD_SQL_MODE;
