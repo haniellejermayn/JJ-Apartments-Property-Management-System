@@ -17,9 +17,13 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { DatePicker } from "@/components/date-picker"
+import { Expense } from "@/components/expenses-list";
 
+interface Props {
+  setExpense:  React.Dispatch<React.SetStateAction<Expense[]>>;
+}
 
-export default function AddExpenseButton() {
+export default function AddExpenseButton({setExpense}: Props) {
     const [isOpen, setIsOpen] = useState(false);
     const [unitId, setUnitId] = useState<number>(0);
     const [modeOfPayment, setModeOfPayment] = useState("");
@@ -65,7 +69,8 @@ export default function AddExpenseButton() {
       }
 
       setIsOpen(false);
-      window.location.reload();
+      const saved = await res.json();
+      setExpense(prev => [saved, ...prev]);
 
     } catch (error) {
       console.error("Error submitting expense:", error);

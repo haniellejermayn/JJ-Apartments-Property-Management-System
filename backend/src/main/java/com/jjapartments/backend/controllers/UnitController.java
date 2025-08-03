@@ -56,7 +56,7 @@ public class UnitController {
             unitRepository.update(id, unit);
             return ResponseEntity.ok(unitRepository.findById(id));
         } catch (ErrorException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
     // Search

@@ -7,13 +7,14 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button"
-import { Unit } from "@/components/expenses-list"
 import { Input } from "@/components/ui/input"
-import {DatePicker} from "@/components/date-picker"
 import { Label } from "@/components/ui/label"
+import { Unit } from "@/components/expenses-list";
+interface Props {
+  setUnits:  React.Dispatch<React.SetStateAction<Unit[]>>;
+}
 
-
-export default function AddUnitButton() {
+export default function AddUnitButton({setUnits}: Props) {
     const [isOpen, setIsOpen] = useState(false);
     const [unitNumber, setUnitNumber] = useState<string>("");
     const [name, setName] = useState<string>("");
@@ -47,7 +48,8 @@ export default function AddUnitButton() {
       }
 
       setIsOpen(false);
-      window.location.reload();
+      const savedUnit = await res.json();
+      setUnits(prev => [savedUnit, ...prev]);
 
     } catch (error) {
       console.error("Error submitting unit:", error);

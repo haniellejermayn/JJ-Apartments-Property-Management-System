@@ -20,7 +20,6 @@ interface AddRateButtonProps {
 }
 
 export default function AddRateButton({ type, setRates }: AddRateButtonProps) {
-  const { triggerRefresh } = useDataRefresh();
   const [rate, setRate] = useState<string>("");
   const [date, setDate] = useState<Date | undefined>(undefined);
 

@@ -57,7 +57,7 @@ public class ExpenseController {
             expenseRepository.update(id, expense);
             return ResponseEntity.ok(expenseRepository.findById(id));
         } catch (ErrorException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 

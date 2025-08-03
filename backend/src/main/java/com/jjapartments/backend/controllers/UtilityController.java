@@ -56,7 +56,7 @@ public class UtilityController {
             utilityRepository.update(id, utility);
             return ResponseEntity.ok(utilityRepository.findById(id));
         } catch (ErrorException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 

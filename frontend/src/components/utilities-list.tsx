@@ -93,8 +93,8 @@ export default function UtilitiesList() {
         throw new Error(`Delete failed with status ${res.status}`);
       }
       console.log("Utility deleted successfully");
-
-      window.location.reload();
+      setMeralco(prev => prev.filter(utility => utility.id !== id));
+      setWater(prev => prev.filter(utility => utility.id !== id));
     } catch (error) {
         console.error("Error deleting utility:", error);
     }
@@ -119,7 +119,9 @@ export default function UtilitiesList() {
       
 
       console.log("Utility updated successfully");
-      window.location.reload();
+      const saved = await res.json();
+      setMeralco(prev => prev.map(utility => utility.id === updated.id ? saved : utility))
+      setWater(prev => prev.map(utility => utility.id === updated.id ? saved : utility))
 
     } catch (error) {
       console.error("Error updating utility:", error);
@@ -220,7 +222,7 @@ export default function UtilitiesList() {
         
         </div>
         <div className="flex items-center gap-2">
-          <AddUtilityButton />
+          <AddUtilityButton type={selectedType} setUtilities={selectedType == "Meralco" ? setMeralco : setWater}/>
           <Button variant="ghost" size="icon" onClick={() => setFilterOpen(true)}>
             <SlidersHorizontal className="w-5 h-5" />
           </Button>
