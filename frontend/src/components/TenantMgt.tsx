@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
-
-export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "./ui/select";
+export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing, units }) {
     const [formData, setFormData] = useState({
         firstName: '',
         middleName: '',
         lastName: '',
         email: '',
         phoneNumber: '',
-        unitName: '',
-        unitNum: ''
+        unitId: ''
     });
 
     // Populate form with editing data when editing
@@ -18,9 +17,9 @@ export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
         console.log("TenantMgt: received editingTenant =", editingTenant); // <<<--- THIS ONE IS THE MOST IMPORTANT
 
         if (isEditing && editingTenant) {
-            console.log("TenantMgt: Attempting to set formData with unit details:");
-            console.log("  unitName (from editingTenant.unit.name):", editingTenant.unit?.name);
-            console.log("  unitNum (from editingTenant.unit.unitNumber):", editingTenant.unit?.unitNumber);
+            // console.log("TenantMgt: Attempting to set formData with unit details:");
+            // console.log("  unitName (from editingTenant.unit.name):", editingTenant.unit?.name);
+            // console.log("  unitNum (from editingTenant.unit.unitNumber):", editingTenant.unit?.unitNumber);
 
             setFormData({
                 firstName: editingTenant.firstName || '',
@@ -28,8 +27,7 @@ export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
                 lastName: editingTenant.lastName || '',
                 email: editingTenant.email || '',
                 phoneNumber: editingTenant.phoneNumber || '',
-                unitName: editingTenant.unit?.name || '',       // <-- THIS IS THE CORRECT WAY
-                unitNum: editingTenant.unit?.unitNumber || ''
+                unitId: editingTenant.unit?.id?.toString() || ''
             });
         } else {
             // Reset form when not editing
@@ -39,8 +37,7 @@ export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
                 lastName: '',
                 email: '',
                 phoneNumber: '',
-                unitName: '',
-                unitNum: ''
+                unitId: ''
             });
         }
     }, [isEditing, editingTenant]);
@@ -147,33 +144,30 @@ export function TenantMgt({ toggleModal, onSubmit, editingTenant, isEditing }) {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Building Name *
-                        </label>
-                        <input
-                            type="text"
-                            name="unitName"
-                            value={formData.unitName}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                            
-                        />
-                    </div>
+                <div className="grid gap-4">
+                    
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Unit no. *
+                            Unit *
                         </label>
-                        <input
-                            type="text"
-                            name="unitNum"
-                            value={formData.unitNum}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                            placeholder="e.g., Z"
-                        />
+                        <Select
+                            value={formData.unitId}
+                            onValueChange={(value) =>
+                                setFormData({ ...formData, unitId: value })
+                            }
+                        >
+                            <SelectTrigger className="w-full min-h-12 rounded-md border px-4 py-3 text-left">
+                                <SelectValue placeholder="Select Unit" />
+                            </SelectTrigger>
+                            <SelectContent className="w-full">
+                                {units.map((u) => (
+                                    <SelectItem key={u.id} value={String(u.id)}>
+                                        Unit {u.unitNumber} - {u.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
             </div>
