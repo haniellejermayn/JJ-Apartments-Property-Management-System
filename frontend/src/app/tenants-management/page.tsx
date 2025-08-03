@@ -215,7 +215,7 @@ export default function TenantsManagementPage() {
             lastName: updatedData.lastName,
             email: updatedData.email,
             phoneNumber: updatedData.phoneNumber,
-            unit: unitIdForUpdate 
+            unitId: unitIdForUpdate 
         };
 
         try {
