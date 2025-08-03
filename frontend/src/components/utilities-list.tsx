@@ -13,6 +13,7 @@ import EditUtilityCard from './edit-utility-card'
 import FilterModal from './filter-modal'
 import { DeleteModal } from './delete-modal';
 import { SlidersHorizontal } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 export type Utility = {
   id: number,
@@ -41,7 +42,7 @@ export default function UtilitiesList() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState<{unit?: number, month?: String, year?: String}>({});
   const [showConfirm, setShowConfirm] = useState(false);
-
+  const [selectedType, setSelectedType] = useState<"Meralco" | "Manila Water">("Meralco");
 
   
 
@@ -168,10 +169,25 @@ export default function UtilitiesList() {
     return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-        <h2 className="text-lg font-medium text-gray-900">{type}</h2>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="flex items-center gap-2">
+              <h2 className="text-lg font-medium text-gray-900">{type}</h2>
+              <ChevronDown/>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => setSelectedType("Meralco")}>
+              Meralco
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSelectedType("Manila Water")}>
+              Manila Water
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <div className="flex items-center gap-2">
           <AddUtilityButton />
-          <Button variant="outline" size="icon" onClick={() => setFilterOpen(true)}>
+          <Button variant="ghost" size="icon" onClick={() => setFilterOpen(true)}>
             <SlidersHorizontal className="w-5 h-5" />
           </Button>
         </div>
@@ -263,8 +279,10 @@ export default function UtilitiesList() {
   if (error) return <p className="text-red-600">{error}</p>;
   return (
     <div className="space-y-2">
-      {createTable(filteredUtility(meralco), "Meralco")}
-      {createTable(filteredUtility(water), "Manila Water")}
+      {createTable(
+        filteredUtility(selectedType === "Meralco" ? meralco : water),
+        selectedType
+      )}
       {selectedUtility && (
       <EditUtilityCard
         open={editOpen}
