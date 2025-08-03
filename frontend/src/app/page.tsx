@@ -249,6 +249,17 @@ export default function Home() {
     );
   };
 
+  const renderExpensePercentChange = (percentChange: number) => {
+    const isPositive = percentChange > 0;
+    const isNegative = percentChange < 0;
+    
+    return (
+      <span className={`${isPositive ? 'text-red-600' : isNegative ? 'text-green-600' : 'text-gray-600'}`}>
+        {isPositive ? '+' : ''}{percentChange.toFixed(1)}%
+      </span>
+    );
+  };
+
   const getMonthlyStats = () => {
     // Calculate revenue from actual payments (real-time data)
     const currentMonthPayments = payments.filter(payment => {
@@ -516,7 +527,7 @@ export default function Home() {
                 <CardContent>
                   <div className="text-2xl font-bold">₱{monthlyStats.monthExpenses}</div>
                   <p className="text-xs text-muted-foreground">
-                    {renderPercentChange(monthlyStats.monthExpensesPercentChange)} from last month
+                    {renderExpensePercentChange(monthlyStats.monthExpensesPercentChange)} from last month
                   </p>
                 </CardContent>
               </Card>
