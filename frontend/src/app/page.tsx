@@ -74,10 +74,27 @@ export default function Home() {
     paidAt: string;
   };
 
+  type Utility = {
+    id: number;
+    type: string;
+    previousReading: number;
+    currentReading: number;
+    totalMeter: number;
+    totalAmount: number;
+    dueDate: string;
+    monthOfStart: string;
+    monthOfEnd: string;
+    isPaid: boolean;
+    paidAt: string;
+    unitId: number;
+    rateId: number;
+  };
+
   const [monthlyReports, setMonthlyReports] = useState<MonthlyReport[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [utilities, setUtilities] = useState<Utility[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -113,7 +130,7 @@ export default function Home() {
         setLoading(true);
         setError(null);
         
-        const [monthlyResponse, tenantsResponse, unitsResponse, paymentsResponse] = await Promise.all([
+        const [monthlyResponse, tenantsResponse, unitsResponse, paymentsResponse, utilitiesResponse] = await Promise.all([
           fetch('/api/monthlyreports', {
             method: 'GET',
             headers: {
@@ -137,6 +154,12 @@ export default function Home() {
             headers: {
               'Content-Type': 'application/json',
             },
+          }),
+          fetch('/api/utilities', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
           })
         ]);
 
@@ -153,18 +176,23 @@ export default function Home() {
         if (!paymentsResponse.ok) {
           throw new Error(`Payments API error: ${paymentsResponse.status}`);
         }
+        if (!utilitiesResponse.ok) {
+          throw new Error(`Utilities API error: ${utilitiesResponse.status}`);
+        }
 
-        const [monthlyData, tenantsData, unitsData, paymentsData] = await Promise.all([
+        const [monthlyData, tenantsData, unitsData, paymentsData, utilitiesData] = await Promise.all([
           monthlyResponse.json(),
           tenantsResponse.json(),
           unitsResponse.json(),
-          paymentsResponse.json()
+          paymentsResponse.json(),
+          utilitiesResponse.json()
         ]);
 
         setMonthlyReports(monthlyData);
         setTenants(tenantsData);
         setUnits(unitsData);
         setPayments(paymentsData);
+        setUtilities(utilitiesData);
 
       } catch (error: unknown) {
         console.error('Error fetching data:', error);
@@ -276,20 +304,41 @@ export default function Home() {
       return paidDate.getMonth() + 1 === prevMonth && paidDate.getFullYear() === prevYear;
     });
 
-    const currentTotalEarnings = currentMonthPayments.reduce((sum, payment) => sum + payment.amount, 0);
-    const previousTotalEarnings = previousMonthPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    // Calculate utility costs that owners have paid (reduces revenue)
+    const currentMonthPaidUtilities = utilities.filter(utility => {
+      if (!utility.isPaid || !utility.paidAt) return false;
+      const paidDate = new Date(utility.paidAt);
+      return paidDate.getMonth() + 1 === currentMonth && paidDate.getFullYear() === currentYear;
+    });
 
-    // Calculate expenses from monthly reports
+    const previousMonthPaidUtilities = utilities.filter(utility => {
+      if (!utility.isPaid || !utility.paidAt) return false;
+      const paidDate = new Date(utility.paidAt);
+      const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+      const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+      return paidDate.getMonth() + 1 === prevMonth && paidDate.getFullYear() === prevYear;
+    });
+
+    const currentUtilityCosts = currentMonthPaidUtilities.reduce((sum, utility) => sum + utility.totalAmount, 0);
+    const previousUtilityCosts = previousMonthPaidUtilities.reduce((sum, utility) => sum + utility.totalAmount, 0);
+
+    // Total earnings from payments minus utility costs paid by owners
+    const currentTotalEarnings = currentMonthPayments.reduce((sum, payment) => sum + payment.amount, 0) - currentUtilityCosts;
+    const previousTotalEarnings = previousMonthPayments.reduce((sum, payment) => sum + payment.amount, 0) - previousUtilityCosts;
+
+    // Calculate expenses from monthly reports plus paid utility costs
     const currentReports = getCurrentMonthReport();
     const previousReports = getPreviousMonthReport();
 
     const currentTotalExpenses = currentReports.reduce((sum, report) => 
-      sum + (report.utilityBills || 0) + (report.expenses || 0), 0);
+      sum + (report.utilityBills || 0) + (report.expenses || 0), 0) + currentUtilityCosts;
     const previousTotalExpenses = previousReports.reduce((sum, report) => 
-      sum + (report.utilityBills || 0) + (report.expenses || 0), 0);
+      sum + (report.utilityBills || 0) + (report.expenses || 0), 0) + previousUtilityCosts;
 
-    const currentNetIncome = currentTotalEarnings - currentTotalExpenses;
-    const previousNetIncome = previousTotalEarnings - previousTotalExpenses;
+    const currentNetIncome = currentTotalEarnings - (currentReports.reduce((sum, report) => 
+      sum + (report.utilityBills || 0) + (report.expenses || 0), 0));
+    const previousNetIncome = previousTotalEarnings - (previousReports.reduce((sum, report) => 
+      sum + (report.utilityBills || 0) + (report.expenses || 0), 0));
 
     return {
       monthRevenue: currentTotalEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
@@ -333,17 +382,28 @@ export default function Home() {
         const paidDate = new Date(payment.paidAt);
         return paidDate.getMonth() + 1 === monthNumber && paidDate.getFullYear() === currentYear;
       });
+
+      // Calculate utility costs that owners paid for this month
+      const utilitiesForMonth = utilities.filter(utility => {
+        if (!utility.isPaid || !utility.paidAt) return false;
+        const paidDate = new Date(utility.paidAt);
+        return paidDate.getMonth() + 1 === monthNumber && paidDate.getFullYear() === currentYear;
+      });
+
+      const utilityCosts = utilitiesForMonth.reduce((sum, utility) => sum + utility.totalAmount, 0);
       
-      const totalRevenue = paymentsForMonth.reduce((sum, payment) => sum + payment.amount, 0);
+      // Total revenue minus utility costs paid by owners
+      const totalRevenue = paymentsForMonth.reduce((sum, payment) => sum + payment.amount, 0) - utilityCosts;
       
-      // Calculate expenses from monthly reports (fallback to this for expenses)
+      // Calculate expenses from monthly reports plus paid utility costs
       const reportsForMonth = monthlyReports.filter(report => 
         report.month === monthNumber && report.year === currentYear
       );
       
       const totalExpenses = reportsForMonth.reduce((sum, report) => 
-        sum + (report.utilityBills || 0) + (report.expenses || 0), 0);
-      const netIncome = totalRevenue - totalExpenses;
+        sum + (report.utilityBills || 0) + (report.expenses || 0), 0) + utilityCosts;
+      const netIncome = totalRevenue - (reportsForMonth.reduce((sum, report) => 
+        sum + (report.utilityBills || 0) + (report.expenses || 0), 0));
       
       return {
         month: monthName,

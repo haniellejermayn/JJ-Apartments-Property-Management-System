@@ -134,7 +134,7 @@ export function ApartmentList() {
                         <span className="text-sm text-gray-600">Search:</span>
                         <input 
                         type="text"
-                        className="px-3 py-1 border border-gray-300 rounded text-sm w-48"
+                        className="px-3 py-1 border border-gray-300 rounded text-sm w-80"
                         placeholder="Search apartments..."
                         value={searchTerm}
                         onChange={handleInputChange}
@@ -192,13 +192,13 @@ export function ApartmentList() {
                     <div className="flex gap-2">
                       <button 
                       onClick={() => handleEdit(apartment)}
-                      className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors">
+                      className="inline-flex items-center px-3 py-1 bg-yellow-300 text-black text-xs rounded hover:bg-yellow-400 transition-colors border border-yellow-300 hover:border-yellow-400">
                         <Edit size={12} className="mr-1" />
                         Edit
                       </button>
                       <button 
                       onClick={() => handleDelete(apartment)}
-                      className="inline-flex items-center px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors">
+                      className="inline-flex items-center px-3 py-1 bg-black text-yellow-300 text-xs rounded hover:text-yellow-400 transition-colors border border-black hover:border-black">
                         <Trash2 size={12} className="mr-1" />
                         Delete
                       </button>
