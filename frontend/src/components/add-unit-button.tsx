@@ -9,12 +9,10 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Unit } from "@/components/expenses-list";
-interface Props {
-  setUnits:  React.Dispatch<React.SetStateAction<Unit[]>>;
-}
+import { Unit } from "@/components/apartment-list";
 
-export default function AddUnitButton({setUnits}: Props) {
+
+export default function AddUnitButton() {
     const [isOpen, setIsOpen] = useState(false);
     const [unitNumber, setUnitNumber] = useState<string>("");
     const [name, setName] = useState<string>("");
@@ -48,8 +46,7 @@ export default function AddUnitButton({setUnits}: Props) {
       }
 
       setIsOpen(false);
-      const savedUnit = await res.json();
-      setUnits(prev => [savedUnit, ...prev]);
+      window.location.reload();
 
     } catch (error) {
       console.error("Error submitting unit:", error);

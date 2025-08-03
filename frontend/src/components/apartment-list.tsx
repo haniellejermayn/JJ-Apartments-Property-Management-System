@@ -4,7 +4,7 @@ import EditUnitCard from "./edit-unit-card";
 import { DeleteModal } from "./delete-modal";
 import AddUnitButton from "./add-unit-button";
 
-type Unit = {
+export type Unit = {
   id: number,
   unitNumber: string,
   name: string,
@@ -152,7 +152,7 @@ export function ApartmentList() {
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <AddUnitButton />
+                  <AddUnitButton/>
                   {/* <Button variant="outline" size="icon" onClick={() => setFilterOpen(true)}>
                     <SlidersHorizontal className="w-5 h-5" />
                   </Button> */}
