@@ -226,29 +226,6 @@ export function ApartmentList() {
   return (
     <div className="flex-1 bg-gray-50 p-6 overflow-auto">
 
-      {/* <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Apartment List</h1>
-            <div className="flex items-center justify-between">
-            
-            <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Search:</span>
-                <input 
-                type="text"
-                className="px-3 py-1 border border-gray-300 rounded text-sm w-48"
-                placeholder="Search apartments..."
-                value={searchTerm}
-                onChange={handleInputChange}
-                onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                    
-                    handleSearch(searchTerm);
-                }
-                }}
-                />
-            </div>
-            </div>
-        </div> */}
-
       {createTable(units)}
 
       {selectedUnit && 

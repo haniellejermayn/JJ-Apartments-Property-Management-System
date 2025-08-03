@@ -62,21 +62,7 @@ export default function RatesList({open, type, onClose}: RatesListProps) {
       try {
         setLoading(true);
         setError(null);
-        // const [meralcoRes, waterRes] = await Promise.all([
-        //   fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/rates/type?type=Meralco`),
-        //   fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/rates/type?type=Manila Water`)
-        // ])
-
-        // if (!meralcoRes.ok) throw new Error(`Rates API error: ${meralcoRes.status}`);
-        // if (!waterRes.ok) throw new Error(`Rates API error: ${waterRes.status}`);
-
-        // const [meralcoData, waterData] = await Promise.all([
-        //     meralcoRes.json(),
-        //     waterRes.json()
-        // ])
-
-        // setMeralco(meralcoData);
-        // setWater(waterData);
+    
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/rates/type?type=${type}`);
         if (!res.ok) throw new Error(`Rates API error: ${res.status}`);
 
