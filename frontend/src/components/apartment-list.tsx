@@ -4,7 +4,7 @@ import EditUnitCard from "./edit-unit-card";
 import { DeleteModal } from "./delete-modal";
 import AddUnitButton from "./add-unit-button";
 import { useDataRefresh } from '@/contexts/DataContext';
-
+import { ErrorModal } from "./error-modal";
 export type Unit = {
   id: number,
   unitNumber: string,
@@ -52,13 +52,14 @@ export function ApartmentList() {
         });
   
         if (!res.ok) {
-          throw new Error(`Delete failed with status ${res.status}`);
+          const err = await res.json();
+          throw new Error(err?.error || "Failed to delete unit record.");
         }
         console.log("Unit deleted successfully");
   
         window.location.reload();
-      } catch (error) {
-        console.error("Error deleting unit:", error);
+      } catch (error: any) {
+        setError(error.message || "Failed to delete unit record.")
       }
     };
     
@@ -76,13 +77,14 @@ export function ApartmentList() {
           });
     
           if (!res.ok) {
-            throw new Error(`Update failed with status ${res.status}`);
+            const err = await res.json();
+            throw new Error(err?.error || "Failed to update unit record.");
           }
     
           console.log("Unit updated successfully");
           window.location.reload();
-        } catch (error) {
-          console.error("Error updating unit:", error);
+        } catch (error: any) {
+          setError(error.message || "Failed to update unit record.")
         }
     
       }
@@ -90,11 +92,14 @@ export function ApartmentList() {
     const handleSearch = async (searchTerm: string) => {
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units/search?q=${encodeURIComponent(searchTerm)}`);
-            if (!response.ok) throw new Error("Something went wrong");
+            if (!response.ok) {
+              const err = await response.json();
+              throw new Error(err?.error || "Something went wrong");
+            }
             const data = await response.json(); 
             setUnits(data);
-        } catch (err) {
-            console.error(err);
+        } catch (err: any) {
+            setError(err.message || "Something went wrong")
         }
     };
 
@@ -104,11 +109,15 @@ export function ApartmentList() {
     useEffect(() => {
         const fetchUnits = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`);
-                const data = await res.json();
-            setUnits(data);
-            } catch (error) {
-            console.error("Error fetching units:", error);
+              const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`);
+              if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err?.error || "Error fetching units");
+              }
+              const data = await res.json();
+              setUnits(data);
+            } catch (error: any) {
+              setError(error.message || "Error fetching units")
             }
         };
         fetchUnits();
@@ -120,12 +129,16 @@ export function ApartmentList() {
             try {
                 console.log("Apartment list: Refreshing units due to trigger:", refreshTrigger);
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`);
+                if (!res.ok) {
+                  const err = await res.json();
+                  throw new Error(err?.error || "Error fetching units");
+                }
                 const data = await res.json();
                 console.log("Apartment list: Fetched units data:", data);
                 setUnits(data);
                 console.log("Apartment list: Units refreshed successfully");
-            } catch (error) {
-                console.error("Error fetching units:", error);
+            } catch (error: any) {
+                setError(error.message || "Error refreshing units")
             }
         };
         // Trigger refresh on any change in refreshTrigger (except initial load)
@@ -249,7 +262,7 @@ export function ApartmentList() {
     )
   }
   if (loading) return <p>Loading payments...</p>;
-  if (error) return <p className="text-red-600">{error}</p>;
+  
   return (
     <div className="flex-1 bg-gray-50 p-6 overflow-auto">
 
@@ -273,6 +286,11 @@ export function ApartmentList() {
         onConfirm={() => confirmDelete(selectedUnit.id)}
         />}
 
+      <ErrorModal
+        open={error !== null}
+        message={error || ""}
+        onClose={() => setError(null)}
+      />
         
       
     </div>

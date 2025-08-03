@@ -32,14 +32,36 @@ export default function AddPaymentButton({setPayment}: Props) {
     const [monthOfEnd, setMonthOfEnd] = useState<Date | undefined>(undefined);
     const [units, setUnits] = useState<Unit[]>([]);
     const modeOptions = ["Cash", "GCash", "Bank Transfer", "Online Payment", "Other"];
+    const [error, setError] = useState<string | null>(null);
+
+
+    const resetForm = () => {
+      setUnitId(0);
+      setAmount("");
+      setDueDate(undefined);
+      setModeOfPayment("");
+      setMonthOfStart(undefined);
+      setMonthOfEnd(undefined);
+      setError(null);
+    };
+
+    const handleClose = () => {
+        setIsOpen(false);
+        resetForm();
+    };
+
     useEffect(() => {
         const fetchUnits = async () => {
             try {
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`);
+                if (!res.ok) {
+                  const err = await res.json();
+                  throw new Error(err?.error || "Failed to fetch units data.");
+                }
                 const data = await res.json();
             setUnits(data);
-            } catch (error) {
-            console.error("Error fetching units:", error);
+            } catch (error: any) {
+              setError(error.message || "Failed to fetch data")
             }
         };
         fetchUnits();
@@ -47,6 +69,36 @@ export default function AddPaymentButton({setPayment}: Props) {
     const handleSubmit = async(e: React.MouseEvent ) => {
         e.preventDefault();
         e.stopPropagation();
+
+        if (!unitId) {
+          setError("Please select a unit.");
+          return;
+        }
+
+        if (!modeOfPayment) {
+          setError("Please select a mode of payment.");
+          return;
+        }
+
+        if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+          setError("Please enter a valid amount greater than 0.");
+          return;
+        }
+        
+        if (!dueDate) {
+          setError("Please select a due date.");
+          return;
+        }
+
+        if (!monthOfStart) {
+          setError("Please select a month of start.");
+          return;
+        }
+
+        if (!monthOfEnd) {
+          setError("Please select a month of end.");
+          return;
+        }
 
         const body = {
             unitId,
@@ -65,16 +117,18 @@ export default function AddPaymentButton({setPayment}: Props) {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create payment record");
+        const err = await res.json();
+        throw new Error(err?.error || "Failed to create payment record.");
       }
 
-      setIsOpen(false);
+      
       const saved = await res.json();
       setPayment(prev => [saved, ...prev]);
+      handleClose();
 
 
-    } catch (error) {
-      console.error("Error submitting payment:", error);
+    } catch (error:any) {
+      setError(error.message || "Error submitting payment")
     }
     }
 
@@ -153,12 +207,18 @@ export default function AddPaymentButton({setPayment}: Props) {
                     </div>
                   </div>
                 </div>
+
+                {error && (
+                  <div className="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded">
+                    {error}
+                  </div>
+                )}
             </CardContent>
 
             <CardFooter className="flex justify-between">
               <div className="flex gap-4">
                 <Button variant="secondary"
-                  onClick={() => setIsOpen(false)}
+                  onClick={handleClose}
                 >
                   Cancel
                 </Button>

@@ -230,17 +230,17 @@ export default function TenantsManagementPage() {
             console.error('No tenant selected for update.');
             return;
         }
-        let unitIdForUpdate = editingTenant.unit.id; 
-        if (updatedData.unitName !== editingTenant.unit.name || updatedData.unitNum !== editingTenant.unit.unitNumber) {
-            console.log("Unit details in form changed. Attempting to find new unit ID...");
-            const newUnitId = await getUnit_id(updatedData.unitName, updatedData.unitNum);
-            if (newUnitId === null || newUnitId === undefined) {
-                console.error('Error: Could not retrieve new unit ID for the updated unit details. Please ensure the Unit Name and Unit No. are valid.');
-                alert('Failed to update tenant: New unit not found or invalid unit details. Please check the Unit Name and Unit No.');
-                return;
-            }
-            unitIdForUpdate = newUnitId;
-        }
+        // let unitIdForUpdate = editingTenant.unit.id; 
+        // if (updatedData.unitName !== editingTenant.unit.name || updatedData.unitNum !== editingTenant.unit.unitNumber) {
+        //     console.log("Unit details in form changed. Attempting to find new unit ID...");
+        //     const newUnitId = await getUnit_id(updatedData.unitName, updatedData.unitNum);
+        //     if (newUnitId === null || newUnitId === undefined) {
+        //         console.error('Error: Could not retrieve new unit ID for the updated unit details. Please ensure the Unit Name and Unit No. are valid.');
+        //         alert('Failed to update tenant: New unit not found or invalid unit details. Please check the Unit Name and Unit No.');
+        //         return;
+        //     }
+        //     unitIdForUpdate = newUnitId;
+        // }
         
         const tenantUpdatePayload = {
             firstName: updatedData.firstName,
@@ -248,7 +248,7 @@ export default function TenantsManagementPage() {
             lastName: updatedData.lastName,
             email: updatedData.email,
             phoneNumber: updatedData.phoneNumber,
-            unitId: unitIdForUpdate 
+            unitId: updatedData.unitId
         };
 
         try {

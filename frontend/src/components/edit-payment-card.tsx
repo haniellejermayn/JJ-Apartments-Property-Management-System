@@ -27,7 +27,7 @@ export default function EditPaymentCard({ open, onClose, onSave, payment }: Prop
     const [units, setUnits] = useState<Unit[]>([]);
     const [originalForm, setOriginalForm] = useState<Payment>(() => ({ ...payment }));
     const modeOptions = ["Cash", "GCash", "Bank Transfer", "Online Payment", "Other"];
-
+    const [error, setError] = useState<string | null>(null);
     useEffect(() => {
     if (open && payment) {
         setForm({ ...payment });
@@ -40,18 +40,29 @@ export default function EditPaymentCard({ open, onClose, onSave, payment }: Prop
     }
 
     const handleSubmit = () => {
+        const validationError = validateForm();
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+
+        setError(null);
         onSave(form)
         onClose()
     }
-
+    
     useEffect(() => {
         const fetchUnits = async () => {
             try {
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`);
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err?.error || "Failed to fetch units data.");
+                }
                 const data = await res.json();
-            setUnits(data);
-            } catch (error) {
-            console.error("Error fetching units:", error);
+                setUnits(data);
+            } catch (error: any) {
+                setError(error.message || "Failed to fetch data")
             }
         };
         fetchUnits();
@@ -62,6 +73,30 @@ export default function EditPaymentCard({ open, onClose, onSave, payment }: Prop
         setForm({ ...originalForm });
     };
 
+    const validateForm = () => {
+        if (!form.unitId || !form.modeOfPayment || form.amount === undefined || !form.dueDate || !form.monthOfStart || !form.monthOfEnd) {
+            return "Please fill in all required fields.";
+        }
+
+        if (form.amount < 0) {
+            return "Amount cannot be negative.";
+        }
+
+        if (new Date(form.monthOfEnd) < new Date(form.monthOfStart)) {
+            return "Month of end cannot be before month of start.";
+        }
+
+        if (form.isPaid && !form.paidAt) {
+            return "Paid at date is required when marked as paid.";
+        }
+
+        if (!form.isPaid && form.paidAt) {
+            return "Paid at should be empty if the record is not marked as paid.";
+        }
+
+        return null;
+    };
+    
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -95,13 +130,13 @@ export default function EditPaymentCard({ open, onClose, onSave, payment }: Prop
                         <SelectContent className="w-full">
                             {modeOptions.map((mode) => (
                             <SelectItem key={mode} value={mode}>
-                               {mode}
+                            {mode}
                             </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
                 </div>
-            <div >
+            <div>
                 <Label className="py-1">Amount</Label>
                 <Input
                     type="number"
@@ -156,41 +191,45 @@ export default function EditPaymentCard({ open, onClose, onSave, payment }: Prop
                 
             </div>
 
-        <div className="grid grid-cols-2 gap-4">
-            
-            <div>
-              <Label className="py-1">Is Paid?</Label>
-              <Select
-                value={form.isPaid ? "yes" : "no"}
-                onValueChange={(value) => handleChange("isPaid", value === "yes")}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="yes">Yes</SelectItem>
-                  <SelectItem value="no">No</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="grid grid-cols-2 gap-4">
+                
+                <div>
+                <Label className="py-1">Is Paid?</Label>
+                <Select
+                    value={form.isPaid ? "yes" : "no"}
+                    onValueChange={(value) => handleChange("isPaid", value === "yes")}
+                >
+                    <SelectTrigger>
+                    <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                    </SelectContent>
+                </Select>
+                </div>
 
-            <div>
-                <Label className="py-1">Paid At</Label>
-                <DatePicker
-                    date={form.paidAt ? new Date(form.paidAt) : undefined}
-                    setDate={(selectedDate) =>
-                        setForm((prev) => ({
-                            ...prev,
-                            paidAt: selectedDate ? selectedDate.toLocaleDateString('en-CA') : "",
-                        }))
-                    }
-                />
+                <div>
+                    <Label className="py-1">Paid At</Label>
+                    <DatePicker
+                        date={form.paidAt ? new Date(form.paidAt) : undefined}
+                        setDate={(selectedDate) =>
+                            setForm((prev) => ({
+                                ...prev,
+                                paidAt: selectedDate ? selectedDate.toLocaleDateString('en-CA') : "",
+                            }))
+                        }
+                    />
+                </div>
             </div>
+        
+            {error && (
+            <div className="text-sm text-red-600 bg-red-100 rounded px-3 py-2 mb-2">
+                {error}
+            </div>
+            )}
+
         </div>
-            
-
-
-          </div>
         <DialogFooter>
           <Button variant="secondary"  
             onClick={() => {

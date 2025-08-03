@@ -31,16 +31,36 @@ export default function AddExpenseButton({setExpense}: Props) {
     const [reason, setReason] = useState<string>("");
     const [date, setDate] = useState<Date | undefined>(undefined);
     const [units, setUnits] = useState<Unit[]>([]);
+    const [error, setError] = useState<string | null>(null);
     const modeOptions = ["Cash", "GCash", "Bank Transfer", "Online Payment", "Other"];
-    const reasonOptions = ["Utility Bills", "Miscellaneous", "Maintenance"];
+    const reasonOptions = ["Miscellaneous", "Maintenance"];
+
+    const resetForm = () => {
+        setAmount("");
+        setDate(undefined);
+        setModeOfPayment("");
+        setReason("");
+        setUnitId(0);
+        setError(null);
+    };
+
+    const handleClose = () => {
+        setIsOpen(false);
+        resetForm();
+    };
+
     useEffect(() => {
         const fetchUnits = async () => {
             try {
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`);
+                if (!res.ok) {
+                  const err = await res.json();
+                  throw new Error(err?.error || "Failed to fetch units data.");
+                }
                 const data = await res.json();
             setUnits(data);
-            } catch (error) {
-            console.error("Error fetching units:", error);
+            } catch (error: any) {
+              setError(error.message || "Failed to fetch data")
             }
         };
         fetchUnits();
@@ -48,6 +68,31 @@ export default function AddExpenseButton({setExpense}: Props) {
     const handleSubmit = async(e: React.MouseEvent ) => {
         e.preventDefault();
         e.stopPropagation();
+
+        if (!unitId) {
+          setError("Please select a unit.");
+          return;
+        }
+
+        if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+          setError("Please enter a valid amount greater than 0.");
+          return;
+        }
+
+        if (!modeOfPayment) {
+          setError("Please select a mode of payment.");
+          return;
+        }
+
+        if (!reason) {
+          setError("Please select a reason.");
+          return;
+        }
+
+        if (!date) {
+          setError("Please select a date.");
+          return;
+        }
 
         const body = {
             unitId: Number(unitId),
@@ -65,15 +110,17 @@ export default function AddExpenseButton({setExpense}: Props) {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create expense record");
+        const err = await res.json();
+        throw new Error(err?.error || "Failed to create expense record.");
       }
 
-      setIsOpen(false);
+      
       const saved = await res.json();
       setExpense(prev => [saved, ...prev]);
+      handleClose();
 
-    } catch (error) {
-      console.error("Error submitting expense:", error);
+    } catch (error: any) {
+      setError(error.message || "Error submitting expense")
     }
     }
 
@@ -91,7 +138,7 @@ export default function AddExpenseButton({setExpense}: Props) {
             </CardHeader>
             <CardContent>
                 <div className="py-1 text-sm text-gray-900">
-                    Unit
+                    Unit <span className="text-red-500">*</span>
                     <Select onValueChange={(value) => setUnitId(Number(value))}>
                         <SelectTrigger className="w-full h-11 rounded-md border px-3 text-left">
                             <SelectValue placeholder="Select Unit" />
@@ -107,7 +154,7 @@ export default function AddExpenseButton({setExpense}: Props) {
                 </div>
 
                 <div className="py-1 text-sm text-gray-900">
-                    Amount
+                    Amount <span className="text-red-500">*</span>
                     <Input
                         type="number"
                         placeholder="Amount"
@@ -118,7 +165,7 @@ export default function AddExpenseButton({setExpense}: Props) {
                 <div className="grid gap-4 py-1">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="py-1 text-sm text-gray-900">
-                            Mode Of Payment
+                            Mode Of Payment <span className="text-red-500">*</span>
                             <Select onValueChange={(value) => setModeOfPayment(value)}>
                                 <SelectTrigger className="w-full h-11 rounded-md border px-3 text-left">
                                     <SelectValue placeholder="Select Mode of Payment" />
@@ -134,7 +181,7 @@ export default function AddExpenseButton({setExpense}: Props) {
                         </div>
 
                         <div className="py-1 text-sm text-gray-900">
-                            Reason
+                            Reason <span className="text-red-500">*</span>
                             <Select onValueChange={(value) => setReason(value)}>
                                 <SelectTrigger className="w-full h-11 rounded-md border px-3 text-left">
                                     <SelectValue placeholder="Select Reason" />
@@ -153,9 +200,15 @@ export default function AddExpenseButton({setExpense}: Props) {
 
 
                 <div className="py-1 text-sm text-gray-900">
-                    Date
+                    Date <span className="text-red-500">*</span>
                     <DatePicker date={date} setDate={setDate}/>
                 </div>
+
+                {error && (
+                  <div className="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded">
+                    {error}
+                  </div>
+                )}
                             
               
             </CardContent>
@@ -163,7 +216,7 @@ export default function AddExpenseButton({setExpense}: Props) {
             <CardFooter className="flex justify-between">
               <div className="flex gap-4">
                 <Button variant="secondary"
-                  onClick={() => setIsOpen(false)}
+                  onClick={handleClose}
                 >
                   Cancel
                 </Button>

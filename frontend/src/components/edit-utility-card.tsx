@@ -26,6 +26,7 @@ export default function EditUtilityCard({ open, onClose, onSave, utility }: Prop
     const [form, setForm] = useState<Utility>(() => ({ ...utility }));
     const [units, setUnits] = useState<Unit[]>([]);
     const [originalForm, setOriginalForm] = useState<Utility>(() => ({ ...utility }));
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
     if (open && utility) {
@@ -39,6 +40,14 @@ export default function EditUtilityCard({ open, onClose, onSave, utility }: Prop
     }
 
     const handleSubmit = () => {
+        const validationError = validateForm();
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+
+        setError(null); // clear previous errors
+        
         onSave(form)
         onClose()
     }
@@ -47,10 +56,14 @@ export default function EditUtilityCard({ open, onClose, onSave, utility }: Prop
         const fetchUnits = async () => {
             try {
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`);
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err?.error || "Failed to fetch units data.");
+                }
                 const data = await res.json();
             setUnits(data);
-            } catch (error) {
-            console.error("Error fetching units:", error);
+            } catch (error: any) {
+                setError(error.message || "Failed to fetch data")
             }
         };
         fetchUnits();
@@ -60,7 +73,29 @@ export default function EditUtilityCard({ open, onClose, onSave, utility }: Prop
     const handleCancel = () => {
         setForm({ ...originalForm });
     };
+    const validateForm = () => {
+        if (!form.type || !form.unitId || form.currentReading === undefined || form.previousReading === undefined || !form.dueDate || !form.monthOfStart || !form.monthOfEnd) {
+            return "Please fill in all required fields.";
+        }
 
+        if (form.currentReading < form.previousReading) {
+            return "Current reading cannot be less than previous reading.";
+        }
+
+        if (new Date(form.monthOfEnd) < new Date(form.monthOfStart)) {
+            return "Month of end cannot be before month of start.";
+        }
+
+        if (form.isPaid && !form.paidAt) {
+            return "Paid at date is required when marked as paid.";
+        }
+
+        if (!form.isPaid && form.paidAt) {
+            return "Paid at should be empty if the record is not marked as paid.";
+        }
+
+        return null; // No error
+    };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -200,7 +235,14 @@ export default function EditUtilityCard({ open, onClose, onSave, utility }: Prop
                     }
                 />
             </div>
+
+            
         </div>
+        {error && (
+            <div className="text-sm text-red-600 bg-red-100 rounded px-3 py-2 mb-2">
+                {error}
+            </div>
+        )}
             
 
 
