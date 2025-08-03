@@ -45,6 +45,10 @@ public class UtilityRepository{
         if (utility.getTotalMeter() < 0) {
             throw new ErrorException("Total meter cannot be less than 0.");
         }
+        
+        if (utility.getMonthOfEnd().compareTo(utility.getMonthOfStart()) < 0) {
+            throw new ErrorException("Month of end cannot be earlier than month of start");
+        }
     }
 
     public Utility add(Utility utility) {
