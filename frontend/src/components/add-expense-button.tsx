@@ -54,7 +54,7 @@ export default function AddExpenseButton({setExpense}: Props) {
             amount: Number(amount),
             modeOfPayment,
             reason,
-            date: date?.toISOString().split("T")[0],
+            date: date?.toLocaleDateString("en-CA")
         }
 
         try {

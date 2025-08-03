@@ -42,7 +42,7 @@ public class PaymentRepository{
             AND month_of_start = ?
             AND month_of_end = ?
             AND is_paid = ?
-            AND paid_at IS NOT DISTINCT FROM ?
+            AND (paid_at = ? OR (paid_at IS NULL AND ? IS NULL))
             ORDER BY id DESC
             LIMIT 1
         """;
@@ -56,6 +56,7 @@ public class PaymentRepository{
             payment.getDueDate(),
             payment.getMonthOfStart(),
             payment.getMonthOfEnd(),
+            payment.getIsPaid(),
             payment.getIsPaid(),
             payment.getPaidAt()
         );

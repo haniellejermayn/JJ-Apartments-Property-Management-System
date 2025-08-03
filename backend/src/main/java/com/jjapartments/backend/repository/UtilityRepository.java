@@ -88,7 +88,7 @@ public class UtilityRepository{
             AND month_of_start = ?
             AND month_of_end = ?
             AND is_paid = ?
-            AND paid_at IS NOT DISTINCT FROM ?
+            AND (paid_at = ? OR (paid_at IS NULL AND ? IS NULL))
             AND units_id = ?
             AND rates_id = ?
             ORDER BY id DESC
@@ -106,6 +106,7 @@ public class UtilityRepository{
             utility.getDueDate(),
             utility.getMonthOfStart(),
             utility.getMonthOfEnd(),
+            utility.getIsPaid(),
             utility.getIsPaid(),
             utility.getPaidAt(), 
             utility.getUnitId(),
