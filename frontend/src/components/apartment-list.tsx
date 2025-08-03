@@ -97,6 +97,10 @@ export function ApartmentList() {
             console.error(err);
         }
     };
+
+    const formatPrice = (price: number) => {
+        return price.toLocaleString('en-US');
+    };
     useEffect(() => {
         const fetchUnits = async () => {
             try {
@@ -209,7 +213,7 @@ export function ApartmentList() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{apartment.name}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{apartment.description}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{apartment.numOccupants}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{apartment.price}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{formatPrice(apartment.price)}</td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <div className="flex gap-2">
