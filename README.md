@@ -47,7 +47,7 @@ Before running the application, make sure you have the following installed:
    - **Option 1:** Using your IDE (recommended)
      - Open the project in your preferred IDE (IntelliJ IDEA, Eclipse, VS Code)
      - Navigate to `src/main/java/com/jjapartments/backend/BackendApplication.java`
-     - Right-click and select "Run" or use the run button
+     - Right-click and select "Run Java" or use the run button
    
    - **Option 2:** Using command line
      ```bash
