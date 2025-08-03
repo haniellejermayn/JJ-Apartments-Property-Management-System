@@ -80,7 +80,7 @@ export default function PaymentsList() {
 
       // Trigger refresh in other components
       triggerRefresh();
-      window.location.reload();
+      setPayments(prev => prev.filter(payment => payment.id !== id));
     } catch (error) {
       console.error("Error deleting payment:", error);
     }
@@ -106,7 +106,8 @@ export default function PaymentsList() {
         console.log("Payment updated successfully");
         // Trigger refresh in other components
         triggerRefresh();
-        window.location.reload();
+        const saved = await res.json();
+        setPayments(prev => prev.map(payment => payment.id === updated.id ? saved : payment))
       } catch (error) {
         console.error("Error updating payment:", error);
       }
@@ -160,7 +161,7 @@ export default function PaymentsList() {
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h2 className="text-lg font-medium text-gray-900">Payments</h2>
         <div className="flex items-center gap-2">
-          <AddPaymentButton/>
+          <AddPaymentButton setPayment={setPayments}/>
           <Button variant="outline" size="icon" onClick={() => setFilterOpen(true)}>
             <SlidersHorizontal className="w-5 h-5" />
           </Button>

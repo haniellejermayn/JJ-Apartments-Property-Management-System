@@ -1,6 +1,7 @@
 package com.jjapartments.backend.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,14 +21,13 @@ public class RateController{
 
     // Create
     @PostMapping("/add")
-    public ResponseEntity<String> addRate(@RequestBody Rate rate) {
+    public ResponseEntity<?> addRate(@RequestBody Rate rate) {
         try {
-            rateRepository.add(rate);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Rate successfully added");
+            Rate newRate = rateRepository.add(rate);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newRate);
         } catch (ErrorException e) {    
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
-
     }
 
     // Get all
@@ -54,6 +54,26 @@ public class RateController{
         try {
             rateRepository.update(id, rate);
             return ResponseEntity.ok(rateRepository.findById(id));
+        } catch (ErrorException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/latest/type")
+    public ResponseEntity<?> getLatestByType(@RequestParam String type) {
+         try {
+            Rate rates = rateRepository.findLatestByType(type);
+            return ResponseEntity.ok(rates);
+        } catch (ErrorException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/type")
+    public ResponseEntity<?> getByType(@RequestParam String type) {
+         try {
+            List<Rate> rates = rateRepository.findByType(type);
+            return ResponseEntity.ok(rates);
         } catch (ErrorException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

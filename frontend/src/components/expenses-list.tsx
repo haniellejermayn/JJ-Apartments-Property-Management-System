@@ -80,34 +80,18 @@ export default function ExpensesList() {
       }
       console.log("Expense deleted successfully");
 
-      window.location.reload();
+      setExpenses(prev => prev.filter(expense => expense.id !== id));
+
     } catch (error) {
         console.error("Error deleting expense:", error);
     }
   };
 
-const cancelDelete = () => {
-  setShowConfirm(false);
-};
+  const cancelDelete = () => {
+    setShowConfirm(false);
+  };
 
-  // const handleDelete = async (id: number) => {
-  //   try {
-  //     if (!window.confirm("Are you sure you want to delete this record?")) return;
-  //     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/${id}`, {
-  //       method: "DELETE",
-  //       headers: { "Content-Type": "application/json" },
-  //     });
-
-  //     if (!res.ok) {
-  //       throw new Error(`Delete failed with status ${res.status}`);
-  //     }
-  //     console.log("Expense deleted successfully");
-
-  //     window.location.reload();
-  //   } catch (error) {
-  //       console.error("Error deleting expense:", error);
-  //   }
-  // }
+  
   
   const handleSave = async (updated: Expense) => {
       const body = updated
@@ -123,7 +107,8 @@ const cancelDelete = () => {
         }
   
         console.log("Expense updated successfully");
-        window.location.reload();
+        const saved = await res.json();
+        setExpenses(prev => prev.map(expense => expense.id === updated.id ? saved : expense))
       } catch (error) {
         console.error("Error updating expense:", error);
       }
@@ -173,7 +158,7 @@ const cancelDelete = () => {
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h2 className="text-lg font-medium text-gray-900">Expenses</h2>
         <div className="flex items-center gap-2">
-          <AddExpenseButton/>
+          <AddExpenseButton setExpense={setExpenses}/>
           <Button variant="outline" size="icon" onClick={() => setFilterOpen(true)}>
             <SlidersHorizontal className="w-5 h-5" />
           </Button>

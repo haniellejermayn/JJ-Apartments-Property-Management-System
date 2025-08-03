@@ -23,13 +23,35 @@ public class ExpenseRepository{
         return jdbcTemplate.query(sql, new ExpenseRowMapper());
     }
 
-    public int add(Expense expense) {
+    public Expense add(Expense expense) {
         if (expense.getAmount() <= 0) {
             throw new ErrorException("Amount cannot be ₱0 or below");
         }
 
         String sql = "INSERT INTO expenses(units_id, amount, mode_of_payment, reason, date) VALUES (?, ?, ?, ?, ?)";
-        return jdbcTemplate.update(sql, expense.getUnitId(), expense.getAmount(), expense.getModeOfPayment(), expense.getReason(), expense.getDate());
+        jdbcTemplate.update(sql, expense.getUnitId(), expense.getAmount(), expense.getModeOfPayment(), expense.getReason(), expense.getDate());
+    
+        String fetchSql = """
+            SELECT * FROM expenses
+            WHERE units_id = ?
+            AND amount = ?
+            AND mode_of_payment = ?
+            AND reason = ?
+            AND date = ?
+            ORDER BY id DESC
+            LIMIT 1
+        """;
+
+        return jdbcTemplate.queryForObject(
+            fetchSql,
+            new ExpenseRowMapper(),
+            expense.getUnitId(),
+            expense.getAmount(),
+            expense.getModeOfPayment(),
+            expense.getReason(),
+            expense.getDate()
+        );
+
     }
 
     public int delete(int id) {
