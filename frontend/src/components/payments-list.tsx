@@ -14,6 +14,7 @@ import FilterModal from './filter-modal';
 import { DeleteModal } from './delete-modal';
 import { SlidersHorizontal } from 'lucide-react';
 import { useDataRefresh } from '@/contexts/DataContext';
+import { ErrorModal } from './error-modal';
 
 export type Payment = {
     id: number,
@@ -74,15 +75,16 @@ export default function PaymentsList() {
       });
 
       if (!res.ok) {
-        throw new Error(`Delete failed with status ${res.status}`);
+        const err = await res.json();
+        throw new Error(err?.error || "Failed to delete payment record.");
       }
       console.log("Payment deleted successfully");
 
       // Trigger refresh in other components
       triggerRefresh();
       setPayments(prev => prev.filter(payment => payment.id !== id));
-    } catch (error) {
-      console.error("Error deleting payment:", error);
+    } catch (error: any) {
+      setError(error.message || "Failed to delete payment record.")
     }
   };
   
@@ -100,7 +102,8 @@ export default function PaymentsList() {
         });
   
         if (!res.ok) {
-          throw new Error(`Update failed with status ${res.status}`);
+          const err = await res.json();
+          throw new Error(err?.error || "Failed to update payment record.");
         }
   
         console.log("Payment updated successfully");
@@ -108,8 +111,8 @@ export default function PaymentsList() {
         triggerRefresh();
         const saved = await res.json();
         setPayments(prev => prev.map(payment => payment.id === updated.id ? saved : payment))
-      } catch (error) {
-        console.error("Error updating payment:", error);
+      } catch (error: any) {
+        setError(error.message || "Failed to update payment record.")
       }
   
     }
@@ -133,12 +136,10 @@ export default function PaymentsList() {
             unitsRes.json()
         ])
 
-     
-
+    
         setPayments(paymentsData);
         setUnits(unitsData);
       } catch (error: any) {
-        console.error('Error fetching data:', error);
         setError(error.message || 'Failed to fetch data');
       } finally {
         setLoading(false);
@@ -246,7 +247,6 @@ export default function PaymentsList() {
   }
 
   if (loading) return <p>Loading payments...</p>;
-  if (error) return <p className="text-red-600">{error}</p>;
   return (
     <div className="space-y-2">
       {createTable(filteredPayments(payments))}
@@ -275,6 +275,12 @@ export default function PaymentsList() {
           message="Are you sure you want to delete this record? This action cannot be undone."
           onCancel={cancelDelete}
           onConfirm={() => confirmDelete(selectedPayment.id)}
+      />}
+
+      {error && <ErrorModal
+        open={error !== null}
+        message={error}
+        onClose={() => setError(null)}
       />}
     </div>
   );

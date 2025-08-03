@@ -32,15 +32,33 @@ export default function AddUtilityButton({type, setUtilities}: Props) {
     const [monthOfStart, setMonthOfStart] = useState<Date | undefined>(undefined);
     const [monthOfEnd, setMonthOfEnd] = useState<Date | undefined>(undefined);
     const [units, setUnits] = useState<Unit[]>([]);
+    const [error, setError] = useState<string | null>(null);
 
+    const resetForm = () => {
+      setUnitId(0);
+      setCurrentReading("");
+      setDueDate(undefined);
+      setMonthOfStart(undefined);
+      setMonthOfEnd(undefined);
+      setError(null);
+    };
+
+    const handleClose = () => {
+        setIsOpen(false);
+        resetForm();
+    };
     useEffect(() => {
         const fetchUnits = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`);
-                const data = await res.json();
-            setUnits(data);
-            } catch (error) {
-            console.error("Error fetching units:", error);
+              const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`);
+              if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err?.error || "Failed to fetch units data.");
+              } 
+              const data = await res.json();
+              setUnits(data);
+            } catch (error: any) {
+              setError(error.message || "Failed to fetch data")
             }
         };
         fetchUnits();
@@ -48,6 +66,31 @@ export default function AddUtilityButton({type, setUtilities}: Props) {
     const handleSubmit = async(e: React.MouseEvent ) => {
         e.preventDefault();
         e.stopPropagation();
+
+        if (!unitId) {
+          setError("Please select a unit.");
+          return;
+        }
+
+        if (!currentReading || isNaN(Number(currentReading)) || Number(currentReading) <= 0) {
+          setError("Please enter a valid reading greater than 0.");
+          return;
+        }
+
+        if (!dueDate) {
+          setError("Please select a due date.");
+          return;
+        }
+
+        if (!monthOfStart) {
+          setError("Please select a month of start.");
+          return;
+        }
+
+        if (!monthOfEnd) {
+          setError("Please select a month of end.");
+          return;
+        }
 
         const body = {
             type,
@@ -66,15 +109,16 @@ export default function AddUtilityButton({type, setUtilities}: Props) {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create utility record");
+        const err = await res.json();
+        throw new Error(err?.error || "Failed to create rate record.");
       }
 
-      setIsOpen(false);
       const savedUtility = await res.json();
       setUtilities(prev => [savedUtility, ...prev]);
+      handleClose();
 
-    } catch (error) {
-      console.error("Error submitting utility:", error);
+    } catch (error: any) {
+      setError(error.message || "Failed to create rate record")
     }
     }
 
@@ -93,7 +137,7 @@ export default function AddUtilityButton({type, setUtilities}: Props) {
             <CardContent>
 
                 <div className="py-1 text-sm text-gray-900">
-                    Unit
+                    Unit <span className="text-red-500">*</span>
                     <Select onValueChange={(value) => setUnitId(Number(value))}>
                         <SelectTrigger className="w-full h-11 rounded-md border px-3 text-left">
                             <SelectValue placeholder="Select Unit" />
@@ -110,7 +154,7 @@ export default function AddUtilityButton({type, setUtilities}: Props) {
                 
                
                 <div className="py-1 text-sm text-gray-900">
-                    Current Reading
+                    Current Reading <span className="text-red-500">*</span>
                     <Input
                         type="number"
                         placeholder="Current Reading"
@@ -120,29 +164,35 @@ export default function AddUtilityButton({type, setUtilities}: Props) {
                 </div>
 
                 <div className="py-1 text-sm text-gray-900">
-                    Due Date
+                    Due Date <span className="text-red-500">*</span>
                     <DatePicker date={dueDate} setDate={setDueDate}/>
                 </div>
                             
               <div className="grid gap-4 py-1">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="py-1 text-sm text-gray-900">
-                          Month Of Start
+                          Month Of Start <span className="text-red-500">*</span>
                           <DatePicker date={monthOfStart} setDate={setMonthOfStart}/>
                       </div>
 
                       <div className="py-1 text-sm text-gray-900">
-                          Month Of End
+                          Month Of End <span className="text-red-500">*</span>
                           <DatePicker date={monthOfEnd} setDate={setMonthOfEnd}/>
                       </div>
                 </div>
               </div>
+
+              {error && (
+                <div className="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded">
+                  {error}
+                </div>
+              )}
             </CardContent>
 
             <CardFooter className="flex justify-between">
               <div className="flex gap-4">
                 <Button variant="secondary"
-                  onClick={() => setIsOpen(false)}
+                  onClick={handleClose}
                 >
                   Cancel
                 </Button>

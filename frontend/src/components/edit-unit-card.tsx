@@ -22,6 +22,7 @@ type Props = {
 export default function EditUnitCard({ open, onClose, onSave, unit }: Props) {
     const [form, setForm] = useState<Unit>(() => ({ ...unit }));
     const [originalForm, setOriginalForm] = useState<Unit>(() => ({ ...unit }));
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
     if (open && unit) {
@@ -35,13 +36,37 @@ export default function EditUnitCard({ open, onClose, onSave, unit }: Props) {
     }
 
     const handleSubmit = () => {
-        onSave(form)
-        onClose()
+        const validationError = validateForm();
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+
+        setError(null);
+        onSave(form);
+        onClose();
     }
 
     const handleCancel = () => {
         setForm({ ...originalForm });
     };
+
+    const validateForm = () => {
+        if (!form.name || !form.unitNumber || !form.contactNumber || form.numOccupants == null || form.price == null) {
+            return "Please fill in all required fields.";
+        }
+
+        if (typeof form.numOccupants !== "number" || isNaN(form.numOccupants) || form.numOccupants < 0) {
+            return "Number of occupants must be a non-negative number.";
+        }
+
+        if (typeof form.price !== "number" || isNaN(form.price) || form.price < 0) {
+            return "Price must be a non-negative number.";
+        }
+
+        return null;
+    };
+
 
 
   return (
@@ -109,7 +134,11 @@ export default function EditUnitCard({ open, onClose, onSave, unit }: Props) {
                     </div>
                 </div>
                 
-               
+                {error && (
+                    <div className="text-sm text-red-600 bg-red-100 rounded px-3 py-2 mb-2">
+                        {error}
+                    </div>
+                )}
             
 
 

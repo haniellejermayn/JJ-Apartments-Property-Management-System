@@ -15,6 +15,7 @@ import { DeleteModal } from './delete-modal';
 import { SlidersHorizontal } from 'lucide-react';
 import { ChevronDown } from 'lucide-react';
 import RatesList from './rates-list';
+import { ErrorModal } from './error-modal';
 
 export type Utility = {
   id: number,
@@ -90,13 +91,14 @@ export default function UtilitiesList() {
       });
 
       if (!res.ok) {
-        throw new Error(`Delete failed with status ${res.status}`);
+        const err = await res.json();
+        throw new Error(err?.error || "Failed to delete utility record.");
       }
       console.log("Utility deleted successfully");
       setMeralco(prev => prev.filter(utility => utility.id !== id));
       setWater(prev => prev.filter(utility => utility.id !== id));
-    } catch (error) {
-        console.error("Error deleting utility:", error);
+    } catch (error: any) {
+        setError(error.message || "Failed to delete utility record.");
     }
   };
 
@@ -114,7 +116,8 @@ export default function UtilitiesList() {
       });
 
       if (!res.ok) {
-        throw new Error(`Update failed with status ${res.status}`);
+        const err = await res.json();
+        throw new Error(err?.error || "Failed to update utility record.");
       }
       
 
@@ -123,8 +126,8 @@ export default function UtilitiesList() {
       setMeralco(prev => prev.map(utility => utility.id === updated.id ? saved : utility))
       setWater(prev => prev.map(utility => utility.id === updated.id ? saved : utility))
 
-    } catch (error) {
-      console.error("Error updating utility:", error);
+    } catch (error: any) {
+      setError(error.message || "Failed to update utility record.")
     }
 
   }
@@ -164,7 +167,6 @@ export default function UtilitiesList() {
         setUnits(unitsData);
         setRates([rates1Data, rates2Data]);
       } catch (error: any) {
-        console.error('Error fetching data:', error);
         setError(error.message || 'Failed to fetch data');
       } finally {
         setLoading(false);
@@ -313,7 +315,7 @@ export default function UtilitiesList() {
   }
 
   if (loading) return <p>Loading utilities...</p>;
-  if (error) return <p className="text-red-600">{error}</p>;
+  
   return (
     <div className="space-y-2">
       {createTable(
@@ -349,6 +351,12 @@ export default function UtilitiesList() {
         open={openRates}
         type={selectedType}
         onClose={() => setOpenRates(false)} 
+      />}
+
+      {error && <ErrorModal
+        open={error !== null}
+        message={error}
+        onClose={() => setError(null)}
       />}
       
     </div>

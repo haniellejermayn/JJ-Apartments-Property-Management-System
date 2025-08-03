@@ -1,17 +1,10 @@
 "use client";
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import FilterModal from './filter-modal';
 import { DeleteModal } from './delete-modal';
-import { SlidersHorizontal } from 'lucide-react';
 import { Rate } from './utilities-list';
-import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { ErrorModal } from './error-modal';
 import AddRateButton from './add-rate-button';
 interface RatesListProps {
   open: boolean;
@@ -19,8 +12,6 @@ interface RatesListProps {
   onClose: () => void
 }
 export default function RatesList({open, type, onClose}: RatesListProps) {
-    // const [meralco, setMeralco] = useState<Rate[]>([]);
-    // const [water, setWater] = useState<Rate[]>([]);
     const [rates, setRates] = useState<Rate[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -41,13 +32,13 @@ export default function RatesList({open, type, onClose}: RatesListProps) {
       });
 
       if (!res.ok) {
-        throw new Error(`Delete failed with status ${res.status}`);
+        const err = await res.json();
+        throw new Error(err?.error || "Failed to delete rate record.");
       }
       console.log("Rate deleted successfully");
 
       setRates(prev => prev.filter(rate => rate.id !== id));
     } catch (error: any) {
-      console.error("Error deleting rate:", error);
       setError(error.message || 'Failed to delete data');
     }
   };
@@ -69,7 +60,6 @@ export default function RatesList({open, type, onClose}: RatesListProps) {
         const data = await res.json();
         setRates(data);
       } catch (error: any) {
-        console.error('Error fetching data:', error);
         setError(error.message || 'Failed to fetch data');
       } finally {
         setLoading(false);
@@ -125,12 +115,18 @@ export default function RatesList({open, type, onClose}: RatesListProps) {
         </Dialog>
 
         {selectedRate && <DeleteModal
-        open={showConfirm}
-        title="Delete Record"
-        message="Are you sure you want to delete this record? This action cannot be undone."
-        onCancel={cancelDelete}
-        onConfirm={() => confirmDelete(selectedRate.id)}
-      />}
+          open={showConfirm}
+          title="Delete Record"
+          message="Are you sure you want to delete this record? This action cannot be undone."
+          onCancel={cancelDelete}
+          onConfirm={() => confirmDelete(selectedRate.id)}
+        />}
+
+        {error && <ErrorModal
+          open={error !== null}
+          message={error}
+          onClose={() => setError(null)}
+        />}
       
     </div>
   );

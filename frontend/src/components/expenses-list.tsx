@@ -12,6 +12,7 @@ import EditExpenseCard from './edit-expense-card';
 import FilterModal from './filter-modal';
 import { DeleteModal } from './delete-modal';
 import { SlidersHorizontal } from 'lucide-react';
+import { ErrorModal } from './error-modal';
 
 export type Expense = {
     id: number,
@@ -42,7 +43,6 @@ export default function ExpensesList() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState<{unit?: number, month?: String, year?: String}>({});
   const [showConfirm, setShowConfirm] = useState(false);
-  
   const handleApplyFilters = (newFilters: typeof filters) => {
     setFilters(newFilters);
   }
@@ -82,8 +82,9 @@ export default function ExpensesList() {
 
       setExpenses(prev => prev.filter(expense => expense.id !== id));
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error deleting expense:", error);
+        setError(error.message || "Error deleting expense");
     }
   };
 
@@ -109,8 +110,9 @@ export default function ExpensesList() {
         console.log("Expense updated successfully");
         const saved = await res.json();
         setExpenses(prev => prev.map(expense => expense.id === updated.id ? saved : expense))
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error updating expense:", error);
+        setError(error.message || "Error updating expense");
       }
   
     }
@@ -223,7 +225,10 @@ export default function ExpensesList() {
   }
 
   if (loading) return <p>Loading expenses...</p>;
-  if (error) return <p className="text-red-600">{error}</p>;
+  // if (error) {
+  //   return <p className="text-red-600">{error}</p>;
+  // }
+    
   return (
     <div className="space-y-2">
       {createTable(filteredExpense(expenses))}
@@ -252,6 +257,12 @@ export default function ExpensesList() {
           onCancel={cancelDelete}
           onConfirm={() => confirmDelete(selectedExpense.id)}
         />}
+
+        <ErrorModal
+          open={error != null}
+          message={error ?? ""}
+          onClose={() => setError(null)}
+        />
     </div>
   );
 }

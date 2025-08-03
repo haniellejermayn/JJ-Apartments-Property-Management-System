@@ -18,9 +18,6 @@ export type MonthlyReport = {
     expenses: number
 }
 
-
-
-
 export default function ReportsList() {
     const [monthlyReports, setMonthlyReports] = useState<MonthlyReport[]>([]);
     const [units, setUnits] = useState<Unit[]>([]);
