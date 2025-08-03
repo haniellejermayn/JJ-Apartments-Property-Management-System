@@ -25,7 +25,7 @@ export function DatePicker({ date, setDate }: { date: Date | undefined, setDate:
           <ChevronDownIcon />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0">
+      <PopoverContent className="w-auto h-[340px] p-0">
         <Calendar
           mode="single"
           selected={date}
