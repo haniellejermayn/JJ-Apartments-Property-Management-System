@@ -163,7 +163,7 @@ export default function PaymentsList() {
         <h2 className="text-lg font-medium text-gray-900">Payments</h2>
         <div className="flex items-center gap-2">
           <AddPaymentButton setPayment={setPayments}/>
-          <Button variant="outline" size="icon" onClick={() => setFilterOpen(true)}>
+          <Button variant="ghost" size="icon" onClick={() => setFilterOpen(true)}>
             <SlidersHorizontal className="w-5 h-5" />
           </Button>
         </div>
