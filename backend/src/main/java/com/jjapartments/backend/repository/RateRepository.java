@@ -66,4 +66,15 @@ public class RateRepository{
         String sql = "UPDATE rates SET type = ?, rate = ?, date = ? WHERE id = ?";
         return jdbcTemplate.update(sql, rate.getType(), rate.getRate(), rate.getDate(), id);
     }
+
+    public Rate findLatestByType(String type) {
+        try {
+            String sql = "SELECT * FROM rates WHERE type = ? ORDER BY date DESC LIMIT 1";
+            List<Rate> results = jdbcTemplate.query(sql, new RateRowMapper(), type);
+            return results.isEmpty() ? null : results.get(0);
+        } catch (EmptyResultDataAccessException e) {
+            throw new ErrorException("Rate not found for type: " + type);
+        }
+        
+    }
 }   

@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.jjapartments.backend.models.Rate;
+import com.jjapartments.backend.models.Utility;
 import com.jjapartments.backend.exception.ErrorException;
 import com.jjapartments.backend.repository.RateRepository;
 
@@ -54,6 +55,16 @@ public class RateController{
         try {
             rateRepository.update(id, rate);
             return ResponseEntity.ok(rateRepository.findById(id));
+        } catch (ErrorException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/type")
+    public ResponseEntity<?> getLatestByType(@RequestParam String type) {
+         try {
+            Rate rates = rateRepository.findLatestByType(type);
+            return ResponseEntity.ok(rates);
         } catch (ErrorException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
