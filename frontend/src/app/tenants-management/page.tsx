@@ -86,6 +86,7 @@ export default function TenantsManagementPage() {
             const unitInfo = units.find(u => u.id === t.unitId);
             return {
                 ...t,
+                middleName: t.middleInitial, // Map middleInitial to middleName for frontend consistency
                 unit: unitInfo ? unitInfo : {
                     id: t.unit,
                     name: 'Unknown Building',
@@ -162,7 +163,7 @@ export default function TenantsManagementPage() {
         
         const tenantDataPayload = {
             firstName: formData.firstName,
-            middleName: formData.middleName || null, 
+            middleInitial: formData.middleName || null, 
             lastName: formData.lastName,
             email: formData.email,
             phoneNumber: formData.phoneNumber,
@@ -211,7 +212,7 @@ export default function TenantsManagementPage() {
         
         const tenantUpdatePayload = {
             firstName: updatedData.firstName,
-            middleName: updatedData.middleName || null,
+            middleInitial: updatedData.middleName || null,
             lastName: updatedData.lastName,
             email: updatedData.email,
             phoneNumber: updatedData.phoneNumber,
