@@ -38,6 +38,9 @@ export default function TenantsManagementPage() {
 
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [tenantToDelete, setTenantToDelete] = useState<TenantWithUnitDetails | null>(null);
+    
+    const [errorModalOpen, setErrorModalOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string>('');
 
     const [units, setUnits] = useState<Unit[]>([]);
 
@@ -154,38 +157,61 @@ export default function TenantsManagementPage() {
     };
 
     const handleAddTenant = async (formData) => {
-        const unitId = await getUnit_id(formData.unitName, formData.unitNum);
-        if (unitId === null || unitId === undefined) {
-            console.error('Error: Could not retrieve unit ID for the given unit name and number.');
-            alert('Failed to add tenant: Unit not found or invalid unit details provided.');
-            return; 
-        }
-        
-        const tenantDataPayload = {
-            firstName: formData.firstName,
-            middleInitial: formData.middleName || null, 
-            lastName: formData.lastName,
-            email: formData.email,
-            phoneNumber: formData.phoneNumber,
-            unitId: unitId
-        };
+        try {
+            const unitId = await getUnit_id(formData.unitName, formData.unitNum);
+            if (unitId === null || unitId === undefined) {
+                console.error('Error: Could not retrieve unit ID for the given unit name and number.');
+                setErrorMessage('Failed to add tenant: Unit not found or invalid unit details provided.');
+                setErrorModalOpen(true);
+                return; 
+            }
+            
+            const tenantDataPayload = {
+                firstName: formData.firstName,
+                middleInitial: formData.middleName || null, 
+                lastName: formData.lastName,
+                email: formData.email,
+                phoneNumber: formData.phoneNumber,
+                unitId: unitId
+            };
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants/add`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(tenantDataPayload),
-        })
-        
-        if (!res.ok){
-            const errorData = await res.json().catch(() => ({ message: 'Unknown error' }));
-            throw new Error(`Failed to add tenant: ${res.status} ${res.statusText} - ${errorData.message || ''}`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants/add`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(tenantDataPayload),
+            })
+            
+            if (!res.ok){
+                const errorData = await res.json().catch(() => ({ message: 'Unknown error' }));
+                
+                // Handle specific error messages from backend
+                let displayMessage = 'Failed to add tenant. Please try again.';
+                if (errorData.error && typeof errorData.error === 'string') {
+                    if (errorData.error.includes('email is already taken')) {
+                        displayMessage = 'This email address is already registered with another tenant. Please use a different email address.';
+                    } else if (errorData.error.includes('phone number is already taken')) {
+                        displayMessage = 'This phone number is already registered with another tenant. Please use a different phone number.';
+                    } else if (errorData.error.includes('tenant is already registered')) {
+                        displayMessage = 'This tenant is already registered in the system.';
+                    } else {
+                        displayMessage = errorData.error;
+                    }
+                }
+                
+                setErrorMessage(displayMessage);
+                setErrorModalOpen(true);
+                return;
+            }
+            
+            toggleModal();
+            fetchTenants();
+        } catch (error) {
+            console.error('Error adding tenant:', error);
+            setErrorMessage('An unexpected error occurred while adding the tenant. Please try again.');
+            setErrorModalOpen(true);
         }
-        
-
-        toggleModal();
-        fetchTenants();
     };
 
     const handleEditTenant = (tenant: TenantWithUnitDetails) => {
@@ -228,7 +254,24 @@ export default function TenantsManagementPage() {
             
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({ message: 'Unknown error' }));
-                throw new Error(`Failed to update tenant: ${res.status} ${res.statusText} - ${errorData.message || ''}`);
+                
+                // Handle specific error messages from backend
+                let displayMessage = 'Failed to update tenant. Please try again.';
+                if (errorData.error && typeof errorData.error === 'string') {
+                    if (errorData.error.includes('email is already taken')) {
+                        displayMessage = 'This email address is already registered with another tenant. Please use a different email address.';
+                    } else if (errorData.error.includes('phone number is already taken')) {
+                        displayMessage = 'This phone number is already registered with another tenant. Please use a different phone number.';
+                    } else if (errorData.error.includes('tenant is already registered')) {
+                        displayMessage = 'This tenant is already registered in the system.';
+                    } else {
+                        displayMessage = errorData.error;
+                    }
+                }
+                
+                setErrorMessage(displayMessage);
+                setErrorModalOpen(true);
+                return;
             }
             
             console.log('Tenant updated successfully:', updatedData);
@@ -236,7 +279,8 @@ export default function TenantsManagementPage() {
             fetchTenants(); 
         } catch (error) {
             console.error('Error updating tenant:', error);
-            alert('Error updating tenant. Please check console for details.');
+            setErrorMessage('An unexpected error occurred while updating the tenant. Please try again.');
+            setErrorModalOpen(true);
         }
     };
 
@@ -445,6 +489,34 @@ export default function TenantsManagementPage() {
                 onCancel={cancelDelete}
                 onConfirm={confirmDeleteTenant}
                 />
+                
+            {/* Error Modal */}
+            {errorModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+                        <div className="p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-semibold text-gray-900">Unable to Add Tenant</h3>
+                                <button
+                                    onClick={() => setErrorModalOpen(false)}
+                                    className="text-gray-400 hover:text-gray-600 text-2xl font-light transition-colors"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                            <p className="text-gray-600 mb-6">{errorMessage}</p>
+                            <div className="flex justify-end">
+                                <button
+                                    onClick={() => setErrorModalOpen(false)}
+                                    className="px-6 py-2 bg-yellow-300 text-black rounded-lg hover:bg-yellow-400 transition-all duration-200 font-medium border border-yellow-300 hover:border-yellow-400"
+                                >
+                                    Got it
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </div>
     );
