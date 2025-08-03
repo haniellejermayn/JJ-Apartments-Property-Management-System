@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import EditUnitCard from "./edit-unit-card";
 import { DeleteModal } from "./delete-modal";
 import AddUnitButton from "./add-unit-button";
+import { useDataRefresh } from '@/contexts/DataContext';
 
 export type Unit = {
   id: number,
@@ -16,6 +17,7 @@ export type Unit = {
 
 
 export function ApartmentList() {
+  const { refreshTrigger } = useDataRefresh();
   const [units, setUnits] = useState<Unit[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -107,6 +109,27 @@ export function ApartmentList() {
         };
         fetchUnits();
     }, []);
+
+    // Listen for refresh triggers from other components (like when tenants are added/removed)
+    useEffect(() => {
+        const fetchUnits = async () => {
+            try {
+                console.log("Apartment list: Refreshing units due to trigger:", refreshTrigger);
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`);
+                const data = await res.json();
+                console.log("Apartment list: Fetched units data:", data);
+                setUnits(data);
+                console.log("Apartment list: Units refreshed successfully");
+            } catch (error) {
+                console.error("Error fetching units:", error);
+            }
+        };
+        // Trigger refresh on any change in refreshTrigger (except initial load)
+        if (refreshTrigger > 0) {
+            console.log("Apartment list: refreshTrigger changed to:", refreshTrigger, "- fetching units");
+            fetchUnits();
+        }
+    }, [refreshTrigger]);
 
     useEffect(() =>{
         const handleKeyDown = (event: KeyboardEvent) => {
