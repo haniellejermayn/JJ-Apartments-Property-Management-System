@@ -31,10 +31,18 @@ export type Utility = {
   rateId: number
 }
 
+export type Rate = {
+  id: number,
+  type: string,
+  rate: number,
+  date: string
+}
+
 export default function UtilitiesList() {
   const [meralco, setMeralco] = useState<Utility[]>([]);
   const [water, setWater] = useState<Utility[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
+  const [rates, setRates] = useState<Rate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -121,10 +129,12 @@ export default function UtilitiesList() {
       try {
         setLoading(true);
         setError(null);
-        const [meralcoRes, waterRes, unitsRes] = await Promise.all([
+        const [meralcoRes, waterRes, unitsRes, rates1Res, rates2Res] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/utilities/type?type=Meralco`),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/utilities/type?type=Manila Water`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`)
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/rates/type?type=Meralco`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/rates/type?type=Manila Water`)
         ])
 
 
@@ -132,11 +142,15 @@ export default function UtilitiesList() {
         if (!meralcoRes.ok) throw new Error(`Utilities API error: ${meralcoRes.status}`);
         if (!waterRes.ok) throw new Error(`Utilities API error: ${waterRes.status}`);
         if (!unitsRes.ok) throw new Error(`Units API error: ${unitsRes.status}`);
+        if (!rates1Res.ok) throw new Error(`Rates API error: ${rates1Res.status}`);
+        if (!rates2Res.ok) throw new Error(`Rates API error: ${rates2Res.status}`);
 
-        const [meralcoData, waterData, unitsData] = await Promise.all([
+        const [meralcoData, waterData, unitsData, rates1Data, rates2Data] = await Promise.all([
           meralcoRes.json(), 
           waterRes.json(), 
-          unitsRes.json()
+          unitsRes.json(),
+          rates1Res.json(),
+          rates2Res.json()
         ])
 
      
@@ -144,6 +158,7 @@ export default function UtilitiesList() {
         setMeralco(meralcoData);
         setWater(waterData);
         setUnits(unitsData);
+        setRates([rates1Data, rates2Data]);
       } catch (error: any) {
         console.error('Error fetching data:', error);
         setError(error.message || 'Failed to fetch data');
@@ -169,28 +184,46 @@ export default function UtilitiesList() {
     return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2">
-              <h2 className="text-lg font-medium text-gray-900">{type}</h2>
-              <ChevronDown/>
+        <div className="flex justify-between items-center">
+          <div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost">
+                  <h2 className="text-lg font-medium text-gray-900">{type}</h2>
+                  <ChevronDown/>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setSelectedType("Meralco")}>
+                  Meralco
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelectedType("Manila Water")}>
+                  Manila Water
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        
+          <div>
+            <Button variant="ghost">
+              <span className="font-medium text-xs uppercase text-gray-700">
+                Rate:{" "}
+                {type === "Meralco"
+                  ? rates[0].rate
+                  : type === "Manila Water"
+                  ? rates[1].rate
+                  : "N/A"}</span>
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => setSelectedType("Meralco")}>
-              Meralco
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSelectedType("Manila Water")}>
-              Manila Water
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </div>
+        
+        </div>
         <div className="flex items-center gap-2">
           <AddUtilityButton />
           <Button variant="ghost" size="icon" onClick={() => setFilterOpen(true)}>
             <SlidersHorizontal className="w-5 h-5" />
           </Button>
         </div>
+        
           
           
       </div>
