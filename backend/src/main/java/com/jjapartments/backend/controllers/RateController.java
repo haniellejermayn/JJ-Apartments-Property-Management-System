@@ -1,6 +1,7 @@
 package com.jjapartments.backend.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -8,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.jjapartments.backend.models.Rate;
-import com.jjapartments.backend.models.Utility;
 import com.jjapartments.backend.exception.ErrorException;
 import com.jjapartments.backend.repository.RateRepository;
 
@@ -21,14 +21,13 @@ public class RateController{
 
     // Create
     @PostMapping("/add")
-    public ResponseEntity<String> addRate(@RequestBody Rate rate) {
+    public ResponseEntity<?> addRate(@RequestBody Rate rate) {
         try {
             rateRepository.add(rate);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Rate successfully added");
+            return ResponseEntity.status(HttpStatus.CREATED).body(rate);
         } catch (ErrorException e) {    
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
-
     }
 
     // Get all

@@ -14,6 +14,7 @@ import FilterModal from './filter-modal'
 import { DeleteModal } from './delete-modal';
 import { SlidersHorizontal } from 'lucide-react';
 import { ChevronDown } from 'lucide-react';
+import RatesList from './rates-list';
 
 export type Utility = {
   id: number,
@@ -51,6 +52,7 @@ export default function UtilitiesList() {
   const [filters, setFilters] = useState<{unit?: number, month?: String, year?: String}>({});
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedType, setSelectedType] = useState<"Meralco" | "Manila Water">("Meralco");
+  const [openRates, setOpenRates] = useState(false);
 
   
 
@@ -133,8 +135,8 @@ export default function UtilitiesList() {
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/utilities/type?type=Meralco`),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/utilities/type?type=Manila Water`),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/rates/type?type=Meralco`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/rates/type?type=Manila Water`)
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/rates/latest/type?type=Meralco`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/rates/latest/type?type=Manila Water`)
         ])
 
 
@@ -205,7 +207,7 @@ export default function UtilitiesList() {
           </div>
         
           <div>
-            <Button variant="ghost">
+            <Button variant="ghost" onClick={() => setOpenRates(true)}>
               <span className="font-medium text-xs uppercase text-gray-700">
                 Rate:{" "}
                 {type === "Meralco"
@@ -341,6 +343,11 @@ export default function UtilitiesList() {
         onConfirm={() => confirmDelete(selectedUtility.id)}
       />}
       
+      {selectedType &&  <RatesList
+        open={openRates}
+        type={selectedType}
+        onClose={() => setOpenRates(false)} 
+      />}
       
     </div>
     
