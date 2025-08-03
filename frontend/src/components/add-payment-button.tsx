@@ -91,9 +91,9 @@ export default function AddPaymentButton({setPayment}: Props) {
               <CardTitle>Add Payment Record</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="py-1 text-sm text-gray-900">
-                    Unit
-                    <Select onValueChange={(value) => setUnitId(Number(value))}>
+              <div className="py-1 text-sm text-gray-900">
+                Unit <span className="text-red-500">*</span>
+                <Select onValueChange={(value) => setUnitId(Number(value))}>
                         <SelectTrigger className="w-full h-11 rounded-md border px-3 text-left">
                             <SelectValue placeholder="Select Unit" />
                         </SelectTrigger>
@@ -108,7 +108,7 @@ export default function AddPaymentButton({setPayment}: Props) {
                 </div>
 
                 <div className="py-1 text-sm text-gray-900">
-                    Mode Of Payment
+                    Mode Of Payment <span className="text-red-500">*</span>
                     <Select onValueChange={(value) => setModeOfPayment(value)}>
                         <SelectTrigger className="w-full h-11 rounded-md border px-3 text-left">
                             <SelectValue placeholder="Select Mode of Payment" />
@@ -127,34 +127,32 @@ export default function AddPaymentButton({setPayment}: Props) {
                 
                
                 <div className="py-1 text-sm text-gray-900">
-                    Amount
-                    <Input
-                        type="number"
-                        placeholder="Amount"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                    />
+                  Amount <span className="text-red-500">*</span>
+                  <Input
+                    type="number"
+                    placeholder="Amount"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                  />
                 </div>
 
                 <div className="py-1 text-sm text-gray-900">
-                    Due Date
-                    <DatePicker date={dueDate} setDate={setDueDate}/>
+                  Due Date <span className="text-red-500">*</span>
+                  <DatePicker date={dueDate} setDate={setDueDate}/>
                 </div>
-                            
-                <div className="grid gap-4 py-1">
-                    <div className="grid grid-cols-2 gap-4">
-                    <div className="py-1 text-sm text-gray-900">
-                            Month Of Start
-                            <DatePicker date={monthOfStart} setDate={setMonthOfStart}/>
-                        </div>
 
-                        <div className="py-1 text-sm text-gray-900">
-                            Month Of End
-                            <DatePicker date={monthOfEnd} setDate={setMonthOfEnd}/>
-                        </div>
+                <div className="grid gap-4 py-1">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="py-1 text-sm text-gray-900">
+                      Month Of Start <span className="text-red-500">*</span>
+                      <DatePicker date={monthOfStart} setDate={setMonthOfStart}/>
                     </div>
+                    <div className="py-1 text-sm text-gray-900">
+                      Month Of End <span className="text-red-500">*</span>
+                      <DatePicker date={monthOfEnd} setDate={setMonthOfEnd}/>
+                    </div>
+                  </div>
                 </div>
-              
             </CardContent>
 
             <CardFooter className="flex justify-between">
