@@ -32,7 +32,7 @@ export default function AddExpenseButton({setExpense}: Props) {
     const [date, setDate] = useState<Date | undefined>(undefined);
     const [units, setUnits] = useState<Unit[]>([]);
     const modeOptions = ["Cash", "GCash", "Bank Transfer", "Online Payment", "Other"];
-    const reasonOptions = ["Utility Bills", "Miscellaneous", "Maintenance"];
+    const reasonOptions = ["Miscellaneous", "Maintenance"];
     useEffect(() => {
         const fetchUnits = async () => {
             try {
