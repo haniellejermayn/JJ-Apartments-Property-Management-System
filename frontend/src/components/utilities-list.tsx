@@ -13,6 +13,8 @@ import EditUtilityCard from './edit-utility-card'
 import FilterModal from './filter-modal'
 import { DeleteModal } from './delete-modal';
 import { SlidersHorizontal } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import RatesList from './rates-list';
 
 export type Utility = {
   id: number,
@@ -30,10 +32,18 @@ export type Utility = {
   rateId: number
 }
 
+export type Rate = {
+  id: number,
+  type: string,
+  rate: number,
+  date: string
+}
+
 export default function UtilitiesList() {
   const [meralco, setMeralco] = useState<Utility[]>([]);
   const [water, setWater] = useState<Utility[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
+  const [rates, setRates] = useState<Rate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -41,7 +51,8 @@ export default function UtilitiesList() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState<{unit?: number, month?: String, year?: String}>({});
   const [showConfirm, setShowConfirm] = useState(false);
-
+  const [selectedType, setSelectedType] = useState<"Meralco" | "Manila Water">("Meralco");
+  const [openRates, setOpenRates] = useState(false);
 
   
 
@@ -82,8 +93,8 @@ export default function UtilitiesList() {
         throw new Error(`Delete failed with status ${res.status}`);
       }
       console.log("Utility deleted successfully");
-
-      window.location.reload();
+      setMeralco(prev => prev.filter(utility => utility.id !== id));
+      setWater(prev => prev.filter(utility => utility.id !== id));
     } catch (error) {
         console.error("Error deleting utility:", error);
     }
@@ -108,7 +119,9 @@ export default function UtilitiesList() {
       
 
       console.log("Utility updated successfully");
-      window.location.reload();
+      const saved = await res.json();
+      setMeralco(prev => prev.map(utility => utility.id === updated.id ? saved : utility))
+      setWater(prev => prev.map(utility => utility.id === updated.id ? saved : utility))
 
     } catch (error) {
       console.error("Error updating utility:", error);
@@ -120,10 +133,12 @@ export default function UtilitiesList() {
       try {
         setLoading(true);
         setError(null);
-        const [meralcoRes, waterRes, unitsRes] = await Promise.all([
+        const [meralcoRes, waterRes, unitsRes, rates1Res, rates2Res] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/utilities/type?type=Meralco`),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/utilities/type?type=Manila Water`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`)
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/rates/latest/type?type=Meralco`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/rates/latest/type?type=Manila Water`)
         ])
 
 
@@ -131,11 +146,15 @@ export default function UtilitiesList() {
         if (!meralcoRes.ok) throw new Error(`Utilities API error: ${meralcoRes.status}`);
         if (!waterRes.ok) throw new Error(`Utilities API error: ${waterRes.status}`);
         if (!unitsRes.ok) throw new Error(`Units API error: ${unitsRes.status}`);
+        if (!rates1Res.ok) throw new Error(`Rates API error: ${rates1Res.status}`);
+        if (!rates2Res.ok) throw new Error(`Rates API error: ${rates2Res.status}`);
 
-        const [meralcoData, waterData, unitsData] = await Promise.all([
+        const [meralcoData, waterData, unitsData, rates1Data, rates2Data] = await Promise.all([
           meralcoRes.json(), 
           waterRes.json(), 
-          unitsRes.json()
+          unitsRes.json(),
+          rates1Res.json(),
+          rates2Res.json()
         ])
 
      
@@ -143,6 +162,7 @@ export default function UtilitiesList() {
         setMeralco(meralcoData);
         setWater(waterData);
         setUnits(unitsData);
+        setRates([rates1Data, rates2Data]);
       } catch (error: any) {
         console.error('Error fetching data:', error);
         setError(error.message || 'Failed to fetch data');
@@ -168,13 +188,46 @@ export default function UtilitiesList() {
     return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-        <h2 className="text-lg font-medium text-gray-900">{type}</h2>
+        <div className="flex justify-between items-center">
+          <div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost">
+                  <h2 className="text-lg font-medium text-gray-900">{type}</h2>
+                  <ChevronDown/>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setSelectedType("Meralco")}>
+                  Meralco
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelectedType("Manila Water")}>
+                  Manila Water
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        
+          <div>
+            <Button variant="ghost" onClick={() => setOpenRates(true)}>
+              <span className="font-medium text-xs uppercase text-gray-700">
+                Rate:{" "}
+                {type === "Meralco"
+                  ? rates[0].rate
+                  : type === "Manila Water"
+                  ? rates[1].rate
+                  : "N/A"}</span>
+            </Button>
+          </div>
+        
+        </div>
         <div className="flex items-center gap-2">
-          <AddUtilityButton />
-          <Button variant="outline" size="icon" onClick={() => setFilterOpen(true)}>
+          <AddUtilityButton type={selectedType} setUtilities={selectedType == "Meralco" ? setMeralco : setWater}/>
+          <Button variant="ghost" size="icon" onClick={() => setFilterOpen(true)}>
             <SlidersHorizontal className="w-5 h-5" />
           </Button>
         </div>
+        
           
           
       </div>
@@ -263,8 +316,10 @@ export default function UtilitiesList() {
   if (error) return <p className="text-red-600">{error}</p>;
   return (
     <div className="space-y-2">
-      {createTable(filteredUtility(meralco), "Meralco")}
-      {createTable(filteredUtility(water), "Manila Water")}
+      {createTable(
+        filteredUtility(selectedType === "Meralco" ? meralco : water),
+        selectedType
+      )}
       {selectedUtility && (
       <EditUtilityCard
         open={editOpen}
@@ -290,6 +345,11 @@ export default function UtilitiesList() {
         onConfirm={() => confirmDelete(selectedUtility.id)}
       />}
       
+      {selectedType &&  <RatesList
+        open={openRates}
+        type={selectedType}
+        onClose={() => setOpenRates(false)} 
+      />}
       
     </div>
     

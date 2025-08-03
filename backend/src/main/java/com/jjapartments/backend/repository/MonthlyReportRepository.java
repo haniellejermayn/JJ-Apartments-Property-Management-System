@@ -22,12 +22,6 @@ public class MonthlyReportRepository{
         return jdbcTemplate.query(sql, new MonthlyReportRowMapper());
     }
 
-    // public int add(MonthlyReport monthlyReport) {
-    //     String sql = "INSERT INTO monthly_reports(tenant_id, reason, mode_of_monthlyReport, amount, due_date, month_of_start, month_of_end, is_paid, paid_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    //     return jdbcTemplate.update(sql, monthlyReport.getTenantId(), monthlyReport.getReason(), monthlyReport.getModeOfMonthlyReport(), monthlyReport.getAmount(), monthlyReport.getDueDate(), monthlyReport.getMonthOfStart(), monthlyReport.getMonthOfEnd(), monthlyReport.getIsPaid(), monthlyReport.getPaidAt());
-       
-    // }
-
     public int delete(int year, int month) {
         String sql = "DELETE FROM monthly_reports WHERE year = ? AND month = ?";
         return jdbcTemplate.update(sql, year, month);
@@ -48,17 +42,6 @@ public class MonthlyReportRepository{
         
         return (expenseSum != null ? expenseSum : 0f) + (utilitySum != null ? utilitySum : 0f);
     }
-
-    // public int add(MonthlyReport report) {
-    //     String sql = "INSERT INTO monthly_reports(year, month, total_earnings, total_expenses, net_income) " +
-    //                  "VALUES (?, ?, ?, ?, ?)";
-    //     return jdbcTemplate.update(sql,
-    //             report.getYear(),
-    //             report.getMonth(),
-    //             report.getTotalEarnings(),
-    //             report.getTotalExpenses(),
-    //             report.getNetIncome());
-    // }
 
     public int add(MonthlyReport report) {
         String sql = "INSERT INTO monthly_reports(year, month, units_id, monthly_dues, utility_bills, expenses) " +

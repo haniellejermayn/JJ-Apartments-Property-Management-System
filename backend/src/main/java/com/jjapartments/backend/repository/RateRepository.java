@@ -23,7 +23,7 @@ public class RateRepository{
         return jdbcTemplate.query(sql, new RateRowMapper());
     }
 
-    public int add(Rate rate) {
+    public Rate add(Rate rate) {
         List<String> validTypes = List.of("Meralco", "Manila Water");
         if (!validTypes.contains(rate.getType())) {
             throw new ErrorException("Invalid rate type " + rate.getType());
@@ -31,8 +31,25 @@ public class RateRepository{
         if (rate.getRate() <= 0) {
             throw new ErrorException("Amount cannot be 0 or below");
         }
-        String sql = "INSERT INTO rates(type, rate) VALUES (?, ?, ?)";
-        return jdbcTemplate.update(sql, rate.getType(), rate.getRate(), rate.getDate());
+        String sql = "INSERT INTO rates(type, rate, date) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, rate.getType(), rate.getRate(), rate.getDate());
+
+        String fetchSql = """
+            SELECT * FROM rates
+            WHERE type = ?
+            AND rate = ?
+            AND date = ?
+            ORDER BY id DESC
+            LIMIT 1
+        """;
+
+        return jdbcTemplate.queryForObject(
+            fetchSql,
+            new RateRowMapper(),
+            rate.getType(),
+            rate.getRate(),
+            rate.getDate()
+        );
     }
 
     public int delete(int id) {
@@ -65,5 +82,21 @@ public class RateRepository{
         
         String sql = "UPDATE rates SET type = ?, rate = ?, date = ? WHERE id = ?";
         return jdbcTemplate.update(sql, rate.getType(), rate.getRate(), rate.getDate(), id);
+    }
+
+    public Rate findLatestByType(String type) {
+        try {
+            String sql = "SELECT * FROM rates WHERE type = ? ORDER BY date DESC LIMIT 1";
+            List<Rate> results = jdbcTemplate.query(sql, new RateRowMapper(), type);
+            return results.isEmpty() ? null : results.get(0);
+        } catch (EmptyResultDataAccessException e) {
+            throw new ErrorException("Rate not found for type: " + type);
+        }
+        
+    }
+
+    public List<Rate> findByType(String type) {
+        String sql = "SELECT * FROM rates WHERE type = ? ORDER BY date DESC";
+        return jdbcTemplate.query(sql, new RateRowMapper(), type);
     }
 }   

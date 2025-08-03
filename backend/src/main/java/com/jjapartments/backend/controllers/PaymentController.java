@@ -2,6 +2,7 @@ package com.jjapartments.backend.controllers;
 
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +21,12 @@ public class PaymentController {
 
     //Create
     @PostMapping("/add")
-    public ResponseEntity<String> addPayment(@RequestBody Payment payment) {
+    public ResponseEntity<?> addPayment(@RequestBody Payment payment) {
         try {
-            paymentRepository.add(payment);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Payment successfully added.");
+            Payment newPayment = paymentRepository.add(payment);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newPayment);
         } catch (ErrorException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -54,7 +55,7 @@ public class PaymentController {
             paymentRepository.update(id, payment);
             return ResponseEntity.ok(paymentRepository.findById(id));
         } catch (ErrorException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
     // Find by year and month

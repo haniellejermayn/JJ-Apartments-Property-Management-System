@@ -7,10 +7,9 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button"
-import { Unit } from "@/components/expenses-list"
 import { Input } from "@/components/ui/input"
-import {DatePicker} from "@/components/date-picker"
 import { Label } from "@/components/ui/label"
+import { Unit } from "@/components/apartment-list";
 
 
 export default function AddUnitButton() {

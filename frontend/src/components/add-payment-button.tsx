@@ -17,11 +17,12 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import {DatePicker} from "@/components/date-picker"
-import { useDataRefresh } from "@/contexts/DataContext";
+import { Payment } from "./payments-list";
+interface Props {
+  setPayment:  React.Dispatch<React.SetStateAction<Payment[]>>;
+}
 
-
-export default function AddPaymentButton() {
-    const { triggerRefresh } = useDataRefresh();
+export default function AddPaymentButton({setPayment}: Props) {
     const [isOpen, setIsOpen] = useState(false);
     const [unitId, setUnitId] = useState<number>(0);
     const [modeOfPayment, setModeOfPayment] = useState("");
@@ -68,9 +69,9 @@ export default function AddPaymentButton() {
       }
 
       setIsOpen(false);
-      // Trigger refresh in other components
-      triggerRefresh();
-      window.location.reload();
+      const saved = await res.json();
+      setPayment(prev => [saved, ...prev]);
+
 
     } catch (error) {
       console.error("Error submitting payment:", error);

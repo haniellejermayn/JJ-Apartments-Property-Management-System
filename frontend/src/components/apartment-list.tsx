@@ -4,7 +4,7 @@ import EditUnitCard from "./edit-unit-card";
 import { DeleteModal } from "./delete-modal";
 import AddUnitButton from "./add-unit-button";
 
-type Unit = {
+export type Unit = {
   id: number,
   unitNumber: string,
   name: string,
@@ -152,7 +152,7 @@ export function ApartmentList() {
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <AddUnitButton />
+                  <AddUnitButton/>
                   {/* <Button variant="outline" size="icon" onClick={() => setFilterOpen(true)}>
                     <SlidersHorizontal className="w-5 h-5" />
                   </Button> */}
@@ -225,29 +225,6 @@ export function ApartmentList() {
   if (error) return <p className="text-red-600">{error}</p>;
   return (
     <div className="flex-1 bg-gray-50 p-6 overflow-auto">
-
-      {/* <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Apartment List</h1>
-            <div className="flex items-center justify-between">
-            
-            <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Search:</span>
-                <input 
-                type="text"
-                className="px-3 py-1 border border-gray-300 rounded text-sm w-48"
-                placeholder="Search apartments..."
-                value={searchTerm}
-                onChange={handleInputChange}
-                onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                    
-                    handleSearch(searchTerm);
-                }
-                }}
-                />
-            </div>
-            </div>
-        </div> */}
 
       {createTable(units)}
 
