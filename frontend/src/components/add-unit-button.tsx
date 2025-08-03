@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Card,
   CardHeader,
@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Unit } from "@/components/apartment-list";
+import { ErrorModal } from "@/components/error-modal";
 
 
 export default function AddUnitButton() {
@@ -20,15 +20,43 @@ export default function AddUnitButton() {
     const [contactNumber, setContactNumber] = useState<string>("");
     const [numOccupants, setNumOccupants] = useState<string>("");
     const [price, setPrice] = useState<string>("");
+    const [errorModalOpen, setErrorModalOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string>("");
     
     const handleSubmit = async(e: React.MouseEvent ) => {
         e.preventDefault();
         e.stopPropagation();
 
+        // Basic form validation
+        if (!name.trim() || !unitNumber.trim()) {
+            setErrorMessage('Apartment Name and Unit Number are required fields.');
+            setErrorModalOpen(true);
+            return;
+        }
+
+        if (!description.trim()) {
+            setErrorMessage('Description is required.');
+            setErrorModalOpen(true);
+            return;
+        }
+
+        if (!contactNumber.trim() || !price.trim() || !numOccupants.trim()) {
+            setErrorMessage('Contact Number, Price, and Number of Occupants are required fields.');
+            setErrorModalOpen(true);
+            return;
+        }
+
+        // Validate that numeric fields are actually numbers
+        if (isNaN(Number(contactNumber)) || isNaN(Number(price)) || isNaN(Number(numOccupants))) {
+            setErrorMessage('Contact Number, Price, and Number of Occupants must be valid numbers.');
+            setErrorModalOpen(true);
+            return;
+        }
+
         const body = {
-            unitNumber,
-            name,
-            description,
+            unitNumber: unitNumber.trim(),
+            name: name.trim(),
+            description: description.trim(),
             price,
             numOccupants: Number(numOccupants),
             contactNumber: Number(contactNumber)
@@ -42,16 +70,57 @@ export default function AddUnitButton() {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create unit record");
+        const errorData = await res.json().catch(() => ({ message: 'Unknown error' }));
+        
+        // Handle specific error messages from backend
+        let displayMessage = 'Failed to add unit. Please try again.';
+        if (errorData.error && typeof errorData.error === 'string') {
+          if (errorData.error.includes('The unit already exists')) {
+            displayMessage = `A unit with apartment name "${name}" and unit number "${unitNumber}" already exists. Please use different values or check existing units.`;
+          } else {
+            displayMessage = errorData.error;
+          }
+        } else if (errorData.message && errorData.message.includes('The unit already exists')) {
+          displayMessage = `A unit with apartment name "${name}" and unit number "${unitNumber}" already exists. Please use different values or check existing units.`;
+        } else if (errorData.message) {
+          displayMessage = errorData.message;
+        }
+        
+        setErrorMessage(displayMessage);
+        setErrorModalOpen(true);
+        return;
       }
 
+      // Reset form fields on success
+      resetForm();
       setIsOpen(false);
       window.location.reload();
 
     } catch (error) {
       console.error("Error submitting unit:", error);
+      setErrorMessage('An unexpected error occurred while adding the unit. Please try again.');
+      setErrorModalOpen(true);
     }
     }
+
+    const closeErrorModal = () => {
+        setErrorModalOpen(false);
+        setErrorMessage("");
+    };
+
+    const resetForm = () => {
+        setUnitNumber("");
+        setName("");
+        setDescription("");
+        setContactNumber("");
+        setNumOccupants("");
+        setPrice("");
+    };
+
+    const handleModalClose = () => {
+        setIsOpen(false);
+        resetForm();
+    };
 
     return (
     <>
@@ -70,7 +139,7 @@ export default function AddUnitButton() {
             <CardContent>
                 <div className="grid gap-4 py-2">
                     <div>
-                        <Label className="py-1">Apartment Name</Label>
+                        <Label className="py-1">Apartment Name <span className="text-red-500">*</span></Label>
                             <Input
                             type="text"
                             placeholder="Tanglewood Drive"
@@ -79,7 +148,7 @@ export default function AddUnitButton() {
                             />
                     </div>
                     <div>
-                        <Label className="py-1">Unit Number</Label>
+                        <Label className="py-1">Unit Number <span className="text-red-500">*</span></Label>
                             <Input
                             type="text"
                             placeholder="G"
@@ -88,7 +157,7 @@ export default function AddUnitButton() {
                             />
                     </div>
                     <div>
-                        <Label className="py-1">Description</Label>
+                        <Label className="py-1">Description <span className="text-red-500">*</span></Label>
                             <Input
                             type="text"
                             placeholder="Studio Apartment"
@@ -97,7 +166,7 @@ export default function AddUnitButton() {
                             />
                     </div>
                     <div>
-                        <Label className="py-1">Contact Number</Label>
+                        <Label className="py-1">Contact Number <span className="text-red-500">*</span></Label>
                             <Input
                             type="text"
                             placeholder="09123456789"
@@ -108,7 +177,7 @@ export default function AddUnitButton() {
                     
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <Label className="py-1">Number of Occupants</Label>
+                            <Label className="py-1">Number of Occupants <span className="text-red-500">*</span></Label>
                             <Input
                                 type="number"
                                 placeholder="2"
@@ -117,7 +186,7 @@ export default function AddUnitButton() {
                                 />
                         </div>
                         <div>
-                            <Label className="py-1">Price</Label>
+                            <Label className="py-1">Price <span className="text-red-500">*</span></Label>
                             <Input
                                 type="number"
                                 placeholder="15000"
@@ -134,7 +203,7 @@ export default function AddUnitButton() {
             <CardFooter className="flex justify-between">
               <div className="flex gap-4">
                 <Button variant="secondary"
-                  onClick={() => setIsOpen(false)}
+                  onClick={handleModalClose}
                 >
                   Cancel
                 </Button>
@@ -148,6 +217,13 @@ export default function AddUnitButton() {
           </Card>
         </div>
       )}
+
+      <ErrorModal
+        open={errorModalOpen}
+        title="Unable to Add Unit"
+        message={errorMessage}
+        onClose={closeErrorModal}
+      />
     </>
   );
 }
