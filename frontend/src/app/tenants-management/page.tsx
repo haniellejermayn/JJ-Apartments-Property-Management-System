@@ -160,13 +160,13 @@ export default function TenantsManagementPage() {
 
     const handleAddTenant = async (formData) => {
         try {
-            const unitId = await getUnit_id(formData.unitName, formData.unitNum);
-            if (unitId === null || unitId === undefined) {
-                console.error('Error: Could not retrieve unit ID for the given unit name and number.');
-                setErrorMessage('Failed to add tenant: Unit not found or invalid unit details provided.');
-                setErrorModalOpen(true);
-                return; 
-            }
+            // const unitId = await getUnit_id(formData.unitName, formData.unitNum);
+            // if (unitId === null || unitId === undefined) {
+            //     console.error('Error: Could not retrieve unit ID for the given unit name and number.');
+            //     setErrorMessage('Failed to add tenant: Unit not found or invalid unit details provided.');
+            //     setErrorModalOpen(true);
+            //     return; 
+            // }
             
             const tenantDataPayload = {
                 firstName: formData.firstName,
@@ -174,7 +174,7 @@ export default function TenantsManagementPage() {
                 lastName: formData.lastName,
                 email: formData.email,
                 phoneNumber: formData.phoneNumber,
-                unitId: unitId
+                unitId: formData.unitId
             };
 
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants/add`, {
@@ -492,6 +492,7 @@ export default function TenantsManagementPage() {
                     onSubmit={editingTenant ? handleUpdateTenant : handleAddTenant}
                     editingTenant={editingTenant}
                     isEditing={!!editingTenant}
+                    units={units}
                 />
             </TenantPopUp>
 
