@@ -52,9 +52,9 @@ export default function AddUtilityButton({type, setUtilities}: Props) {
         const body = {
             type,
             currentReading: Number(currentReading),
-            dueDate: dueDate?.toISOString().split("T")[0],
-            monthOfStart: monthOfStart?.toISOString().split("T")[0],
-            monthOfEnd: monthOfEnd?.toISOString().split("T")[0],
+            dueDate: dueDate?.toLocaleDateString("en-CA"),
+            monthOfStart: monthOfStart?.toLocaleDateString("en-CA"),
+            monthOfEnd: monthOfEnd?.toLocaleDateString("en-CA"),
             unitId: Number(unitId)
         }
 

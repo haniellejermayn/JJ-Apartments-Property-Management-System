@@ -27,7 +27,7 @@ export default function AddRateButton({ type, setRates }: AddRateButtonProps) {
     const body = {
       type,
       rate: Number(rate),
-      date: date?.toISOString().split("T")[0],
+      date: date?.toLocaleDateString("en-CA")
     };
 
     try {

@@ -52,9 +52,9 @@ export default function AddPaymentButton({setPayment}: Props) {
             unitId,
             modeOfPayment,
             amount: Number(amount),
-            dueDate: dueDate?.toISOString().split("T")[0],
-            monthOfStart: monthOfStart?.toISOString().split("T")[0],
-            monthOfEnd: monthOfEnd?.toISOString().split("T")[0],
+            dueDate: dueDate?.toLocaleDateString("en-CA"),
+            monthOfStart: monthOfStart?.toLocaleDateString("en-CA"),
+            monthOfEnd: monthOfEnd?.toLocaleDateString("en-CA")
         }
 
         try {
