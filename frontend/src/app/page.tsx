@@ -90,11 +90,21 @@ export default function Home() {
     rateId: number;
   };
 
+  type Expense = {
+    id: number;
+    unitId: number;
+    amount: number;
+    modeOfPayment: string;
+    reason: string;
+    date: string;
+  };
+
   const [monthlyReports, setMonthlyReports] = useState<MonthlyReport[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [utilities, setUtilities] = useState<Utility[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -130,7 +140,7 @@ export default function Home() {
         setLoading(true);
         setError(null);
         
-        const [monthlyResponse, tenantsResponse, unitsResponse, paymentsResponse, utilitiesResponse] = await Promise.all([
+        const [monthlyResponse, tenantsResponse, unitsResponse, paymentsResponse, utilitiesResponse, expensesResponse] = await Promise.all([
           fetch('/api/monthlyreports', {
             method: 'GET',
             headers: {
@@ -160,6 +170,12 @@ export default function Home() {
             headers: {
               'Content-Type': 'application/json',
             },
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
           })
         ]);
 
@@ -179,13 +195,17 @@ export default function Home() {
         if (!utilitiesResponse.ok) {
           throw new Error(`Utilities API error: ${utilitiesResponse.status}`);
         }
+        if (!expensesResponse.ok) {
+          throw new Error(`Expenses API error: ${expensesResponse.status}`);
+        }
 
-        const [monthlyData, tenantsData, unitsData, paymentsData, utilitiesData] = await Promise.all([
+        const [monthlyData, tenantsData, unitsData, paymentsData, utilitiesData, expensesData] = await Promise.all([
           monthlyResponse.json(),
           tenantsResponse.json(),
           unitsResponse.json(),
           paymentsResponse.json(),
-          utilitiesResponse.json()
+          utilitiesResponse.json(),
+          expensesResponse.json()
         ]);
 
         setMonthlyReports(monthlyData);
@@ -193,6 +213,7 @@ export default function Home() {
         setUnits(unitsData);
         setPayments(paymentsData);
         setUtilities(utilitiesData);
+        setExpenses(expensesData);
 
       } catch (error: unknown) {
         console.error('Error fetching data:', error);
@@ -322,23 +343,39 @@ export default function Home() {
     const currentUtilityCosts = currentMonthPaidUtilities.reduce((sum, utility) => sum + utility.totalAmount, 0);
     const previousUtilityCosts = previousMonthPaidUtilities.reduce((sum, utility) => sum + utility.totalAmount, 0);
 
+    // Calculate direct expenses from current month
+    const currentMonthExpenses = expenses.filter(expense => {
+      const expenseDate = new Date(expense.date);
+      return expenseDate.getMonth() + 1 === currentMonth && expenseDate.getFullYear() === currentYear;
+    });
+
+    const previousMonthExpenses = expenses.filter(expense => {
+      const expenseDate = new Date(expense.date);
+      const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+      const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+      return expenseDate.getMonth() + 1 === prevMonth && expenseDate.getFullYear() === prevYear;
+    });
+
+    const currentDirectExpenses = currentMonthExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const previousDirectExpenses = previousMonthExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+
     // Total earnings from payments minus utility costs paid by owners
     const currentTotalEarnings = currentMonthPayments.reduce((sum, payment) => sum + payment.amount, 0) - currentUtilityCosts;
     const previousTotalEarnings = previousMonthPayments.reduce((sum, payment) => sum + payment.amount, 0) - previousUtilityCosts;
 
-    // Calculate expenses from monthly reports plus paid utility costs
+    // Calculate expenses from monthly reports plus paid utility costs plus direct expenses
     const currentReports = getCurrentMonthReport();
     const previousReports = getPreviousMonthReport();
 
     const currentTotalExpenses = currentReports.reduce((sum, report) => 
-      sum + (report.utilityBills || 0) + (report.expenses || 0), 0) + currentUtilityCosts;
+      sum + (report.utilityBills || 0) + (report.expenses || 0), 0) + currentUtilityCosts + currentDirectExpenses;
     const previousTotalExpenses = previousReports.reduce((sum, report) => 
-      sum + (report.utilityBills || 0) + (report.expenses || 0), 0) + previousUtilityCosts;
+      sum + (report.utilityBills || 0) + (report.expenses || 0), 0) + previousUtilityCosts + previousDirectExpenses;
 
     const currentNetIncome = currentTotalEarnings - (currentReports.reduce((sum, report) => 
-      sum + (report.utilityBills || 0) + (report.expenses || 0), 0));
+      sum + (report.utilityBills || 0) + (report.expenses || 0), 0) + currentDirectExpenses);
     const previousNetIncome = previousTotalEarnings - (previousReports.reduce((sum, report) => 
-      sum + (report.utilityBills || 0) + (report.expenses || 0), 0));
+      sum + (report.utilityBills || 0) + (report.expenses || 0), 0) + previousDirectExpenses);
 
     return {
       monthRevenue: currentTotalEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
@@ -392,18 +429,26 @@ export default function Home() {
 
       const utilityCosts = utilitiesForMonth.reduce((sum, utility) => sum + utility.totalAmount, 0);
       
+      // Calculate direct expenses for this month
+      const expensesForMonth = expenses.filter(expense => {
+        const expenseDate = new Date(expense.date);
+        return expenseDate.getMonth() + 1 === monthNumber && expenseDate.getFullYear() === currentYear;
+      });
+      
+      const directExpensesAmount = expensesForMonth.reduce((sum, expense) => sum + expense.amount, 0);
+      
       // Total revenue minus utility costs paid by owners
       const totalRevenue = paymentsForMonth.reduce((sum, payment) => sum + payment.amount, 0) - utilityCosts;
       
-      // Calculate expenses from monthly reports plus paid utility costs
+      // Calculate expenses from monthly reports plus paid utility costs plus direct expenses
       const reportsForMonth = monthlyReports.filter(report => 
         report.month === monthNumber && report.year === currentYear
       );
       
       const totalExpenses = reportsForMonth.reduce((sum, report) => 
-        sum + (report.utilityBills || 0) + (report.expenses || 0), 0) + utilityCosts;
+        sum + (report.utilityBills || 0) + (report.expenses || 0), 0) + utilityCosts + directExpensesAmount;
       const netIncome = totalRevenue - (reportsForMonth.reduce((sum, report) => 
-        sum + (report.utilityBills || 0) + (report.expenses || 0), 0));
+        sum + (report.utilityBills || 0) + (report.expenses || 0), 0) + directExpensesAmount);
       
       return {
         month: monthName,
