@@ -1,6 +1,7 @@
 package com.jjapartments.backend.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,12 +23,12 @@ public class ExpenseController {
 
     // Create
     @PostMapping("/add")
-    public ResponseEntity<String> addExpense(@RequestBody Expense expense) {
+    public ResponseEntity<?> addExpense(@RequestBody Expense expense) {
         try {
-            expenseRepository.add(expense);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Expense successfully added");
+            Expense newExpense = expenseRepository.add(expense);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newExpense);
         } catch (ErrorException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -56,7 +57,14 @@ public class ExpenseController {
             expenseRepository.update(id, expense);
             return ResponseEntity.ok(expenseRepository.findById(id));
         } catch (ErrorException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
+    }
+
+    // Find by year and month
+    @GetMapping("/{id}/{year}/{month}")
+    public ResponseEntity<Float> findByYearAndMonth(@PathVariable int id, @PathVariable int year, @PathVariable int month) {
+        float amount = expenseRepository.getMonthlyAmountById(id, year, month);
+        return ResponseEntity.ok(amount);
     }
 }

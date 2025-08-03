@@ -10,6 +10,7 @@ import com.jjapartments.backend.models.Utility;
 import com.jjapartments.backend.exception.ErrorException;
 import com.jjapartments.backend.repository.UtilityRepository;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/utilities")
@@ -21,12 +22,12 @@ public class UtilityController {
 
     // Create
     @PostMapping("/add")
-    public ResponseEntity<String> addUtility(@RequestBody Utility utility) {        
+    public ResponseEntity<?> addUtility(@RequestBody Utility utility) {        
         try { // returns 201 created
-            utilityRepository.add(utility);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Utility record created successfully");
+            Utility newUtility = utilityRepository.add(utility);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newUtility);
         } catch(ErrorException e) { // returns 400 bad request
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -55,7 +56,7 @@ public class UtilityController {
             utilityRepository.update(id, utility);
             return ResponseEntity.ok(utilityRepository.findById(id));
         } catch (ErrorException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -72,6 +73,12 @@ public class UtilityController {
         return ResponseEntity.ok(utilities);
     }
 
+    // Find by year and month
+    @GetMapping("/{id}/{year}/{month}")
+    public ResponseEntity<Float> findByYearAndMonth(@PathVariable int id, @PathVariable int year, @PathVariable int month) {
+        float utilities = utilityRepository.getMonthlyAmountByUnitId(id, year, month);
+        return ResponseEntity.ok(utilities);
+    }
 
 
 }

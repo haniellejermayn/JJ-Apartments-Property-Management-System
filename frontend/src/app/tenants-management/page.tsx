@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { TenantPopUp } from "@/components/TenantPopUp";
 import { TenantMgt } from "@/components/TenantMgt";
 import { Mail, Phone, Building, DoorClosed  } from "lucide-react";
+import { DeleteModal } from "@/components/delete-modal";
 
 type Tenant = {
     id: number;
@@ -34,14 +35,20 @@ export default function TenantsManagementPage() {
     const [editingTenant, setEditingTenant] = useState<TenantWithUnitDetails | null>(null);
     const [tenants, setTenants] = useState<TenantWithUnitDetails[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
-   
+
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [tenantToDelete, setTenantToDelete] = useState<TenantWithUnitDetails | null>(null);
+    
+    const [errorModalOpen, setErrorModalOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string>('');
+
     const [units, setUnits] = useState<Unit[]>([]);
 
-    useEffect(() => {
-        if (!isLoading && !isLoggedIn) {
-            router.replace('/login');
-        }
-    }, [isLoggedIn, isLoading, router]);
+    // useEffect(() => {
+    //     if (!isLoading && !isLoggedIn) {
+    //         router.replace('/login');
+    //     }
+    // }, [isLoggedIn, isLoading, router]);
     
     
     useEffect(() => {
@@ -69,27 +76,32 @@ export default function TenantsManagementPage() {
     };
     const fetchTenants = async () => {
         try {
-            const response = await fetch("/api/tenants"); 
-            if (!response.ok) {
-                throw new Error("Failed to fetch tenants");
-            }
-            const rawTenants: TenantApiData[] = await response.json(); 
-            
-            const processedTenants: TenantWithUnitDetails[] = rawTenants.map(rawTenant => {
-                const unitInfo = units.find(u => u.id === rawTenant.unit); 
+        const [unitsResponse, tenantsResponse] = await Promise.all([
+            fetch("/api/units"),
+            fetch("/api/tenants")
+        ]);
 
-                return {
-                    ...rawTenant,
-                    
-                    unit: unitInfo ? unitInfo : { id: rawTenant.unit, name: 'Unknown Building', unitNumber: 'Unknown Unit' }
-                };
-            });
-            
-            setTenants(processedTenants);
-            console.log("Tenants loaded:", processedTenants);
-        } catch (error) {
-            console.error("Error fetching tenants:", error);
-        }
+        const units = await unitsResponse.json();
+        const tenants = await tenantsResponse.json();
+        
+        const processedTenants = tenants.map(t => {
+
+            const unitInfo = units.find(u => u.id === t.unitId);
+            return {
+                ...t,
+                middleName: t.middleInitial, // Map middleInitial to middleName for frontend consistency
+                unit: unitInfo ? unitInfo : {
+                    id: t.unit,
+                    name: 'Unknown Building',
+                    unitNumber: 'Unknown Unit'
+                }
+            };
+        });
+
+        setTenants(processedTenants);
+    } catch (err) {
+        console.error("Error fetching data", err);
+    }
     };
 
     const toggleModal = () => {
@@ -103,7 +115,7 @@ export default function TenantsManagementPage() {
 
     const getUnit_id = async (unitName, unitNumber) => {
         try {
-        console.log("DEBUG (Frontend): getUnit_id received - unitName:", unitName, ", unitNumber:", unitNumber);
+        
         const encodedUnitName = unitName ? encodeURIComponent(unitName) : '';
         const encodedUnitNumber = unitNumber ? encodeURIComponent(unitNumber) : '';
 
@@ -145,36 +157,61 @@ export default function TenantsManagementPage() {
     };
 
     const handleAddTenant = async (formData) => {
-        const unitId = await getUnit_id(formData.unitName, formData.unitNum);
-        if (unitId === null || unitId === undefined) {
-            console.error('Error: Could not retrieve unit ID for the given unit name and number.');
-            alert('Failed to add tenant: Unit not found or invalid unit details provided.');
-            return; 
-        }
-        
-        const tenantDataPayload = {
-            firstName: formData.firstName,
-            middleName: formData.middleName || null, 
-            lastName: formData.lastName,
-            email: formData.email,
-            phoneNumber: formData.phoneNumber,
-            unit: unitId 
-        };
+        try {
+            const unitId = await getUnit_id(formData.unitName, formData.unitNum);
+            if (unitId === null || unitId === undefined) {
+                console.error('Error: Could not retrieve unit ID for the given unit name and number.');
+                setErrorMessage('Failed to add tenant: Unit not found or invalid unit details provided.');
+                setErrorModalOpen(true);
+                return; 
+            }
+            
+            const tenantDataPayload = {
+                firstName: formData.firstName,
+                middleInitial: formData.middleName || null, 
+                lastName: formData.lastName,
+                email: formData.email,
+                phoneNumber: formData.phoneNumber,
+                unitId: unitId
+            };
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants/add`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(tenantDataPayload),
-        })
-        
-        if (!res.ok){
-            const errorData = await res.json().catch(() => ({ message: 'Unknown error' }));
-            throw new Error(`Failed to add tenant: ${res.status} ${res.statusText} - ${errorData.message || ''}`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants/add`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(tenantDataPayload),
+            })
+            
+            if (!res.ok){
+                const errorData = await res.json().catch(() => ({ message: 'Unknown error' }));
+                
+                // Handle specific error messages from backend
+                let displayMessage = 'Failed to add tenant. Please try again.';
+                if (errorData.error && typeof errorData.error === 'string') {
+                    if (errorData.error.includes('email is already taken')) {
+                        displayMessage = 'This email address is already registered with another tenant. Please use a different email address.';
+                    } else if (errorData.error.includes('phone number is already taken')) {
+                        displayMessage = 'This phone number is already registered with another tenant. Please use a different phone number.';
+                    } else if (errorData.error.includes('tenant is already registered')) {
+                        displayMessage = 'This tenant is already registered in the system.';
+                    } else {
+                        displayMessage = errorData.error;
+                    }
+                }
+                
+                setErrorMessage(displayMessage);
+                setErrorModalOpen(true);
+                return;
+            }
+            
+            toggleModal();
+            fetchTenants();
+        } catch (error) {
+            console.error('Error adding tenant:', error);
+            setErrorMessage('An unexpected error occurred while adding the tenant. Please try again.');
+            setErrorModalOpen(true);
         }
-        toggleModal();
-        fetchTenants();
     };
 
     const handleEditTenant = (tenant: TenantWithUnitDetails) => {
@@ -201,11 +238,11 @@ export default function TenantsManagementPage() {
         
         const tenantUpdatePayload = {
             firstName: updatedData.firstName,
-            middleName: updatedData.middleName || null,
+            middleInitial: updatedData.middleName || null,
             lastName: updatedData.lastName,
             email: updatedData.email,
             phoneNumber: updatedData.phoneNumber,
-            unit: unitIdForUpdate 
+            unitId: unitIdForUpdate 
         };
 
         try {
@@ -217,7 +254,24 @@ export default function TenantsManagementPage() {
             
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({ message: 'Unknown error' }));
-                throw new Error(`Failed to update tenant: ${res.status} ${res.statusText} - ${errorData.message || ''}`);
+                
+                // Handle specific error messages from backend
+                let displayMessage = 'Failed to update tenant. Please try again.';
+                if (errorData.error && typeof errorData.error === 'string') {
+                    if (errorData.error.includes('email is already taken')) {
+                        displayMessage = 'This email address is already registered with another tenant. Please use a different email address.';
+                    } else if (errorData.error.includes('phone number is already taken')) {
+                        displayMessage = 'This phone number is already registered with another tenant. Please use a different phone number.';
+                    } else if (errorData.error.includes('tenant is already registered')) {
+                        displayMessage = 'This tenant is already registered in the system.';
+                    } else {
+                        displayMessage = errorData.error;
+                    }
+                }
+                
+                setErrorMessage(displayMessage);
+                setErrorModalOpen(true);
+                return;
             }
             
             console.log('Tenant updated successfully:', updatedData);
@@ -225,22 +279,39 @@ export default function TenantsManagementPage() {
             fetchTenants(); 
         } catch (error) {
             console.error('Error updating tenant:', error);
-            alert('Error updating tenant. Please check console for details.');
+            setErrorMessage('An unexpected error occurred while updating the tenant. Please try again.');
+            setErrorModalOpen(true);
         }
     };
 
-    const handleDeleteTenant = async (tenantId: number) => {
-        if (window.confirm('Are you sure you want to delete this tenant?')) {
-            // setTenants(prev => prev.filter(tenant => tenant.id !== tenantId));
-            // console.log('Tenant deleted:', tenantId);
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants/${tenantId}`, {
-                method: 'DELETE',
-                headers: { "Content-Type": "application/json" },
-            })
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            fetchUnits();
-        }
+    const handleDeleteTenant = (tenant: TenantWithUnitDetails) => {
+    setTenantToDelete(tenant);
+    setDeleteModalOpen(true);
     };
+
+    const confirmDeleteTenant = async () => {
+    if (!tenantToDelete) return;
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants/${tenantToDelete.id}`, {
+        method: 'DELETE',
+        headers: { "Content-Type": "application/json" },
+    });
+
+    if (!res.ok) {
+        alert("Failed to delete tenant.");
+        return;
+    }
+
+    setDeleteModalOpen(false);
+    setTenantToDelete(null);
+    fetchTenants();
+    };
+
+    const cancelDelete = () => {
+        setDeleteModalOpen(false);
+        setTenantToDelete(null);
+    };
+
 
     const formatPhoneNumber = (phone: string) => {
         if (!phone) return 'N/A';
@@ -261,22 +332,24 @@ export default function TenantsManagementPage() {
         };
     };
 
+    
+
     // Note: We'll use the getUnitInfo function directly in the JSX
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-100">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-                    <div className="text-lg text-gray-600">Loading...</div>
-                </div>
-            </div>
-        );
-    }
+    // if (isLoading) {
+    //     return (
+    //         <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    //             <div className="text-center">
+    //                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+    //                 <div className="text-lg text-gray-600">Loading...</div>
+    //             </div>
+    //         </div>
+    //     );
+    // }
 
-    if (!isLoggedIn) {
-        return null;
-    }
+    // if (!isLoggedIn) {
+    //     return null;
+    // }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -295,7 +368,7 @@ export default function TenantsManagementPage() {
                             placeholder="Search tenant name..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-300 w-150"
                         />
                                                 
                         <button
@@ -367,13 +440,13 @@ export default function TenantsManagementPage() {
                                                 <div className="flex items-center space-x-2 mb-2 md:mb-0">
                                                     <DoorClosed  className="w-4 h-4 text-gray-400" />
                                                     <span className="font-medium text-gray-700">Unit:</span>
-                                                    <span className="text-gray-600">{getUnitInfo(tenant.unit.id).unitNumber}</span>
+                                                    <span className="text-gray-600">{tenant.unit.unitNumber}</span>
                                                 </div>
                                                 
                                                 <div className="flex items-center space-x-2">
                                                     <Building className="w-4 h-4 text-gray-400" />
                                                     <span className="font-medium text-gray-700">Building:</span>
-                                                    <span className="text-gray-600">{getUnitInfo(tenant.unit.id).buildingName}</span>
+                                                    <span className="text-gray-600">{tenant.unit.name}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -386,7 +459,7 @@ export default function TenantsManagementPage() {
                                                 Edit
                                             </button>
                                             <button
-                                                onClick={() => handleDeleteTenant(tenant.id)}
+                                                onClick={() => handleDeleteTenant(tenant)}
                                                 className="px-4 py-2 text-yellow-300 bg-black hover:text-yellow-400 rounded-lg transition-all duration-200 text-sm font-medium border border-black hover:border-black"
                                             >
                                                 Delete
@@ -408,6 +481,43 @@ export default function TenantsManagementPage() {
                     isEditing={!!editingTenant}
                 />
             </TenantPopUp>
+
+             <DeleteModal
+                open={deleteModalOpen}
+                title="Delete Tenant"
+                message={`Are you sure you want to delete ${tenantToDelete ? formatName(tenantToDelete.firstName, tenantToDelete.lastName, tenantToDelete.middleName) : 'this tenant'}?`}
+                onCancel={cancelDelete}
+                onConfirm={confirmDeleteTenant}
+                />
+                
+            {/* Error Modal */}
+            {errorModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+                        <div className="p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-semibold text-gray-900">Unable to Add Tenant</h3>
+                                <button
+                                    onClick={() => setErrorModalOpen(false)}
+                                    className="text-gray-400 hover:text-gray-600 text-2xl font-light transition-colors"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                            <p className="text-gray-600 mb-6">{errorMessage}</p>
+                            <div className="flex justify-end">
+                                <button
+                                    onClick={() => setErrorModalOpen(false)}
+                                    className="px-6 py-2 bg-yellow-300 text-black rounded-lg hover:bg-yellow-400 transition-all duration-200 font-medium border border-yellow-300 hover:border-yellow-400"
+                                >
+                                    Got it
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }

@@ -7,7 +7,8 @@ import {
   Building2, 
   Users, 
   DollarSign,
-  LogOut 
+  LogOut,
+  BanknoteArrowUpIcon
 } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
@@ -37,6 +38,11 @@ export default function Sidebar() {
       name: 'Financial',
       href: '/financial-tracking',
       icon: DollarSign,
+    },
+    {
+      name: 'Monthly Reports',
+      href: '/monthly-reports',
+      icon: BanknoteArrowUpIcon,
     },
   ];
 

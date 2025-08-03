@@ -54,7 +54,7 @@ public class TenantRepository{
         return null;
     }
 
-    public int add(Tenant tenant) {
+    public Tenant add(Tenant tenant) {
         String duplicateField = duplicateExists(tenant);
         if (duplicateField != null) {
             switch (duplicateField) {
@@ -68,8 +68,30 @@ public class TenantRepository{
             }
         }
         String sql = "INSERT INTO tenants(last_name, first_name, middle_initial, email, phone_number, units_id) VALUES (?, ?, ?, ?, ?, ?)"; 
-        return jdbcTemplate.update(sql, tenant.getLastName(), tenant.getFirstName(), tenant.getMiddleInitial(), tenant.getEmail(), tenant.getPhoneNumber(), tenant.getUnitId());
+        jdbcTemplate.update(sql, tenant.getLastName(), tenant.getFirstName(), tenant.getMiddleInitial(), tenant.getEmail(), tenant.getPhoneNumber(), tenant.getUnitId());
       
+        String fetchSql = """
+            SELECT * FROM tenants
+            WHERE last_name = ?
+            AND first_name = ?
+            AND middle_initial = ?
+            AND email = ?
+            AND phone_number = ?
+            AND units_id = ?
+            ORDER BY id DESC
+            LIMIT 1
+        """;
+
+        return jdbcTemplate.queryForObject(
+            fetchSql,
+            new TenantRowMapper(),
+            tenant.getLastName(),
+            tenant.getFirstName(),
+            tenant.getMiddleInitial(),
+            tenant.getEmail(),
+            tenant.getPhoneNumber(),
+            tenant.getUnitId()
+        );
     }
 
     public int delete(int id) {

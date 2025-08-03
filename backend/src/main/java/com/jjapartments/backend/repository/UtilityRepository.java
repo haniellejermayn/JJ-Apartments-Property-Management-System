@@ -45,9 +45,13 @@ public class UtilityRepository{
         if (utility.getTotalMeter() < 0) {
             throw new ErrorException("Total meter cannot be less than 0.");
         }
+        
+        if (utility.getMonthOfEnd().compareTo(utility.getMonthOfStart()) < 0) {
+            throw new ErrorException("Month of end cannot be earlier than month of start");
+        }
     }
 
-    public int add(Utility utility) {
+    public Utility add(Utility utility) {
         String rateSql = "SELECT id, rate FROM rates WHERE type = ? ORDER BY date DESC LIMIT 1";
         Map<String, Object> rate = jdbcTemplate.queryForMap(rateSql, utility.getType());
         int rateId = (int) rate.get("id");
@@ -71,8 +75,43 @@ public class UtilityRepository{
 
         validate(utility);
         String sql = "INSERT INTO utilities(type, previous_reading, current_reading, total_meter, total_amount, due_date, month_of_start, month_of_end, is_paid, paid_at, units_id, rates_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        return jdbcTemplate.update(sql, utility.getType(), previousReading, utility.getCurrentReading(), totalMeter, totalAmount, utility.getDueDate(), utility.getMonthOfStart(), utility.getMonthOfEnd(), utility.getIsPaid(), utility.getPaidAt(), utility.getUnitId(), rateId);
+        jdbcTemplate.update(sql, utility.getType(), previousReading, utility.getCurrentReading(), totalMeter, totalAmount, utility.getDueDate(), utility.getMonthOfStart(), utility.getMonthOfEnd(), utility.getIsPaid(), utility.getPaidAt(), utility.getUnitId(), rateId);
        
+        String fetchSql = """
+            SELECT * FROM utilities
+            WHERE type = ?
+            AND previous_reading = ?
+            AND current_reading = ?
+            AND total_meter = ?
+            AND total_amount = ?
+            AND due_date = ?
+            AND month_of_start = ?
+            AND month_of_end = ?
+            AND is_paid = ?
+            AND (paid_at = ? OR (paid_at IS NULL AND ? IS NULL))
+            AND units_id = ?
+            AND rates_id = ?
+            ORDER BY id DESC
+            LIMIT 1
+        """;
+
+        return jdbcTemplate.queryForObject(
+            fetchSql,
+            new UtilityRowMapper(),
+            utility.getType(),
+            previousReading,
+            utility.getCurrentReading(),
+            totalMeter,
+            totalAmount,
+            utility.getDueDate(),
+            utility.getMonthOfStart(),
+            utility.getMonthOfEnd(),
+            utility.getIsPaid(),
+            utility.getIsPaid(),
+            utility.getPaidAt(), 
+            utility.getUnitId(),
+            rateId
+        );
     }
 
     public int delete(int id) {
@@ -120,5 +159,11 @@ public class UtilityRepository{
     public List<Utility> findByType(String type) {
         String sql = "SELECT * FROM utilities WHERE type = ? ORDER BY due_date DESC"; 
         return jdbcTemplate.query(sql, new UtilityRowMapper(), type);
+    }
+    
+    public float getMonthlyAmountByUnitId(int id, int year, int month) {
+        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM utilities WHERE units_id = ? AND is_paid = 1 AND YEAR(paid_at) = ? AND MONTH(paid_at) = ? ";
+        Float amount = jdbcTemplate.queryForObject(sql, Float.class, id, year, month);
+        return amount != null? amount : 0.0f;
     }
 }

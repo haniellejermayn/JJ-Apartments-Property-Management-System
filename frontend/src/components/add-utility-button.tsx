@@ -18,12 +18,15 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import {DatePicker} from "@/components/date-picker"
+import { Utility } from "./utilities-list";
+interface Props {
+  type: "Meralco" | "Manila Water"
+  setUtilities:  React.Dispatch<React.SetStateAction<Utility[]>>;
+}
 
-
-export default function AddUtilityButton() {
+export default function AddUtilityButton({type, setUtilities}: Props) {
     const [isOpen, setIsOpen] = useState(false);
     const [unitId, setUnitId] = useState<number>(0);
-    const [type, setType] = useState("");
     const [currentReading, setCurrentReading] = useState<string>("");
     const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
     const [monthOfStart, setMonthOfStart] = useState<Date | undefined>(undefined);
@@ -49,9 +52,9 @@ export default function AddUtilityButton() {
         const body = {
             type,
             currentReading: Number(currentReading),
-            dueDate: dueDate?.toISOString().split("T")[0],
-            monthOfStart: monthOfStart?.toISOString().split("T")[0],
-            monthOfEnd: monthOfEnd?.toISOString().split("T")[0],
+            dueDate: dueDate?.toLocaleDateString("en-CA"),
+            monthOfStart: monthOfStart?.toLocaleDateString("en-CA"),
+            monthOfEnd: monthOfEnd?.toLocaleDateString("en-CA"),
             unitId: Number(unitId)
         }
 
@@ -67,7 +70,8 @@ export default function AddUtilityButton() {
       }
 
       setIsOpen(false);
-      window.location.reload(); // Optional: reload to reflect changes
+      const savedUtility = await res.json();
+      setUtilities(prev => [savedUtility, ...prev]);
 
     } catch (error) {
       console.error("Error submitting utility:", error);
@@ -84,25 +88,9 @@ export default function AddUtilityButton() {
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <Card className="w-[600px] bg-card">
             <CardHeader>
-              <CardTitle>Add Utility Record</CardTitle>
+              <CardTitle>Add {type} Record</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="py-1 text-sm text-gray-900">
-                    Type
-                    <Select onValueChange={(value) => setType(value)}>
-                        <SelectTrigger className="w-full h-11 rounded-md border px-3 text-left">
-                            <SelectValue placeholder="Select Type" />
-                        </SelectTrigger>
-                        <SelectContent className="w-full">
-                            <SelectItem key="Meralco" value="Meralco">
-                                Meralco
-                            </SelectItem>
-                            <SelectItem key="Manila Water" value="Manila Water">
-                                Manila Water
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
 
                 <div className="py-1 text-sm text-gray-900">
                     Unit

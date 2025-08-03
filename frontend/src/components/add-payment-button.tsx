@@ -17,9 +17,12 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import {DatePicker} from "@/components/date-picker"
+import { Payment } from "./payments-list";
+interface Props {
+  setPayment:  React.Dispatch<React.SetStateAction<Payment[]>>;
+}
 
-
-export default function AddPaymentButton() {
+export default function AddPaymentButton({setPayment}: Props) {
     const [isOpen, setIsOpen] = useState(false);
     const [unitId, setUnitId] = useState<number>(0);
     const [modeOfPayment, setModeOfPayment] = useState("");
@@ -49,9 +52,9 @@ export default function AddPaymentButton() {
             unitId,
             modeOfPayment,
             amount: Number(amount),
-            dueDate: dueDate?.toISOString().split("T")[0],
-            monthOfStart: monthOfStart?.toISOString().split("T")[0],
-            monthOfEnd: monthOfEnd?.toISOString().split("T")[0],
+            dueDate: dueDate?.toLocaleDateString("en-CA"),
+            monthOfStart: monthOfStart?.toLocaleDateString("en-CA"),
+            monthOfEnd: monthOfEnd?.toLocaleDateString("en-CA")
         }
 
         try {
@@ -66,7 +69,9 @@ export default function AddPaymentButton() {
       }
 
       setIsOpen(false);
-      window.location.reload();
+      const saved = await res.json();
+      setPayment(prev => [saved, ...prev]);
+
 
     } catch (error) {
       console.error("Error submitting payment:", error);

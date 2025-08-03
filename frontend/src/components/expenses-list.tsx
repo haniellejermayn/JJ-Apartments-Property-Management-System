@@ -9,6 +9,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import EditExpenseCard from './edit-expense-card';
+import FilterModal from './filter-modal';
+import { DeleteModal } from './delete-modal';
+import { SlidersHorizontal } from 'lucide-react';
 
 export type Expense = {
     id: number,
@@ -36,50 +39,81 @@ export default function ExpensesList() {
   const [error, setError] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false)
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null)
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filters, setFilters] = useState<{unit?: number, month?: String, year?: String}>({});
+  const [showConfirm, setShowConfirm] = useState(false);
   
-    const handleEdit = (u: Expense) => {
-      setSelectedExpense(u)
-      setEditOpen(true)
+  const handleApplyFilters = (newFilters: typeof filters) => {
+    setFilters(newFilters);
+  }
+
+  const filteredExpense = (data : Expense[]) => {
+    return data.filter((e) => {
+    const date = new Date(e.date);
+    const matchesUnit = !filters.unit || e.unitId == filters.unit;
+    const matchesMonth = !filters.month || String(date.getMonth() + 1).padStart(2, "0") === filters.month;
+    const matchesYear = !filters.year || String(date.getFullYear()) === filters.year;
+
+    return matchesUnit && matchesMonth && matchesYear;
+    })
+  }
+    
+  const handleEdit = (e: Expense) => {
+    setSelectedExpense(e)
+    setEditOpen(true)
+  }
+  const handleDelete = (e: Expense) => {
+    setSelectedExpense(e)
+    setShowConfirm(true)
+  }
+  
+  const confirmDelete = async (id: number) => {
+    setShowConfirm(false);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Delete failed with status ${res.status}`);
+      }
+      console.log("Expense deleted successfully");
+
+      setExpenses(prev => prev.filter(expense => expense.id !== id));
+
+    } catch (error) {
+        console.error("Error deleting expense:", error);
     }
+  };
+
+  const cancelDelete = () => {
+    setShowConfirm(false);
+  };
+
   
-    const handleDelete = async (id: number) => {
+  
+  const handleSave = async (updated: Expense) => {
+      const body = updated
       try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/${id}`, {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-          });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/update/${updated.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
   
-          if (!res.ok) {
-            throw new Error(`Delete failed with status ${res.status}`);
-          }
-          console.log("Expense deleted successfully");
-  
-          window.location.reload();
-      } catch (error) {
-          console.error("Error deleting expense:", error);
-      }
-    }
-    
-    const handleSave = async (updated: Expense) => {
-        const body = updated
-        try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/update/${updated.id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-          });
-    
-          if (!res.ok) {
-            throw new Error(`Update failed with status ${res.status}`);
-          }
-    
-          console.log("Expense updated successfully");
-          window.location.reload();
-        } catch (error) {
-          console.error("Error updating expense:", error);
+        if (!res.ok) {
+          throw new Error(`Update failed with status ${res.status}`);
         }
-    
+  
+        console.log("Expense updated successfully");
+        const saved = await res.json();
+        setExpenses(prev => prev.map(expense => expense.id === updated.id ? saved : expense))
+      } catch (error) {
+        console.error("Error updating expense:", error);
       }
+  
+    }
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
@@ -123,7 +157,12 @@ export default function ExpensesList() {
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h2 className="text-lg font-medium text-gray-900">Expenses</h2>
-        <AddExpenseButton/>
+        <div className="flex items-center gap-2">
+          <AddExpenseButton setExpense={setExpenses}/>
+          <Button variant="outline" size="icon" onClick={() => setFilterOpen(true)}>
+            <SlidersHorizontal className="w-5 h-5" />
+          </Button>
+        </div>
       </div>
       <div className="overflow-x-auto rounded shadow border">
         <table className="w-full">
@@ -166,7 +205,7 @@ export default function ExpensesList() {
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem 
-                        onClick={() => handleDelete(e.id)} 
+                        onClick={() => handleDelete(e)} 
                         className="text-red-600 focus:text-red-700">
                           Delete
                         </DropdownMenuItem>
@@ -187,7 +226,7 @@ export default function ExpensesList() {
   if (error) return <p className="text-red-600">{error}</p>;
   return (
     <div className="space-y-2">
-      {createTable(expenses)}
+      {createTable(filteredExpense(expenses))}
       {selectedExpense && (
         <EditExpenseCard
           open={editOpen}
@@ -196,6 +235,23 @@ export default function ExpensesList() {
           expense={selectedExpense}
         />
       )}
+      <FilterModal 
+        open={filterOpen}
+        onClose={() => {setFilterOpen(false)}}
+        onApply={(newFilters) => {
+          handleApplyFilters(newFilters);
+          setFilterOpen(false);
+        }}
+        units={units}
+      />
+      {selectedExpense && 
+        <DeleteModal
+          open={showConfirm}
+          title="Delete Record"
+          message="Are you sure you want to delete this record? This action cannot be undone."
+          onCancel={cancelDelete}
+          onConfirm={() => confirmDelete(selectedExpense.id)}
+        />}
     </div>
   );
 }

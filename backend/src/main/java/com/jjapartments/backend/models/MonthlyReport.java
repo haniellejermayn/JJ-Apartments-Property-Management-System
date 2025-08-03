@@ -5,9 +5,10 @@ public class MonthlyReport {
     private int id;
     private int year;
     private int month;
-    private float totalEarnings;
-    private float totalExpenses;
-    private float netIncome;
+    private int unitId;
+    private float monthlyDues;
+    private float utilityBills;
+    private float expenses;
     private String createdAt;
 
 
@@ -35,30 +36,38 @@ public class MonthlyReport {
         this.month = month;
     }
 
-    public float getTotalEarnings() {
-        return this.totalEarnings;
+    public int getUnitId() {
+        return this.unitId;
     }
 
-    public void setTotalEarnings(float totalEarnings) {
-        this.totalEarnings = totalEarnings;
+    public void setUnitId(int unitId) {
+        this.unitId = unitId;
     }
 
-    public float getTotalExpenses() {
-        return this.totalExpenses;
+    public float getMonthlyDues() {
+        return this.monthlyDues;
     }
 
-    public void setTotalExpenses(float totalExpenses) {
-        this.totalExpenses = totalExpenses;
+    public void setMonthlyDues(float monthlyDues) {
+        this.monthlyDues = monthlyDues;
     }
 
-    public float getNetIncome() {
-        return this.netIncome;
+    public float getUtilityBills() {
+        return this.utilityBills;
     }
 
-    public void setNetIncome(float netIncome) {
-        this.netIncome = netIncome;
+    public void setUtilityBills(float utilityBills) {
+        this.utilityBills = utilityBills;
     }
 
+    public float getExpenses() {
+        return this.expenses;
+    }
+
+    public void setExpenses(float expenses) {
+        this.expenses = expenses;
+    }
+   
     public String getCreatedAt() {
         return this.createdAt;
     }

@@ -10,6 +10,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import FilterModal from './filter-modal';
+import { DeleteModal } from './delete-modal';
+import { SlidersHorizontal } from 'lucide-react';
+import { useDataRefresh } from '@/contexts/DataContext';
+
 export type Payment = {
     id: number,
     unitId: number,
@@ -24,35 +29,66 @@ export type Payment = {
 
 
 export default function PaymentsList() {
+  const { triggerRefresh } = useDataRefresh();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false)
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filters, setFilters] = useState<{unit?: number, month?: String, year?: String}>({});
+  const [showConfirm, setShowConfirm] = useState(false);
+  
 
-  const handleEdit = (u: Payment) => {
-    setSelectedPayment(u)
+  const handleApplyFilters = (newFilters: typeof filters) => {
+    setFilters(newFilters);
+  }
+
+  const filteredPayments = (data : Payment[]) => {
+    return data.filter((p) => {
+    const date = new Date(p.paidAt);
+    const matchesUnit = !filters.unit || p.unitId == filters.unit;
+    const matchesMonth = !filters.month || String(date.getMonth() + 1).padStart(2, "0") === filters.month;
+    const matchesYear = !filters.year || String(date.getFullYear()) === filters.year;
+
+    return matchesUnit && matchesMonth && matchesYear;
+    })
+  }
+  
+  const handleEdit = (p: Payment) => {
+    setSelectedPayment(p)
     setEditOpen(true)
   }
-
-  const handleDelete = async (id: number) => {
-    try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/${id}`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-        });
-
-        if (!res.ok) {
-          throw new Error(`Delete failed with status ${res.status}`);
-        }
-        console.log("Payment deleted successfully");
-
-        window.location.reload();
-    } catch (error) {
-        console.error("Error deleting payment:", error);
-    }
+  const handleDelete = (p: Payment) => {
+    setSelectedPayment(p)
+    setShowConfirm(true)
   }
+    
+  const confirmDelete = async (id: number) => {
+    setShowConfirm(false);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Delete failed with status ${res.status}`);
+      }
+      console.log("Payment deleted successfully");
+
+      // Trigger refresh in other components
+      triggerRefresh();
+      setPayments(prev => prev.filter(payment => payment.id !== id));
+    } catch (error) {
+      console.error("Error deleting payment:", error);
+    }
+  };
+  
+  const cancelDelete = () => {
+    setShowConfirm(false);
+  };
   
   const handleSave = async (updated: Payment) => {
       const body = updated
@@ -68,7 +104,10 @@ export default function PaymentsList() {
         }
   
         console.log("Payment updated successfully");
-        window.location.reload();
+        // Trigger refresh in other components
+        triggerRefresh();
+        const saved = await res.json();
+        setPayments(prev => prev.map(payment => payment.id === updated.id ? saved : payment))
       } catch (error) {
         console.error("Error updating payment:", error);
       }
@@ -121,7 +160,12 @@ export default function PaymentsList() {
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h2 className="text-lg font-medium text-gray-900">Payments</h2>
-        <AddPaymentButton/>
+        <div className="flex items-center gap-2">
+          <AddPaymentButton setPayment={setPayments}/>
+          <Button variant="outline" size="icon" onClick={() => setFilterOpen(true)}>
+            <SlidersHorizontal className="w-5 h-5" />
+          </Button>
+        </div>
       </div>
       <div className="overflow-x-auto rounded shadow border">
         <table className="w-full">
@@ -184,7 +228,7 @@ export default function PaymentsList() {
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem 
-                        onClick={() => handleDelete(p.id)} 
+                        onClick={() => handleDelete(p)} 
                         className="text-red-600 focus:text-red-700">
                           Delete
                         </DropdownMenuItem>
@@ -205,7 +249,7 @@ export default function PaymentsList() {
   if (error) return <p className="text-red-600">{error}</p>;
   return (
     <div className="space-y-2">
-      {createTable(payments)}
+      {createTable(filteredPayments(payments))}
 
       {selectedPayment && (
         <EditPaymentCard
@@ -215,6 +259,23 @@ export default function PaymentsList() {
           payment={selectedPayment}
         />
       )}
+      <FilterModal 
+        open={filterOpen}
+        onClose={() => {setFilterOpen(false)}}
+        onApply={(newFilters) => {
+          handleApplyFilters(newFilters);
+          setFilterOpen(false);
+        }}
+        units={units}
+      />
+      {selectedPayment && 
+        <DeleteModal
+          open={showConfirm}
+          title="Delete Record"
+          message="Are you sure you want to delete this record? This action cannot be undone."
+          onCancel={cancelDelete}
+          onConfirm={() => confirmDelete(selectedPayment.id)}
+      />}
     </div>
   );
 }

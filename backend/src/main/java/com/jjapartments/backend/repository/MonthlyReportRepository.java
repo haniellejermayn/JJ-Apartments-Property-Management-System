@@ -22,26 +22,9 @@ public class MonthlyReportRepository{
         return jdbcTemplate.query(sql, new MonthlyReportRowMapper());
     }
 
-    // public int add(MonthlyReport monthlyReport) {
-    //     String sql = "INSERT INTO monthly_reports(tenant_id, reason, mode_of_monthlyReport, amount, due_date, month_of_start, month_of_end, is_paid, paid_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    //     return jdbcTemplate.update(sql, monthlyReport.getTenantId(), monthlyReport.getReason(), monthlyReport.getModeOfMonthlyReport(), monthlyReport.getAmount(), monthlyReport.getDueDate(), monthlyReport.getMonthOfStart(), monthlyReport.getMonthOfEnd(), monthlyReport.getIsPaid(), monthlyReport.getPaidAt());
-       
-    // }
-
-    public int delete(int id) {
-        String sql = "DELETE FROM monthly_reports WHERE id = ?";
-        return jdbcTemplate.update(sql, id);
-    }
-
-    public int add(MonthlyReport report) {
-        String sql = "INSERT INTO monthly_reports(year, month, total_earnings, total_expenses, net_income) " +
-                     "VALUES (?, ?, ?, ?, ?)";
-        return jdbcTemplate.update(sql,
-                report.getYear(),
-                report.getMonth(),
-                report.getTotalEarnings(),
-                report.getTotalExpenses(),
-                report.getNetIncome());
+    public int delete(int year, int month) {
+        String sql = "DELETE FROM monthly_reports WHERE year = ? AND month = ?";
+        return jdbcTemplate.update(sql, year, month);
     }
 
     public float sumPayments(int year, int month) {
@@ -52,10 +35,25 @@ public class MonthlyReportRepository{
     }
 
     public float sumExpenses(int year, int month) {
-        String sql = "SELECT COALESCE(SUM(amount), 0) FROM expenses " +
-                     "WHERE YEAR(date) = ? AND MONTH(date) = ?";
-        Float sum = jdbcTemplate.queryForObject(sql, Float.class, year, month);
-        return sum != null ? sum : 0.0f;
+        String sql = "SELECT COALESCE(SUM(amount), 0) FROM %s WHERE YEAR(date) = ? AND MONTH(date) = ?";
+    
+        Float expenseSum = jdbcTemplate.queryForObject(String.format(sql, "expenses"), Float.class, year, month);
+        Float utilitySum = jdbcTemplate.queryForObject(String.format(sql, "utilities"), Float.class, year, month);
+        
+        return (expenseSum != null ? expenseSum : 0f) + (utilitySum != null ? utilitySum : 0f);
+    }
+
+    public int add(MonthlyReport report) {
+        String sql = "INSERT INTO monthly_reports(year, month, units_id, monthly_dues, utility_bills, expenses) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
+        return jdbcTemplate.update(sql,
+            report.getYear(),
+            report.getMonth(),
+            report.getUnitId(),
+            report.getMonthlyDues(),
+            report.getUtilityBills(),
+            report.getExpenses()
+        );
     }
 
     public MonthlyReport findById(int id) {

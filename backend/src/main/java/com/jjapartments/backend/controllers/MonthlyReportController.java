@@ -10,8 +10,12 @@ import org.springframework.dao.DuplicateKeyException;
 
 import com.jjapartments.backend.models.MonthlyReport;
 import com.jjapartments.backend.repository.MonthlyReportRepository;
+import com.jjapartments.backend.repository.PaymentRepository;
+import com.jjapartments.backend.repository.UnitRepository;
+import com.jjapartments.backend.repository.UtilityRepository;
+import com.jjapartments.backend.repository.ExpenseRepository;
 import com.jjapartments.backend.exception.ErrorException;
-
+import com.jjapartments.backend.models.Unit;
 @RestController
 @RequestMapping("/api/monthlyreports")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -19,6 +23,14 @@ public class MonthlyReportController {
 
     @Autowired
     private MonthlyReportRepository monthlyReportRepository;
+    @Autowired
+    private UnitRepository unitRepository;
+    @Autowired
+    private PaymentRepository paymentRepository;
+    @Autowired
+    private ExpenseRepository expenseRepository;
+    @Autowired
+    private UtilityRepository utilityRepository;
 
     @PostMapping("/add")
     public ResponseEntity<String> addMonthlyReport(
@@ -26,19 +38,26 @@ public class MonthlyReportController {
         @RequestParam("month") int month
     ) {
         try {
-            float totalEarnings = monthlyReportRepository.sumPayments(year, month);
-            float totalExpenses = monthlyReportRepository.sumExpenses(year, month);
-            float netIncome = totalEarnings - totalExpenses;
-
-            MonthlyReport report = new MonthlyReport();
-            report.setYear(year);
-            report.setMonth(month);
-            report.setTotalEarnings(totalEarnings);
-            report.setTotalExpenses(totalExpenses);
-            report.setNetIncome(netIncome);
-
-            monthlyReportRepository.add(report);
-
+            // float totalEarnings = monthlyReportRepository.sumPayments(year, month);
+            // float totalExpenses = monthlyReportRepository.sumExpenses(year, month);
+            // float netIncome = totalEarnings - totalExpenses;
+            List<Unit> units = unitRepository.findAll();
+            for(int i = 0; i < units.size(); i++) {
+                int unitId = units.get(i).getId();
+                float monthlyDues = paymentRepository.getMonthlyAmountByUnitId(unitId, year, month);
+                float utilityBills = utilityRepository.getMonthlyAmountByUnitId(unitId, year, month);
+                float expenses = expenseRepository.getMonthlyAmountById(unitId, year, month);
+                MonthlyReport report = new MonthlyReport();
+                report.setYear(year);
+                report.setMonth(month);
+                report.setUnitId(unitId);
+                report.setMonthlyDues(monthlyDues);
+                report.setUtilityBills(utilityBills);
+                report.setExpenses(expenses);
+                monthlyReportRepository.add(report);
+            }
+            
+            
             return ResponseEntity.status(HttpStatus.CREATED).body("Monthly report successfully created for " + month + "/" + year);
         } catch (DuplicateKeyException e) { // if report already exists with same month and year
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Monthly report already exists for " + month + "/" + year);
@@ -55,9 +74,9 @@ public class MonthlyReportController {
     }
 
     // Delete
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteMonthlyReport(@PathVariable int id) {
-        int rowsAffected = monthlyReportRepository.delete(id);
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteMonthlyReport(@RequestParam("year") int year, @RequestParam("month") int month) {
+        int rowsAffected = monthlyReportRepository.delete(year, month);
         if (rowsAffected > 0) {
             return ResponseEntity.ok("Monthly Report deleted successfully.");
         } else {

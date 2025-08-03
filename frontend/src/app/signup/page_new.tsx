@@ -44,10 +44,21 @@ export default function SignUpPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to sign up');
+        let errorMessage = errorData.error || 'Failed to sign up';
+        
+        // Map specific backend errors to user-friendly messages
+        if (errorMessage.includes('already taken')) {
+          errorMessage = 'This username is already taken. Please choose a different username.';
+        } else if (response.status === 400) {
+          errorMessage = errorMessage; // Keep the original message for validation errors
+        } else if (response.status >= 500) {
+          errorMessage = 'Server error. Please try again later.';
+        }
+        
+        throw new Error(errorMessage);
       }
 
-      alert('User registered successfully!');
+      alert('Account created successfully! You can now log in.');
       router.push('/login');
     } catch (err) {
       console.error('Sign-up error:', err);

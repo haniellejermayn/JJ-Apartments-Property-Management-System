@@ -54,7 +54,21 @@ VALUES
 ('B', 'Maple Residences', '1 Bedroom', 15000.00, 2, '09181234567'),
 ('C', 'Palm Grove Towers', '2 Bedroom', 18000.00, 3, '09192233445'),
 ('D', 'Palm Grove Towers', 'Studio Apartment', 12500.00, 1, '09201234567'),
-('E', 'Sunrise Villas', '1 Bedroom', 15500.00, 2, '09179998888');
+('E', 'Sunrise Villas', '1 Bedroom', 15500.00, 2, '09179998888'),
+('F', 'Sunrise Villas', '2 Bedroom', 16500.00, 3, '09170000001'),
+('G', 'Sunrise Villas', 'Studio Apartment', 13000.00, 1, '09170000002'),
+('H', 'Palm Grove Towers', '3 Bedroom', 20000.00, 4, '09170000003'),
+('I', 'Palm Grove Towers', '1 Bedroom', 15000.00, 2, '09170000004'),
+('J', 'Palm Grove Towers', 'Penthouse', 30000.00, 5, '09170000005'),
+('K', 'Maple Residences', '3 Bedroom', 22000.00, 4, '09170000006'),
+('L', 'Maple Residences', '1 Bedroom', 15500.00, 2, '09170000007'),
+('M', 'Sunrise Villas', '2 Bedroom', 17000.00, 3, '09170000008'),
+('N', 'Sunrise Villas', '3 Bedroom', 19000.00, 4, '09170000009'),
+('O', 'Palm Grove Towers', 'Studio Apartment', 14000.00, 1, '09170000010'),
+('P', 'Palm Grove Towers', '1 Bedroom', 16000.00, 2, '09170000011'),
+('Q', 'Maple Residences', 'Penthouse', 28000.00, 5, '09170000012'),
+('R', 'Sunrise Villas', '1 Bedroom', 15500.00, 2, '09170000013'),
+('S', 'Palm Grove Towers', 'Studio Apartment', 13500.00, 1, '09170000014');
 
 SELECT * FROM units;
 -- -------------------------
@@ -133,7 +147,9 @@ CREATE TABLE IF NOT EXISTS rates (
 
 INSERT INTO rates (type, rate, date) VALUES
 ('Meralco', 15.02, '2025-07-17'),
-('Manila Water', 50, '2025-07-17');
+('Manila Water', 50, '2025-07-17'),
+('Meralco', 14.30, '2024-07-17'),
+('Manila Water', 45, '2024-07-17');
 
 
 -- -------------------------
@@ -212,22 +228,38 @@ CREATE TABLE IF NOT EXISTS monthly_reports (
   id INT NOT NULL AUTO_INCREMENT,
   year INT NOT NULL,
   month INT NOT NULL,
-  total_earnings DECIMAL(10,2) NOT NULL,
-  total_expenses DECIMAL(10,2) NOT NULL,
-  net_income DECIMAL(10,2) NOT NULL,
+  units_id INT NULL,
+  monthly_dues DECIMAL(10, 2) NULL,
+  utility_bills DECIMAL(10,2) NULL,
+  expenses DECIMAL(10,2) NULL,
   created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  UNIQUE KEY unique_year_month (year, month)
+  UNIQUE KEY unique_unit_year_month (units_id, year, month),
+  INDEX fk_monthlyreports_units1_idx (units_id ASC),
+  CONSTRAINT fk_monthlyreports_units1 FOREIGN KEY (units_id) REFERENCES units (id) ON DELETE SET NULL
 ) ENGINE = InnoDB;
 
-INSERT INTO monthly_reports(year, month, total_earnings, total_expenses, net_income)
+-- INSERT INTO monthly_reports(year, month, total_earnings, total_expenses, net_income)
+-- VALUES
+-- (2025, 6, 514136.30, 20000, 494136.3),
+-- (2025, 7, 514136.30, 20000, 494136.3);
+INSERT INTO monthly_reports(year, month, units_id, monthly_dues, utility_bills, expenses)
 VALUES
-(2025, 6, 514136.30, 20000, 494136.3),
-(2025, 7, 514136.30, 20000, 494136.3);
+(2025, 7, 1, 11000.00, 925.00, 1500.00),
+(2025, 7, 2, 11500.00, 802.50, 4750.00),
+(2025, 7, 3, 1800.00, 0.00, 2200.00),
+(2025, 7, 4, 950.00, 0.00, 800.00),
+(2025, 7, 5, 2200.00, 0.00, 0.00),
+(2025, 7, 6, NULL, 0.00, 950.00),
+(2025, 8, 1, 11000.00, 0.00, 0.00),
+(2025, 8, 2, 11500.00, 0.00, 0.00),
+(2025, 8, 3, 1800.00, 0.00, 0.00),
+(2025, 8, 4, 950.00, 0.00, 0.00),
+(2025, 8, 5, 2200.00, 0.00, 0.00);
 
 SELECT * FROM monthly_reports;
 
-
+SELECT * FROM units;
 
 -- Restore original SQL modes and checks
 SET SQL_MODE = @OLD_SQL_MODE;

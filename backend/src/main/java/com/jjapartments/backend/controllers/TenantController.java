@@ -1,6 +1,7 @@
 package com.jjapartments.backend.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +21,12 @@ public class TenantController{
 
     //Create
     @PostMapping("/add")
-    public ResponseEntity<String> addTenant(@RequestBody Tenant tenant) {
+    public ResponseEntity<?> addTenant(@RequestBody Tenant tenant) {
         try {
             tenantRepository.add(tenant);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Tenant successfully added");
+            return ResponseEntity.status(HttpStatus.CREATED).body(tenant);
         } catch(ErrorException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
         
     }
