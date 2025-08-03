@@ -1,6 +1,7 @@
 package com.jjapartments.backend.controllers;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +22,12 @@ public class UnitController {
 
     //Create
     @PostMapping("/add")
-    public ResponseEntity<String> addUnit(@RequestBody Unit unit) {
+    public ResponseEntity<?> addUnit(@RequestBody Unit unit) {
         try {
-            unitRepository.add(unit);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Unit successfully added");
+            Unit newUnit = unitRepository.add(unit);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newUnit);
         } catch(ErrorException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 

@@ -23,8 +23,8 @@ public class PaymentController {
     @PostMapping("/add")
     public ResponseEntity<?> addPayment(@RequestBody Payment payment) {
         try {
-            paymentRepository.add(payment);
-            return ResponseEntity.status(HttpStatus.CREATED).body(payment);
+            Payment newPayment = paymentRepository.add(payment);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newPayment);
         } catch (ErrorException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }

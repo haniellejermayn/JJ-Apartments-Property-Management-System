@@ -23,13 +23,40 @@ public class PaymentRepository{
         return jdbcTemplate.query(sql, new PaymentRowMapper());
     }
 
-    public int add(Payment payment) {
+    public Payment add(Payment payment) {
         if (payment.getAmount() <= 0) {
             throw new ErrorException("Amount cannot be ₱0 or below");
         }
         String sql = "INSERT INTO payments(units_id, mode_of_payment, amount, due_date, month_of_start, month_of_end, is_paid, paid_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        return jdbcTemplate.update(sql, payment.getUnitId(), payment.getModeOfPayment(), payment.getAmount(), payment.getDueDate(), payment.getMonthOfStart(), payment.getMonthOfEnd(), payment.getIsPaid(), payment.getPaidAt());
-       
+        jdbcTemplate.update(sql, payment.getUnitId(), payment.getModeOfPayment(), payment.getAmount(), payment.getDueDate(), payment.getMonthOfStart(), payment.getMonthOfEnd(), payment.getIsPaid(), payment.getPaidAt());
+     
+        String fetchSql = """
+            SELECT * FROM payments
+            WHERE units_id = ?
+            AND mode_of_payment = ?
+            AND amount = ?
+            AND due_date = ?
+            AND month_of_start = ?
+            AND month_of_end = ?
+            AND is_paid = ?
+            AND paid_at IS NOT DISTINCT FROM ?
+            ORDER BY id DESC
+            LIMIT 1
+        """;
+
+        return jdbcTemplate.queryForObject(
+            fetchSql,
+            new PaymentRowMapper(),
+            payment.getUnitId(),
+            payment.getModeOfPayment(),
+            payment.getAmount(),
+            payment.getDueDate(),
+            payment.getMonthOfStart(),
+            payment.getMonthOfEnd(),
+            payment.getIsPaid(),
+            payment.getPaidAt()
+        );
+
     }
 
     public int delete(int id) {

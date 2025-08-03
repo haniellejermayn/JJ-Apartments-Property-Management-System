@@ -23,8 +23,8 @@ public class RateController{
     @PostMapping("/add")
     public ResponseEntity<?> addRate(@RequestBody Rate rate) {
         try {
-            rateRepository.add(rate);
-            return ResponseEntity.status(HttpStatus.CREATED).body(rate);
+            Rate newRate = rateRepository.add(rate);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newRate);
         } catch (ErrorException e) {    
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }

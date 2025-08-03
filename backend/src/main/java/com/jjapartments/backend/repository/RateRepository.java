@@ -23,7 +23,7 @@ public class RateRepository{
         return jdbcTemplate.query(sql, new RateRowMapper());
     }
 
-    public int add(Rate rate) {
+    public Rate add(Rate rate) {
         List<String> validTypes = List.of("Meralco", "Manila Water");
         if (!validTypes.contains(rate.getType())) {
             throw new ErrorException("Invalid rate type " + rate.getType());
@@ -32,7 +32,24 @@ public class RateRepository{
             throw new ErrorException("Amount cannot be 0 or below");
         }
         String sql = "INSERT INTO rates(type, rate, date) VALUES (?, ?, ?)";
-        return jdbcTemplate.update(sql, rate.getType(), rate.getRate(), rate.getDate());
+        jdbcTemplate.update(sql, rate.getType(), rate.getRate(), rate.getDate());
+
+        String fetchSql = """
+            SELECT * FROM rates
+            WHERE type = ?
+            AND rate = ?
+            AND date = ?
+            ORDER BY id DESC
+            LIMIT 1
+        """;
+
+        return jdbcTemplate.queryForObject(
+            fetchSql,
+            new RateRowMapper(),
+            rate.getType(),
+            rate.getRate(),
+            rate.getDate()
+        );
     }
 
     public int delete(int id) {
