@@ -13,7 +13,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const triggerRefresh = () => {
-    setRefreshTrigger(prev => prev + 1);
+    console.log("DataContext: triggerRefresh called, current value:", refreshTrigger);
+    setRefreshTrigger(prev => {
+      const newValue = prev + 1;
+      console.log("DataContext: refreshTrigger updated from", prev, "to", newValue);
+      return newValue;
+    });
   };
 
   return (

@@ -23,6 +23,15 @@ public class TenantRepository{
         return jdbcTemplate.query(sql, new TenantRowMapper());
     }
 
+    // Method to update unit occupant count based on actual tenant count
+    private void updateUnitOccupantCount(int unitId) {
+        String countSql = "SELECT COUNT(*) FROM tenants WHERE units_id = ?";
+        Integer tenantCount = jdbcTemplate.queryForObject(countSql, Integer.class, unitId);
+        
+        String updateSql = "UPDATE units SET num_occupants = ? WHERE id = ?";
+        jdbcTemplate.update(updateSql, tenantCount != null ? tenantCount : 0, unitId);
+    }
+
     // for creating
     public String duplicateExists(Tenant tenant) {
         String sqlChecker = "SELECT COUNT(*) FROM tenants WHERE email = ?";
@@ -70,6 +79,9 @@ public class TenantRepository{
         String sql = "INSERT INTO tenants(last_name, first_name, middle_initial, email, phone_number, units_id) VALUES (?, ?, ?, ?, ?, ?)"; 
         jdbcTemplate.update(sql, tenant.getLastName(), tenant.getFirstName(), tenant.getMiddleInitial(), tenant.getEmail(), tenant.getPhoneNumber(), tenant.getUnitId());
       
+        // Update unit occupant count after adding tenant
+        updateUnitOccupantCount(tenant.getUnitId());
+        
         String fetchSql = """
             SELECT * FROM tenants
             WHERE last_name = ?
@@ -95,8 +107,19 @@ public class TenantRepository{
     }
 
     public int delete(int id) {
+        // Get the unit ID before deleting the tenant
+        Tenant tenant = findById(id);
+        int unitId = tenant.getUnitId();
+        
         String sql = "DELETE FROM tenants WHERE id = ?";
-        return jdbcTemplate.update(sql, id);
+        int result = jdbcTemplate.update(sql, id);
+        
+        // Update unit occupant count after deleting tenant
+        if (result > 0) {
+            updateUnitOccupantCount(unitId);
+        }
+        
+        return result;
     }
 
     public Tenant findById(int id) {
@@ -110,6 +133,8 @@ public class TenantRepository{
 
     public int update(int id, Tenant tenant) {
         Tenant existingTenant = findById(id);
+        int oldUnitId = existingTenant.getUnitId();
+        int newUnitId = tenant.getUnitId();
 
         String duplicateField = duplicateExists(tenant, existingTenant.getId());
         if (duplicateField != null) {
@@ -124,6 +149,20 @@ public class TenantRepository{
             }
         }
         String sql = "UPDATE tenants SET last_name = ?, first_name = ?, middle_initial = ?, email = ?, phone_number = ?, units_id = ? WHERE id = ?";
-        return jdbcTemplate.update(sql, tenant.getLastName(), tenant.getFirstName(), tenant.getMiddleInitial(), tenant.getEmail(), tenant.getPhoneNumber(), tenant.getUnitId(), id);
+        int result = jdbcTemplate.update(sql, tenant.getLastName(), tenant.getFirstName(), tenant.getMiddleInitial(), tenant.getEmail(), tenant.getPhoneNumber(), tenant.getUnitId(), id);
+        
+        // Update occupant counts for both old and new units if tenant moved
+        if (result > 0) {
+            if (oldUnitId != newUnitId) {
+                // Update both old and new unit occupant counts
+                updateUnitOccupantCount(oldUnitId);
+                updateUnitOccupantCount(newUnitId);
+            } else {
+                // Update current unit occupant count
+                updateUnitOccupantCount(newUnitId);
+            }
+        }
+        
+        return result;
     }
 }

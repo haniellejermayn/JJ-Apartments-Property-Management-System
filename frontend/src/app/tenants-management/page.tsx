@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useDataRefresh } from '@/contexts/DataContext';
 import { TenantPopUp } from "@/components/TenantPopUp";
 import { TenantMgt } from "@/components/TenantMgt";
 import { Mail, Phone, Building, DoorClosed  } from "lucide-react";
@@ -30,6 +31,7 @@ type TenantWithUnitDetails = Omit<Tenant, 'unit'> & {
 
 export default function TenantsManagementPage() {
     const { isLoggedIn, isLoading } = useAuth();
+    const { triggerRefresh } = useDataRefresh();
     const router = useRouter();
     const [modalOpen, setModalOpen] = useState(false);
     const [editingTenant, setEditingTenant] = useState<TenantWithUnitDetails | null>(null);
@@ -63,7 +65,7 @@ export default function TenantsManagementPage() {
     }, [units]);
     const fetchUnits = async () => {
         try {
-            const response = await fetch("/api/units");
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`);
             if (!response.ok) {
                 throw new Error("Failed to fetch units");
             }
@@ -77,8 +79,8 @@ export default function TenantsManagementPage() {
     const fetchTenants = async () => {
         try {
         const [unitsResponse, tenantsResponse] = await Promise.all([
-            fetch("/api/units"),
-            fetch("/api/tenants")
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/units`),
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenants`)
         ]);
 
         const units = await unitsResponse.json();
@@ -119,7 +121,7 @@ export default function TenantsManagementPage() {
         const encodedUnitName = unitName ? encodeURIComponent(unitName) : '';
         const encodedUnitNumber = unitNumber ? encodeURIComponent(unitNumber) : '';
 
-        const url = `http://localhost:8080/api/units/findUnitId?name=${encodedUnitName}&unitNumber=${encodedUnitNumber}`;
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/api/units/findUnitId?name=${encodedUnitName}&unitNumber=${encodedUnitNumber}`;
         console.log("DEBUG (Frontend): Full URL being sent:", url);
         
         const res = await fetch(url);
@@ -205,7 +207,11 @@ export default function TenantsManagementPage() {
                 return;
             }
             
+            console.log("Tenant added successfully, triggering refresh...");
             toggleModal();
+            console.log("About to call triggerRefresh()");
+            triggerRefresh(); // Trigger refresh in other components
+            console.log("triggerRefresh() called successfully");
             fetchTenants();
         } catch (error) {
             console.error('Error adding tenant:', error);
@@ -274,8 +280,11 @@ export default function TenantsManagementPage() {
                 return;
             }
             
-            console.log('Tenant updated successfully:', updatedData);
+            console.log('Tenant updated successfully, triggering refresh...');
             toggleModal(); 
+            console.log("About to call triggerRefresh()");
+            triggerRefresh(); // Trigger refresh in other components
+            console.log("triggerRefresh() called successfully");
             fetchTenants(); 
         } catch (error) {
             console.error('Error updating tenant:', error);
@@ -302,8 +311,12 @@ export default function TenantsManagementPage() {
         return;
     }
 
+    console.log("Tenant deleted successfully, triggering refresh...");
     setDeleteModalOpen(false);
     setTenantToDelete(null);
+    console.log("About to call triggerRefresh()");
+    triggerRefresh(); // Trigger refresh in other components
+    console.log("triggerRefresh() called successfully");
     fetchTenants();
     };
 
