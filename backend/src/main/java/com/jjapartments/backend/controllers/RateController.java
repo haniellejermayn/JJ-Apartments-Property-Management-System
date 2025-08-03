@@ -60,10 +60,20 @@ public class RateController{
         }
     }
 
-    @GetMapping("/type")
+    @GetMapping("/latest/type")
     public ResponseEntity<?> getLatestByType(@RequestParam String type) {
          try {
             Rate rates = rateRepository.findLatestByType(type);
+            return ResponseEntity.ok(rates);
+        } catch (ErrorException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/type")
+    public ResponseEntity<?> getByType(@RequestParam String type) {
+         try {
+            List<Rate> rates = rateRepository.findByType(type);
             return ResponseEntity.ok(rates);
         } catch (ErrorException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

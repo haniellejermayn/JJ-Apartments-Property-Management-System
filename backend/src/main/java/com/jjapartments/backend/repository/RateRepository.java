@@ -31,7 +31,7 @@ public class RateRepository{
         if (rate.getRate() <= 0) {
             throw new ErrorException("Amount cannot be 0 or below");
         }
-        String sql = "INSERT INTO rates(type, rate) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO rates(type, rate, date) VALUES (?, ?, ?)";
         return jdbcTemplate.update(sql, rate.getType(), rate.getRate(), rate.getDate());
     }
 
@@ -76,5 +76,10 @@ public class RateRepository{
             throw new ErrorException("Rate not found for type: " + type);
         }
         
+    }
+
+    public List<Rate> findByType(String type) {
+        String sql = "SELECT * FROM rates WHERE type = ? ORDER BY date DESC";
+        return jdbcTemplate.query(sql, new RateRowMapper(), type);
     }
 }   
