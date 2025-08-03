@@ -13,6 +13,7 @@ import {
 import FilterModal from './filter-modal';
 import { DeleteModal } from './delete-modal';
 import { SlidersHorizontal } from 'lucide-react';
+import { useDataRefresh } from '@/contexts/DataContext';
 
 export type Payment = {
     id: number,
@@ -28,6 +29,7 @@ export type Payment = {
 
 
 export default function PaymentsList() {
+  const { triggerRefresh } = useDataRefresh();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,7 +78,9 @@ export default function PaymentsList() {
       }
       console.log("Payment deleted successfully");
 
-      window.location.reload();
+      // Trigger refresh in other components
+      triggerRefresh();
+      setPayments(prev => prev.filter(payment => payment.id !== id));
     } catch (error) {
       console.error("Error deleting payment:", error);
     }
@@ -100,7 +104,10 @@ export default function PaymentsList() {
         }
   
         console.log("Payment updated successfully");
-        window.location.reload();
+        // Trigger refresh in other components
+        triggerRefresh();
+        const saved = await res.json();
+        setPayments(prev => prev.map(payment => payment.id === updated.id ? saved : payment))
       } catch (error) {
         console.error("Error updating payment:", error);
       }
@@ -154,7 +161,7 @@ export default function PaymentsList() {
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h2 className="text-lg font-medium text-gray-900">Payments</h2>
         <div className="flex items-center gap-2">
-          <AddPaymentButton/>
+          <AddPaymentButton setPayment={setPayments}/>
           <Button variant="outline" size="icon" onClick={() => setFilterOpen(true)}>
             <SlidersHorizontal className="w-5 h-5" />
           </Button>

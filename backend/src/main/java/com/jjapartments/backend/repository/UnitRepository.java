@@ -38,12 +38,36 @@ public class UnitRepository {
     }
 
 
-    public int add(Unit unit) {
+    public Unit add(Unit unit) {
         if (unitExists(unit)) {
             throw new ErrorException("The unit already exists.");
         } else {
             String sql = "INSERT INTO units(unit_number, name, description, price, num_occupants, contact_number) VALUES (?, ?, ?, ?, ?, ?)";
-            return jdbcTemplate.update(sql, unit.getUnitNumber(), unit.getName(), unit.getDescription(), unit.getPrice(), unit.getNumOccupants(), unit.getContactNumber());
+            jdbcTemplate.update(sql, unit.getUnitNumber(), unit.getName(), unit.getDescription(), unit.getPrice(), unit.getNumOccupants(), unit.getContactNumber());
+            
+            // return the created record
+            String fetchSql = """
+                SELECT * FROM units
+                WHERE unit_number = ?
+                AND name = ?
+                AND description = ?
+                AND price = ?
+                AND num_occupants = ?
+                AND contact_number = ?
+                ORDER BY id DESC
+                LIMIT 1
+            """;
+
+            return jdbcTemplate.queryForObject(
+                fetchSql,
+                new UnitRowMapper(),
+                unit.getUnitNumber(),
+                unit.getName(),
+                unit.getDescription(),
+                unit.getPrice(),
+                unit.getNumOccupants(),
+                unit.getContactNumber()
+            );
         }
     }
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useDataRefresh } from '@/contexts/DataContext';
 
 import {
   Card,
@@ -31,15 +32,17 @@ import { Unit } from '@/components/expenses-list';
 
 export default function Home() {
   const { isLoggedIn, isLoading } = useAuth();
+  const { refreshTrigger } = useDataRefresh();
   const router = useRouter();
 
   type MonthlyReport = {
     id: number;
     month: number;
     year: number;
-    totalEarnings: number;
-    totalExpenses: number;
-    netIncome: number;
+    unitId: number;
+    monthlyDues: number;
+    utilityBills: number;
+    expenses: number;
     createdAt: string;
   };
 
@@ -59,9 +62,39 @@ export default function Home() {
   //   occupied: number;
   // };
 
+  type Payment = {
+    id: number;
+    unitId: number;
+    modeOfPayment: string;
+    amount: number;
+    dueDate: string;
+    monthOfStart: string;
+    monthOfEnd: string;
+    isPaid: boolean;
+    paidAt: string;
+  };
+
+  type Utility = {
+    id: number;
+    type: string;
+    previousReading: number;
+    currentReading: number;
+    totalMeter: number;
+    totalAmount: number;
+    dueDate: string;
+    monthOfStart: string;
+    monthOfEnd: string;
+    isPaid: boolean;
+    paidAt: string;
+    unitId: number;
+    rateId: number;
+  };
+
   const [monthlyReports, setMonthlyReports] = useState<MonthlyReport[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [utilities, setUtilities] = useState<Utility[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -97,7 +130,7 @@ export default function Home() {
         setLoading(true);
         setError(null);
         
-        const [monthlyResponse, tenantsResponse, unitsResponse] = await Promise.all([
+        const [monthlyResponse, tenantsResponse, unitsResponse, paymentsResponse, utilitiesResponse] = await Promise.all([
           fetch('/api/monthlyreports', {
             method: 'GET',
             headers: {
@@ -115,6 +148,18 @@ export default function Home() {
             headers: {
               'Content-Type': 'application/json',
             },
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }),
+          fetch('/api/utilities', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
           })
         ]);
 
@@ -128,16 +173,26 @@ export default function Home() {
         if (!unitsResponse.ok) {
           throw new Error(`Units API error: ${unitsResponse.status}`);
         }
+        if (!paymentsResponse.ok) {
+          throw new Error(`Payments API error: ${paymentsResponse.status}`);
+        }
+        if (!utilitiesResponse.ok) {
+          throw new Error(`Utilities API error: ${utilitiesResponse.status}`);
+        }
 
-        const [monthlyData, tenantsData, unitsData] = await Promise.all([
+        const [monthlyData, tenantsData, unitsData, paymentsData, utilitiesData] = await Promise.all([
           monthlyResponse.json(),
           tenantsResponse.json(),
-          unitsResponse.json()
+          unitsResponse.json(),
+          paymentsResponse.json(),
+          utilitiesResponse.json()
         ]);
 
         setMonthlyReports(monthlyData);
         setTenants(tenantsData);
         setUnits(unitsData);
+        setPayments(paymentsData);
+        setUtilities(utilitiesData);
 
       } catch (error: unknown) {
         console.error('Error fetching data:', error);
@@ -151,7 +206,7 @@ export default function Home() {
     if (isLoggedIn && !isLoading) {
       fetchAllData();
     }
-  }, [isLoggedIn, isLoading]);
+  }, [isLoggedIn, isLoading, refreshTrigger]);
 
   // Show loading while auth is being checked
   if (isLoading) {
@@ -192,7 +247,7 @@ export default function Home() {
   }
 
   const getCurrentMonthReport = () => {
-    return monthlyReports.find(report => 
+    return monthlyReports.filter(report => 
       report.month === currentMonth && report.year === currentYear
     );
   };
@@ -201,7 +256,7 @@ export default function Home() {
     const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
     const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
     
-    return monthlyReports.find(report => 
+    return monthlyReports.filter(report => 
       report.month === prevMonth && report.year === prevYear
     );
   };
@@ -222,36 +277,84 @@ export default function Home() {
     );
   };
 
-  const getMonthlyStats = () => {
-    const currentReport = getCurrentMonthReport();
-    const previousReport = getPreviousMonthReport();
+  const renderExpensePercentChange = (percentChange: number) => {
+    const isPositive = percentChange > 0;
+    const isNegative = percentChange < 0;
+    
+    return (
+      <span className={`${isPositive ? 'text-red-600' : isNegative ? 'text-green-600' : 'text-gray-600'}`}>
+        {isPositive ? '+' : ''}{percentChange.toFixed(1)}%
+      </span>
+    );
+  };
 
-    if (!currentReport) {
-      return {
-        monthRevenue: '0.00',
-        monthRevenuePercentChange: 0,
-        monthExpenses: '0.00',
-        monthExpensesPercentChange: 0,
-        netIncome: '0.00',
-        netIncomePercentChange: 0
-      };
-    }
+  const getMonthlyStats = () => {
+    // Calculate revenue from actual payments (real-time data)
+    const currentMonthPayments = payments.filter(payment => {
+      if (!payment.isPaid || !payment.paidAt) return false;
+      const paidDate = new Date(payment.paidAt);
+      return paidDate.getMonth() + 1 === currentMonth && paidDate.getFullYear() === currentYear;
+    });
+
+    const previousMonthPayments = payments.filter(payment => {
+      if (!payment.isPaid || !payment.paidAt) return false;
+      const paidDate = new Date(payment.paidAt);
+      const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+      const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+      return paidDate.getMonth() + 1 === prevMonth && paidDate.getFullYear() === prevYear;
+    });
+
+    // Calculate utility costs that owners have paid (reduces revenue)
+    const currentMonthPaidUtilities = utilities.filter(utility => {
+      if (!utility.isPaid || !utility.paidAt) return false;
+      const paidDate = new Date(utility.paidAt);
+      return paidDate.getMonth() + 1 === currentMonth && paidDate.getFullYear() === currentYear;
+    });
+
+    const previousMonthPaidUtilities = utilities.filter(utility => {
+      if (!utility.isPaid || !utility.paidAt) return false;
+      const paidDate = new Date(utility.paidAt);
+      const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+      const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+      return paidDate.getMonth() + 1 === prevMonth && paidDate.getFullYear() === prevYear;
+    });
+
+    const currentUtilityCosts = currentMonthPaidUtilities.reduce((sum, utility) => sum + utility.totalAmount, 0);
+    const previousUtilityCosts = previousMonthPaidUtilities.reduce((sum, utility) => sum + utility.totalAmount, 0);
+
+    // Total earnings from payments minus utility costs paid by owners
+    const currentTotalEarnings = currentMonthPayments.reduce((sum, payment) => sum + payment.amount, 0) - currentUtilityCosts;
+    const previousTotalEarnings = previousMonthPayments.reduce((sum, payment) => sum + payment.amount, 0) - previousUtilityCosts;
+
+    // Calculate expenses from monthly reports plus paid utility costs
+    const currentReports = getCurrentMonthReport();
+    const previousReports = getPreviousMonthReport();
+
+    const currentTotalExpenses = currentReports.reduce((sum, report) => 
+      sum + (report.utilityBills || 0) + (report.expenses || 0), 0) + currentUtilityCosts;
+    const previousTotalExpenses = previousReports.reduce((sum, report) => 
+      sum + (report.utilityBills || 0) + (report.expenses || 0), 0) + previousUtilityCosts;
+
+    const currentNetIncome = currentTotalEarnings - (currentReports.reduce((sum, report) => 
+      sum + (report.utilityBills || 0) + (report.expenses || 0), 0));
+    const previousNetIncome = previousTotalEarnings - (previousReports.reduce((sum, report) => 
+      sum + (report.utilityBills || 0) + (report.expenses || 0), 0));
 
     return {
-      monthRevenue: currentReport.totalEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      monthRevenue: currentTotalEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       monthRevenuePercentChange: calculatePercentChange(
-        currentReport.totalEarnings, 
-        previousReport?.totalEarnings || 0
+        currentTotalEarnings, 
+        previousTotalEarnings
       ),
-      monthExpenses: currentReport.totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      monthExpenses: currentTotalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       monthExpensesPercentChange: calculatePercentChange(
-        currentReport.totalExpenses, 
-        previousReport?.totalExpenses || 0
+        currentTotalExpenses, 
+        previousTotalExpenses
       ),
-      netIncome: currentReport.netIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      netIncome: currentNetIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       netIncomePercentChange: calculatePercentChange(
-        currentReport.netIncome, 
-        previousReport?.netIncome || 0
+        currentNetIncome, 
+        previousNetIncome
       )
     };
   };
@@ -273,15 +376,40 @@ export default function Home() {
     const fullYearData = monthNames.map((monthName, index) => {
       const monthNumber = index + 1;
       
-      const reportForMonth = monthlyReports.find(report => 
+      // Calculate revenue from actual payments for this month
+      const paymentsForMonth = payments.filter(payment => {
+        if (!payment.isPaid || !payment.paidAt) return false;
+        const paidDate = new Date(payment.paidAt);
+        return paidDate.getMonth() + 1 === monthNumber && paidDate.getFullYear() === currentYear;
+      });
+
+      // Calculate utility costs that owners paid for this month
+      const utilitiesForMonth = utilities.filter(utility => {
+        if (!utility.isPaid || !utility.paidAt) return false;
+        const paidDate = new Date(utility.paidAt);
+        return paidDate.getMonth() + 1 === monthNumber && paidDate.getFullYear() === currentYear;
+      });
+
+      const utilityCosts = utilitiesForMonth.reduce((sum, utility) => sum + utility.totalAmount, 0);
+      
+      // Total revenue minus utility costs paid by owners
+      const totalRevenue = paymentsForMonth.reduce((sum, payment) => sum + payment.amount, 0) - utilityCosts;
+      
+      // Calculate expenses from monthly reports plus paid utility costs
+      const reportsForMonth = monthlyReports.filter(report => 
         report.month === monthNumber && report.year === currentYear
       );
       
+      const totalExpenses = reportsForMonth.reduce((sum, report) => 
+        sum + (report.utilityBills || 0) + (report.expenses || 0), 0) + utilityCosts;
+      const netIncome = totalRevenue - (reportsForMonth.reduce((sum, report) => 
+        sum + (report.utilityBills || 0) + (report.expenses || 0), 0));
+      
       return {
         month: monthName,
-        revenue: reportForMonth ? reportForMonth.totalEarnings : 0,
-        expenses: reportForMonth ? reportForMonth.totalExpenses : 0,
-        netIncome: reportForMonth ? reportForMonth.netIncome : 0,
+        revenue: totalRevenue,
+        expenses: totalExpenses,
+        netIncome: netIncome,
       };
     });
     
@@ -459,7 +587,7 @@ export default function Home() {
                 <CardContent>
                   <div className="text-2xl font-bold">₱{monthlyStats.monthExpenses}</div>
                   <p className="text-xs text-muted-foreground">
-                    {renderPercentChange(monthlyStats.monthExpensesPercentChange)} from last month
+                    {renderExpensePercentChange(monthlyStats.monthExpensesPercentChange)} from last month
                   </p>
                 </CardContent>
               </Card>

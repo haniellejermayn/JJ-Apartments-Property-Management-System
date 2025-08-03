@@ -147,7 +147,9 @@ CREATE TABLE IF NOT EXISTS rates (
 
 INSERT INTO rates (type, rate, date) VALUES
 ('Meralco', 15.02, '2025-07-17'),
-('Manila Water', 50, '2025-07-17');
+('Manila Water', 50, '2025-07-17'),
+('Meralco', 14.30, '2024-07-17'),
+('Manila Water', 45, '2024-07-17');
 
 
 -- -------------------------

@@ -64,6 +64,17 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    // Basic client-side validation
+    if (!formData.username.trim()) {
+      setError('Please enter your username.');
+      return;
+    }
+    
+    if (!formData.password.trim()) {
+      setError('Please enter your password.');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
@@ -78,7 +89,20 @@ export default function LoginPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to login');
+        let errorMessage = errorData.error || 'Failed to login';
+        
+        // Map specific backend errors to user-friendly messages
+        if (response.status === 404 || errorMessage.includes('not found') || errorMessage.includes('Account not found')) {
+          errorMessage = 'Account does not exist. Please check your username or create a new account.';
+        } else if (errorMessage.includes('Invalid password') || errorMessage.includes('password')) {
+          errorMessage = 'Incorrect password. Please try again.';
+        } else if (response.status === 401) {
+          errorMessage = 'Invalid credentials. Please check your username and password.';
+        } else if (response.status >= 500) {
+          errorMessage = 'Server error. Please try again later.';
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const user = await response.json();
