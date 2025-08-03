@@ -69,7 +69,18 @@ The backend will start on `http://localhost:8080`
    npm install
    ```
 
-3. Start the development server:
+3. Create a `.env` file in the frontend directory:
+   ```bash
+   # Create the .env file
+   touch .env
+   ```
+   
+   Add the following content to the `.env` file:
+   ```properties
+   NEXT_PUBLIC_API_URL=http://localhost:8080
+   ```
+
+4. Start the development server:
    ```bash
    npm run dev
    ```
