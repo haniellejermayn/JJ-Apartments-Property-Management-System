@@ -2,8 +2,6 @@
 name: Feature
 about: A high-level feature or functionality
 title: "FEAT | "
-labels: feature
-assignees: ''
 
 ---
 
@@ -11,7 +9,6 @@ assignees: ''
 Provide a clear and concise description of the feature.
 
 ### Sub-issues
-- TASKs or BUGs associated with this feature:
+- TASKs associated with this feature:
   - [ ] TASK | 
   - [ ] TASK | 
-  - [ ] BUG | 
