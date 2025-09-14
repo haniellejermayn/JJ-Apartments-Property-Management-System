@@ -7,8 +7,3 @@ title: "FEAT | "
 
 ### Description
 Provide a clear and concise description of the feature.
-
-### Sub-issues
-- TASKs associated with this feature:
-  - [ ] TASK | 
-  - [ ] TASK | 
