@@ -14,24 +14,23 @@ import com.jjapartments.backend.exception.ErrorException;
 
 @RestController
 @RequestMapping("/api/tenants")
-@CrossOrigin(origins = "*")
-public class TenantController{
+public class TenantController {
     @Autowired
     private TenantRepository tenantRepository;
 
-    //Create
+    // Create
     @PostMapping("/add")
     public ResponseEntity<?> addTenant(@RequestBody Tenant tenant) {
         try {
             tenantRepository.add(tenant);
             return ResponseEntity.status(HttpStatus.CREATED).body(tenant);
-        } catch(ErrorException e) {
+        } catch (ErrorException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
-        
+
     }
 
-    //Get all
+    // Get all
     @GetMapping
     public ResponseEntity<List<Tenant>> getAllTenants() {
         try {
@@ -64,6 +63,5 @@ public class TenantController{
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-    
 
 }
