@@ -1,0 +1,42 @@
+#!/bin/sh
+FILE="backend/src/main/resources/application.properties"
+
+if git diff --cached --name-only | grep -q "$FILE"; then
+  echo ""
+  echo "⚠️  SECURITY NOTICE ⚠️"
+  echo "For security, your changes to application.properties will NOT be committed."
+  echo "Your local changes still exist, but the safe template will be pushed instead."
+  echo ""
+
+  # Restore the template into the staged version
+  cat > "$FILE" <<'EOF'
+# Database driver
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# These values come from environment variables with local fallbacks
+spring.datasource.url=${DATABASE_URL:jdbc:mysql://localhost:3306/jj_apartments}
+spring.datasource.username=${DATABASE_USERNAME:changeme}
+spring.datasource.password=${DATABASE_PASSWORD:changeme}
+
+# Frontend URL configuration
+frontend.url=${FRONTEND_URL:http://localhost:3000}
+
+# CORS configuration (used by CorsConfig)
+app.cors.allowed-origins=${FRONTEND_URL:http://localhost:3000}
+
+# JPA/Hibernate settings
+spring.jpa.hibernate.ddl-auto=${JPA_DDL_AUTO:update}
+spring.jpa.show-sql=true
+spring.jpa.database-platform=org.hibernate.dialect.MySQL5InnoDBDialect
+logging.level.org.springframework.jdbc=DEBUG
+logging.level.org.hibernate.SQL=DEBUG
+
+# Server port (Railway injects PORT automatically)
+server.port=${PORT:8080}
+EOF
+
+  # Re-stage the safe template
+  git add "$FILE"
+
+  echo "✅ application.properties has been reset to the safe template in your commit."
+fi
