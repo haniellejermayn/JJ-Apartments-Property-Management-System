@@ -41,14 +41,14 @@ export default function AddUnitButton() {
         }
 
         if (!contactNumber.trim() || !price.trim() || !numOccupants.trim()) {
-            setErrorMessage('Contact Number, Price, and Number of Occupants are required fields.');
+            setErrorMessage('Contact Number, Price, and Max Number of Occupants are required fields.');
             setErrorModalOpen(true);
             return;
         }
 
         // Validate that numeric fields are actually numbers
         if (isNaN(Number(contactNumber)) || isNaN(Number(price)) || isNaN(Number(numOccupants))) {
-            setErrorMessage('Contact Number, Price, and Number of Occupants must be valid numbers.');
+            setErrorMessage('Contact Number, Price, and Max Number of Occupants must be valid numbers.');
             setErrorModalOpen(true);
             return;
         }
@@ -177,7 +177,7 @@ export default function AddUnitButton() {
                     
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <Label className="py-1">Number of Occupants <span className="text-red-500">*</span></Label>
+                            <Label className="py-1">Max Number of Occupants <span className="text-red-500">*</span></Label>
                             <Input
                                 type="number"
                                 placeholder="2"
