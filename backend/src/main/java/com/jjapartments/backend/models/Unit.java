@@ -8,6 +8,7 @@ public class Unit {
     private String description;
     private float price;
     private int numOccupants;
+    private int currOccupants;
     private String contactNumber;
 
     public int getId() {
@@ -58,6 +59,13 @@ public class Unit {
         this.numOccupants = numOccupants;
     }
 
+    public int getCurrOccupants() {
+        return currOccupants;
+    }
+
+    public void setCurrOccupants(int currOccupants) {
+        this.currOccupants = currOccupants;
+    }
 
     public String getContactNumber() {
         return this.contactNumber;
@@ -67,6 +75,4 @@ public class Unit {
         this.contactNumber = contactNumber;
     }
 
-   
 }
-

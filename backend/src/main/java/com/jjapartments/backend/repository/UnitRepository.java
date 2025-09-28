@@ -24,50 +24,83 @@ public class UnitRepository {
         String sql = "SELECT * FROM units";
         return jdbcTemplate.query(sql, new UnitRowMapper());
     }
+
+    /*
+     * REPLACE WITH THE BELOW CODE AFTER ADDING ACTIVE TENANT FOREIGN KEY TO UNITS
+     * TABLE (FIX INDENTATION, BLOCK COMMENT BROKE IT)
+     * 
+     * @Transactional(readOnly = true)
+     * public List<Unit> findAll() {
+     * String sql = """
+     * SELECT
+     * u.id,
+     * u.unit_number,
+     * u.name,
+     * u.description,
+     * u.price,
+     * u.num_occupants,
+     * t.phone_number AS contact_number,
+     * (CASE WHEN u.active_tenant_id IS NULL THEN 0 ELSE 1 END
+     * + COALESCE(
+     * (SELECT COUNT(*) FROM sub_tenants st WHERE st.main_tenant_id =
+     * u.active_tenant_id),
+     * 0
+     * )
+     * ) AS curr_occupants
+     * FROM units u
+     * LEFT JOIN tenants t ON u.active_tenant_id = t.id
+     * """;
+     * 
+     * return jdbcTemplate.query(sql, new UnitRowMapper());
+     * }
+     * 
+     */
+
     // for creating
     public boolean unitExists(Unit unit) {
         String sqlChecker = "SELECT COUNT(*) FROM units WHERE unit_number = ? AND name = ?";
         Integer count = jdbcTemplate.queryForObject(sqlChecker, Integer.class, unit.getUnitNumber(), unit.getName());
         return count != null && count > 0;
     }
+
     // for updating
     public boolean unitExists(Unit unit, int excludeId) {
         String sqlChecker = "SELECT COUNT(*) FROM units WHERE unit_number = ? AND name = ? AND id != ?";
-        Integer count = jdbcTemplate.queryForObject(sqlChecker, Integer.class, unit.getUnitNumber(), unit.getName(), excludeId);
+        Integer count = jdbcTemplate.queryForObject(sqlChecker, Integer.class, unit.getUnitNumber(), unit.getName(),
+                excludeId);
         return count != null && count > 0;
     }
-
 
     public Unit add(Unit unit) {
         if (unitExists(unit)) {
             throw new ErrorException("The unit already exists.");
         } else {
             String sql = "INSERT INTO units(unit_number, name, description, price, num_occupants, contact_number) VALUES (?, ?, ?, ?, ?, ?)";
-            jdbcTemplate.update(sql, unit.getUnitNumber(), unit.getName(), unit.getDescription(), unit.getPrice(), unit.getNumOccupants(), unit.getContactNumber());
-            
+            jdbcTemplate.update(sql, unit.getUnitNumber(), unit.getName(), unit.getDescription(), unit.getPrice(),
+                    unit.getNumOccupants(), unit.getContactNumber());
+
             // return the created record
             String fetchSql = """
-                SELECT * FROM units
-                WHERE unit_number = ?
-                AND name = ?
-                AND description = ?
-                AND price = ?
-                AND num_occupants = ?
-                AND contact_number = ?
-                ORDER BY id DESC
-                LIMIT 1
-            """;
+                        SELECT * FROM units
+                        WHERE unit_number = ?
+                        AND name = ?
+                        AND description = ?
+                        AND price = ?
+                        AND num_occupants = ?
+                        AND contact_number = ?
+                        ORDER BY id DESC
+                        LIMIT 1
+                    """;
 
             return jdbcTemplate.queryForObject(
-                fetchSql,
-                new UnitRowMapper(),
-                unit.getUnitNumber(),
-                unit.getName(),
-                unit.getDescription(),
-                unit.getPrice(),
-                unit.getNumOccupants(),
-                unit.getContactNumber()
-            );
+                    fetchSql,
+                    new UnitRowMapper(),
+                    unit.getUnitNumber(),
+                    unit.getName(),
+                    unit.getDescription(),
+                    unit.getPrice(),
+                    unit.getNumOccupants(),
+                    unit.getContactNumber());
         }
     }
 
@@ -92,21 +125,22 @@ public class UnitRepository {
             throw new ErrorException("The unit already exists.");
         }
         String sql = "UPDATE units SET unit_number = ?, name = ?, description = ?, price = ?, num_occupants = ?, contact_number = ? WHERE id = ?";
-        return jdbcTemplate.update(sql, unit.getUnitNumber(), unit.getName(), unit.getDescription(), unit.getPrice(), unit.getNumOccupants(), unit.getContactNumber(), id);
+        return jdbcTemplate.update(sql, unit.getUnitNumber(), unit.getName(), unit.getDescription(), unit.getPrice(),
+                unit.getNumOccupants(), unit.getContactNumber(), id);
     }
 
     public List<Unit> searchByKeyword(String keyword) {
         String sql = "SELECT * FROM units WHERE LOWER(name) LIKE ? OR LOWER(description) LIKE ? OR LOWER(unit_number) LIKE ?";
         String likeKeyword = "%" + keyword.toLowerCase() + "%";
         return jdbcTemplate.query(sql, new UnitRowMapper(), likeKeyword, likeKeyword, likeKeyword);
-    } 
+    }
 
     public Optional<Unit> findByNameAndUnitNumber(String name, String unitNumber) {
         String sql = "SELECT * FROM units WHERE name = ? AND unit_number = ?";
 
         try {
             Unit unit = jdbcTemplate.queryForObject(sql, new UnitRowMapper(), name, unitNumber);
-            return Optional.ofNullable(unit); 
+            return Optional.ofNullable(unit);
         } catch (org.springframework.dao.EmptyResultDataAccessException e) {
             return Optional.empty();
         } catch (Exception e) {
