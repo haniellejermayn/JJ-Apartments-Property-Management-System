@@ -22,12 +22,15 @@ public class TenantController {
     @PostMapping("/add")
     public ResponseEntity<?> addTenant(@RequestBody Tenant tenant) {
         try {
-            tenantRepository.add(tenant);
-            return ResponseEntity.status(HttpStatus.CREATED).body(tenant);
+            Tenant newTenant = tenantRepository.add(tenant);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newTenant);
         } catch (ErrorException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
         }
-
     }
 
     // Get all
