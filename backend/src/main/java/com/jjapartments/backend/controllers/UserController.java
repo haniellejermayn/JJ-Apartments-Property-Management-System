@@ -10,6 +10,7 @@ import com.jjapartments.backend.models.User;
 import com.jjapartments.backend.exception.ErrorException;
 import com.jjapartments.backend.repository.UserRepository;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -74,24 +75,25 @@ public class UserController {
     public ResponseEntity<?> login(@RequestBody User user) {
         try {
             User existingUser = userRepository.findByUsername(user.getUsername());
-            if (existingUser != null) {
-                if (passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
-                    // Don't return the password in the response
-                    existingUser.setPassword(null);
-                    return ResponseEntity.ok(existingUser);
-                } else {
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                            .body("Invalid password. Please check your password and try again.");
-                }
-            } else {
+
+            if (existingUser == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Account not found. Please check your username or create a new account.");
+                        .body(Map.of("error", "ACCOUNT_NOT_FOUND"));
             }
+
+            if (!passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "INVALID_PASSWORD"));
+            }
+
+            // Success: remove password before sending
+            existingUser.setPassword(null);
+            return ResponseEntity.ok(existingUser);
+
         } catch (ErrorException e) {
             // This catches the "User with username X not found" from repository
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Account not found. Please check your username or create a new account.");
+                    .body(Map.of("error", "ACCOUNT_NOT_FOUND"));
         }
     }
-
 }
