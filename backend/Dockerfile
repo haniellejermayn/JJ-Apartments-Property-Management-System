@@ -1,5 +1,5 @@
 # Build stage: Java 21
-FROM eclipse-temurin:21-jdk-alpine3.19 AS build
+FROM eclipse-temurin:21-jdk AS build
 
 # Set working directory inside the container
 WORKDIR /app
@@ -22,7 +22,7 @@ COPY src ./src
 RUN ./mvnw clean package -DskipTests
 
 # Run stage: Java 21
-FROM eclipse-temurin:21-jdk-alpine3.19
+FROM eclipse-temurin:21-jdk
 
 WORKDIR /app
 
