@@ -74,5 +74,4 @@ public class Unit {
     public void setContactNumber(String contactNumber) {
         this.contactNumber = contactNumber;
     }
-
 }
