@@ -62,15 +62,24 @@ public class UnitRepository {
             jdbcTemplate.update(sql, unit.getUnitNumber(), unit.getName(), unit.getDescription(), unit.getPrice(),
                     unit.getNumOccupants());
 
-            // return the created record
             String fetchSql = """
-                        SELECT * FROM units
-                        WHERE unit_number = ?
-                        AND name = ?
-                        AND description = ?
-                        AND price = ?
-                        AND num_occupants = ?
-                        ORDER BY id DESC
+                        SELECT
+                            u.id,
+                            u.unit_number,
+                            u.name,
+                            u.description,
+                            u.price,
+                            u.num_occupants,
+                            t.phone_number AS contact_number,
+                            (CASE WHEN u.active_tenant_id IS NULL THEN 0 ELSE 1 END) AS curr_occupants
+                        FROM units u
+                        LEFT JOIN tenants t ON u.active_tenant_id = t.id
+                        WHERE u.unit_number = ?
+                            AND u.name = ?
+                            AND u.description = ?
+                            AND u.price = ?
+                            AND u.num_occupants = ?
+                        ORDER BY u.id DESC
                         LIMIT 1
                     """;
             return jdbcTemplate.queryForObject(
