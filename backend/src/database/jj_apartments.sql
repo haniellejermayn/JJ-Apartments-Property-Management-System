@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS `jj_apartments`.`sub_tenants` (
   `first_name` VARCHAR(45) NOT NULL,
   `middle_initial` VARCHAR(1) NULL,
   `phone_number` VARCHAR(15) NOT NULL,
-  `messenger_link` VARCHAR(45) NOT NULL,
+  `messenger_link` VARCHAR(45) NULL,
   `main_tenant_id` INT NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `main_tenant_id_idx` (`main_tenant_id` ASC) VISIBLE,
