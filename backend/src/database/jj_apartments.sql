@@ -115,6 +115,28 @@ UPDATE units SET active_tenant_id = 10 WHERE id = 19; -- Patricia in Unit S
 SELECT * FROM units;
 SELECT * FROM tenants;
 
+-- -----------------------------------------------------
+-- Table `jj_apartments`.`sub_tenants`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `jj_apartments`.`sub_tenants` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `last_name` VARCHAR(45) NOT NULL,
+  `first_name` VARCHAR(45) NOT NULL,
+  `middle_initial` VARCHAR(1) NULL,
+  `phone_number` VARCHAR(15) NOT NULL,
+  `messenger_link` VARCHAR(45) NOT NULL,
+  `main_tenant_id` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `main_tenant_id_idx` (`main_tenant_id` ASC) VISIBLE,
+  UNIQUE INDEX `phone_number_UNIQUE` (`phone_number` ASC) VISIBLE,
+  UNIQUE INDEX `messenger_link_UNIQUE` (`messenger_link` ASC) VISIBLE,
+  CONSTRAINT `main_tenant_id`
+    FOREIGN KEY (`main_tenant_id`)
+    REFERENCES `jj_apartments`.`tenants` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
 -- -------------------------
 -- Table: payments
 -- -------------------------
