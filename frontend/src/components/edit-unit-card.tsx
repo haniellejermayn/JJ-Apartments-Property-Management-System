@@ -62,7 +62,6 @@ export default function EditUnitCard({ open, onClose, onSave, unit }: Props) {
         if (!form.name) missingFields.push("Apartment Name");
         if (!form.unitNumber) missingFields.push("Unit Number");
         if (!form.description) missingFields.push("Description");
-        if (!form.contactNumber) missingFields.push("Contact Number");
         if (form.numOccupants == null) missingFields.push("Max Number of Occupants");
         if (form.price == null || form.price === "") missingFields.push("Price");
 
